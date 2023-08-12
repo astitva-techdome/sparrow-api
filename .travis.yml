@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+  - "stable"
+cache:
+  directories:
+    - ./node_modules
+services:
+  - "mongodb"
+install:
+  - pnpm install
+before_script:
+  - "cp .env.example .env"
+script:
+  - "pnpm run test:e2e"
+branches:
+  only:
+    - master
