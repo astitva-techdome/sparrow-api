@@ -1,8 +1,8 @@
 import { Injectable, Module } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { expect } from "chai";
-import { WINSTON_MODULE_PROVIDER } from "./winston.constants";
-import { WinstonModule } from "./winston.module";
+import { WINSTON_MODULE_PROVIDER } from "@winston/winston.constants";
+import { WinstonModule } from "@winston/winston.module";
 
 describe("Winston Module", () => {
   it("boots successfully", async () => {

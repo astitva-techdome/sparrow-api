@@ -1,4 +1,4 @@
-import { Env } from "./env.validation";
+import { Env } from "@common/config/env.validation";
 
 export default () => ({
   app: {

@@ -2,21 +2,33 @@
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
-    "noImplicitAny": false,
     "removeComments": true,
     "noLib": false,
     "allowSyntheticDefaultImports": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es6",
+    "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": true,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "esModuleInterop": true,
+    "paths": {
+      "@src/*": ["src/*"],
+      "@app/*": ["src/modules/app/*"],
+      "@auth/*": ["src/modules/auth/*"],
+      "@common/*": ["src/modules/common/*"],
+      "@profile/*": ["src/modules/profile/*"],
+      "@winston/*": ["src/modules/winston/*"],
+    }
   },
   "exclude": [
     "node_modules",
-  ],
-  "paths": {
-    "@src/*": ["src/*"]
-  }
+  ]
 }

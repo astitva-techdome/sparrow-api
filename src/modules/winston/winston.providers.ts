@@ -3,11 +3,11 @@ import { createLogger, LoggerOptions } from "winston";
 import {
   WINSTON_MODULE_OPTIONS,
   WINSTON_MODULE_PROVIDER,
-} from "./winston.constants";
+} from "@winston/winston.constants";
 import {
   WinstonModuleAsyncOptions,
   WinstonModuleOptions,
-} from "./winston.interfaces";
+} from "@winston/winston.interfaces";
 
 /**
  * Constructor a winston provider

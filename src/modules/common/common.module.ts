@@ -1,5 +1,4 @@
 import { Global, Module } from "@nestjs/common";
-// import { DatabaseConnectionService } from "./services/database.service";
 import { MongoClient, Db } from "mongodb";
 @Global()
 @Module({

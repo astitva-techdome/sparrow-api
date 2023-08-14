@@ -1,9 +1,9 @@
 import { Controller, Body, Post } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
-import { AuthService } from "./auth.service";
-import { LoginPayload } from "./payload/login.payload";
-import { RegisterPayload } from "./payload/register.payload";
-import { ProfileService } from "../profile/profile.service";
+import { AuthService } from "@auth/auth.service";
+import { LoginPayload } from "@auth/payload/login.payload";
+import { RegisterPayload } from "@auth/payload/register.payload";
+import { ProfileService } from "@profile/profile.service";
 
 /**
  * Authentication Controller
@@ -32,7 +32,7 @@ export class AuthController {
   async login(@Body() payload: LoginPayload) {
     const user = await this.authService.validateUser(payload);
     return await this.authService.createToken({
-      acknowledged: 1,
+      acknowledged: true,
       insertedId: user._id,
     });
   }

@@ -1,9 +1,9 @@
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { ProfileService } from "../profile/profile.service";
-import { LoginPayload } from "./payload/login.payload";
+import { ProfileService } from "@profile/profile.service";
+import { LoginPayload } from "@auth/payload/login.payload";
 import { ConfigService } from "@nestjs/config";
-import { Db } from "mongodb";
+import { Db, InsertOneResult } from "mongodb";
 
 /**
  * Models a typical Login/Register route return body
@@ -55,7 +55,10 @@ export class AuthService {
    * @param {Profile} param dto to generate token from
    * @returns {Promise<ITokenReturnBody>} token body
    */
-  async createToken({ acknowledged, insertedId }): Promise<ITokenReturnBody> {
+  async createToken({
+    acknowledged,
+    insertedId,
+  }: InsertOneResult<Document>): Promise<ITokenReturnBody> {
     if (!acknowledged) {
       throw new Error("Insertion failed.");
     }

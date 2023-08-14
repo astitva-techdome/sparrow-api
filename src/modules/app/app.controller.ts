@@ -1,5 +1,5 @@
 import { Controller, Get, Req, UseGuards } from "@nestjs/common";
-import { AppService } from "./app.service";
+import { AppService } from "@app/app.service";
 import { ApiBearerAuth, ApiResponse } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
 import { FastifyRequest } from "fastify";
@@ -38,7 +38,7 @@ export class AppController {
   @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 200, description: "Request Received" })
   @ApiResponse({ status: 400, description: "Request Failed" })
-  getProfile(@Req() req): Partial<FastifyRequest> {
+  getProfile(@Req() req: { user: object }): Partial<FastifyRequest> {
     return req.user;
   }
 }

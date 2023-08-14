@@ -1,12 +1,12 @@
 import * as request from "supertest";
 import { Test, TestingModule } from "@nestjs/testing";
-import { AppModule } from "../src/modules/app/app.module";
+import { AppModule } from "@app/app.module";
 import { ValidationPipe } from "@nestjs/common";
 
 describe("AppController (e2e)", () => {
-  let app;
-  let bearer;
-  let payload;
+  let app: any;
+  let bearer: any;
+  let payload: any;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
