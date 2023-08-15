@@ -1,4 +1,4 @@
-import * as request from "supertest";
+import { agent } from "supertest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { AppModule } from "@app/app.module";
 import { ValidationPipe } from "@nestjs/common";
@@ -20,14 +20,14 @@ describe("AppController (e2e)", () => {
   });
 
   it("/ (GET) unauthorized get request", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .get("/")
       .expect(401)
       .expect({ statusCode: 401, message: "Unauthorized" });
   });
 
   it("/api/auth/login (POST) validate username is alphanumeric", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .post("/api/auth/login")
       .send({
         username: "@#!@@/$%%^)(*+_=",
@@ -42,7 +42,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/auth/login (POST) validate password is at least 8 characters", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .post("/api/auth/login")
       .send({
         username: "test",
@@ -57,7 +57,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/auth/login (POST) try to login with unregistered account", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .post("/api/auth/login")
       .send({
         username: "BeforeCreatedProfiles",
@@ -72,7 +72,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/auth/register (POST) create an account", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .post("/api/auth/register")
       .send({
         username: "test",
@@ -84,7 +84,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/auth/login (POST) login to created account", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .post("/api/auth/login")
       .send({
         username: "test",
@@ -95,21 +95,21 @@ describe("AppController (e2e)", () => {
   });
 
   it("/ (GET) fetch main route when authorized", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .get("/")
       .set("Authorization", `Bearer ${bearer}`)
       .expect(200);
   });
 
   it("/request/user (GET) get request user object", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .get("/request/user")
       .set("Authorization", `Bearer ${bearer}`)
       .expect(200);
   });
 
   it("/api/auth/register (POST) validate that the same account fails to register", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .post("/api/auth/register")
       .send({
         username: "test",
@@ -127,7 +127,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/auth/register (POST) create an account to delete", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .post("/api/auth/register")
       .send({
         username: "delete",
@@ -139,7 +139,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/profile/{username} (GET) fetch created account", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .get("/api/profile/test")
       .set("Authorization", `Bearer ${bearer}`)
       .expect(200)
@@ -147,7 +147,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/profile (PATCH) update created account information", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .patch("/api/profile")
       .set("Authorization", `Bearer ${bearer}`)
       .send({
@@ -164,7 +164,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/profile/{username} (DELETE) teardown created account", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .delete("/api/profile/delete")
       .set("Authorization", `Bearer ${bearer}`)
       .expect(200)
@@ -174,7 +174,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("/api/profile/{username} (DELETE) teardown main account", () => {
-    return request(app.getHttpServer())
+    return agent(app.getHttpServer())
       .delete("/api/profile/test")
       .set("Authorization", `Bearer ${bearer}`)
       .expect(200)
