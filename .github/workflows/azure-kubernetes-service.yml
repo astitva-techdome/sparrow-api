@@ -4,20 +4,20 @@ on:
       - development
 
 jobs:
-   # build:
-   #    runs-on: ubuntu-latest
-   #    steps:
-   #       - uses: actions/checkout@master
+   build:
+      runs-on: ubuntu-latest
+      steps:
+         - uses: actions/checkout@master
 
-   #       - uses: Azure/docker-login@v1
-   #         with:
-   #            login-server: usccrm.azurecr.io
-   #            username: ${{ secrets.REGISTRY_USERNAME }}
-   #            password: ${{ secrets.REGISTRY_PASSWORD }}
+         - uses: Azure/docker-login@v1
+           with:
+              login-server: projectsparrow.azurecr.io
+              username: ${{ secrets.REGISTRY_USERNAME }}
+              password: ${{ secrets.REGISTRY_PASSWORD }}
 
-   #       - run: |
-   #            docker build . -t usccrm.azurecr.io/nv-scrapper:${{ github.run_number }}
-   #            docker push usccrm.azurecr.io/nv-scrapper:${{ github.run_number }}
+         - run: |
+              docker build . -t usccrm.azurecr.io/nv-scrapper:${{ github.run_number }}
+              docker push usccrm.azurecr.io/nv-scrapper:${{ github.run_number }}
 
    deploy:
       # needs: build
