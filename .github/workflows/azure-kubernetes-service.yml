@@ -11,7 +11,7 @@ jobs:
 
          - uses: Azure/docker-login@v1
            with:
-              login-server: projectsparrow.azurecr.io
+              login-server: sparrowdev.azurecr.io
               username: ${{ secrets.REGISTRY_USERNAME }}
               password: ${{ secrets.REGISTRY_PASSWORD }}
 
