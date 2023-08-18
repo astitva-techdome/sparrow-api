@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: sparrow-api
+  name: sparrow-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sparrow-api
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: sparrow-api
+    spec:
+      containers:
+      - image: sparrowdev.azurecr.io/sparrow-api:_BUILD__ID_
+        name: sparrow-api
+        imagePullPolicy: Always
+        resources: {}
+        ports:
+          - containerPort: 80
+        env:
+          - name: PORT
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key: PORT
+          - name: APP_ENV
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key: APP_ENV 
+          - name: APP_URL
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key: APP_URL     
+          - name: WEBTOKEN_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key: WEBTOKEN_SECRET_KEY
+          - name: WEBTOKEN_EXPIRATION_TIME
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key: WEBTOKEN_EXPIRATION_TIME
+          - name: DB_URL
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key: DB_URL                                                                          
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sparrow-api
+  labels:
+    run: sparrow-api
+spec:
+  type: ClusterIP
+  selector:
+    app: sparrow-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9000
