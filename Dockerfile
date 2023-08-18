@@ -11,10 +11,6 @@ COPY . .
 RUN npm i -g pnpm
 RUN pnpm i
 
-# Additional steps to enable live reload
-RUN mkdir app
-RUN cp -r node_modules/* ./app
-
 #Expose port and begin application
 EXPOSE 9000
 
