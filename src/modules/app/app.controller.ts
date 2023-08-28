@@ -1,8 +1,7 @@
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, UseGuards } from "@nestjs/common";
 import { AppService } from "@app/app.service";
 import { ApiBearerAuth, ApiResponse } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
-import { FastifyRequest } from "fastify";
 
 /**
  * App Controller
@@ -13,7 +12,6 @@ export class AppController {
   /**
    * Constructor
    * @param appService
-   * @param profileService
    */
   constructor(private readonly appService: AppService) {}
 
@@ -27,18 +25,5 @@ export class AppController {
   @ApiResponse({ status: 400, description: "Request Failed" })
   getString(): string {
     return this.appService.root();
-  }
-
-  /**
-   * Fetches request metadata
-   * @param {Req} req the request body
-   * @returns {Partial<FastifyRequest>} the request user populated from the passport module
-   */
-  @Get("request/user")
-  @UseGuards(AuthGuard("jwt"))
-  @ApiResponse({ status: 200, description: "Request Received" })
-  @ApiResponse({ status: 400, description: "Request Failed" })
-  getProfile(@Req() req: { user: object }): Partial<FastifyRequest> {
-    return req.user;
   }
 }

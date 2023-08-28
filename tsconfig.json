@@ -24,7 +24,7 @@
       "@app/*": ["src/modules/app/*"],
       "@auth/*": ["src/modules/auth/*"],
       "@common/*": ["src/modules/common/*"],
-      "@profile/*": ["src/modules/profile/*"],
+      "@user/*": ["src/modules/user/*"],
       "@winston/*": ["src/modules/winston/*"],
     }
   },

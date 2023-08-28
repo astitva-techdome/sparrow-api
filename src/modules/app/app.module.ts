@@ -4,13 +4,14 @@ import { AppController } from "@app/app.controller";
 import { AppService } from "@app/app.service";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AuthModule } from "@auth/auth.module";
-import { ProfileModule } from "@profile/profile.module";
 import { WinstonModule } from "@winston/winston.module";
 import { AccessControlModule } from "nest-access-control";
 import { roles } from "@app/app.roles";
 import { Env, EnvironmentVariables } from "@common/config/env.validation";
 import { transformAndValidateSync } from "class-transformer-validator";
 import configuration from "@common/config/configuration";
+import { WorkspaceModule } from "../workspace/workspace.module";
+import { UserModule } from "../user/user.module";
 
 @Module({
   imports: [
@@ -49,7 +50,8 @@ import configuration from "@common/config/configuration";
     AccessControlModule.forRoles(roles),
     ConfigModule,
     AuthModule,
-    ProfileModule,
+    UserModule,
+    WorkspaceModule,
   ],
   controllers: [AppController],
   providers: [

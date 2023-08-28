@@ -4,6 +4,7 @@ import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Db, ObjectId } from "mongodb";
 import { JwtPayload } from "./payload/jwt.payload";
+import { Collections } from "../common/enum/database.collection.enum";
 
 /**
  * Jwt Strategy Class
@@ -33,19 +34,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @param {any} done callback to resolve the request user with
    * @returns {Promise<boolean>} whether or not to validate the jwt token
    */
-  async validate({ iat, exp, _id }: JwtPayload, done: any): Promise<boolean> {
+  async validate({ iat, exp, id }: JwtPayload) {
     const timeDiff = exp - iat;
+    const _id = new ObjectId(id);
     if (timeDiff <= 0) {
       throw new UnauthorizedException();
     }
-    const user = await this.db.collection("profile").findOne({
-      _id: new ObjectId(_id),
+    const user = await this.db.collection(Collections.USER).findOne({
+      _id,
     });
 
     if (!user) {
       throw new UnauthorizedException();
     }
-    done(null, user);
-    return true;
+    return user._id;
   }
 }
