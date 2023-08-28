@@ -1,9 +1,10 @@
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { ProfileService } from "@profile/profile.service";
 import { LoginPayload } from "@auth/payload/login.payload";
 import { ConfigService } from "@nestjs/config";
-import { Db, InsertOneResult } from "mongodb";
+import { Db, ObjectId } from "mongodb";
+import { UserService } from "../user/user.service";
+import { Collections } from "../common/enum/database.collection.enum";
 
 /**
  * Models a typical Login/Register route return body
@@ -38,12 +39,12 @@ export class AuthService {
    * Constructor
    * @param {JwtService} jwtService jwt service
    * @param {ConfigService} configService
-   * @param {ProfileService} profileService profile service
+   * @param {UserService} userService user service
    */
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly profileService: ProfileService,
+    private readonly userService: UserService,
     @Inject("DATABASE_CONNECTION")
     private db: Db,
   ) {
@@ -51,28 +52,23 @@ export class AuthService {
   }
 
   /**
-   * Creates a signed jwt token based on IProfile payload
-   * @param {Profile} param dto to generate token from
+   * Creates a signed jwt token based on IUser payload
+   * @param {acknowledged} param
+   * @param {insertedId} param id of document
    * @returns {Promise<ITokenReturnBody>} token body
    */
-  async createToken({
-    acknowledged,
-    insertedId,
-  }: InsertOneResult<Document>): Promise<ITokenReturnBody> {
-    if (!acknowledged) {
-      throw new Error("Insertion failed.");
-    }
-    const insertedDocument = await this.db.collection("profile").findOne({
-      _id: insertedId,
-    });
+  async createToken(insertedId: ObjectId): Promise<ITokenReturnBody> {
+    const insertedDocument = await this.db
+      .collection(Collections.USER)
+      .findOne({
+        _id: insertedId,
+      });
     return {
       expires: this.expiration,
       expiresPrettyPrint: AuthService.prettyPrintSeconds(this.expiration),
       token: this.jwtService.sign({
         _id: insertedId,
-        username: insertedDocument.username,
         email: insertedDocument.email,
-        avatar: insertedDocument.avatar,
       }),
     };
   }
@@ -94,16 +90,15 @@ export class AuthService {
   }
 
   /**
-   * Validates whether or not the profile exists in the database
+   * Validates whether or not the User exists in the database
    * @param {LoginPayload} payload login payload to authenticate with
-   * @returns {Promise<IProfile>} registered profile
+   * @returns {Promise<IUser>} registered User
    */
   async validateUser(payload: LoginPayload) {
-    const user = await this.profileService.getByUsernameAndPass(
-      payload.username,
+    const user = await this.userService.getUserByEmailAndPass(
+      payload.email,
       payload.password,
     );
-    console.log(user);
     if (!user) {
       throw new UnauthorizedException(
         "Could not authenticate. Please try again.",

@@ -2,8 +2,7 @@ import { Controller, Body, Post } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "@auth/auth.service";
 import { LoginPayload } from "@auth/payload/login.payload";
-import { RegisterPayload } from "@auth/payload/register.payload";
-import { ProfileService } from "@profile/profile.service";
+import { UserService } from "../user/user.service";
 
 /**
  * Authentication Controller
@@ -14,11 +13,11 @@ export class AuthController {
   /**
    * Constructor
    * @param {AuthService} authService authentication service
-   * @param {ProfileService} profileService profile service
+   * @param {UserService} userService user service
    */
   constructor(
     private readonly authService: AuthService,
-    private readonly profileService: ProfileService,
+    private readonly userService: UserService,
   ) {}
 
   /**
@@ -31,22 +30,6 @@ export class AuthController {
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async login(@Body() payload: LoginPayload) {
     const user = await this.authService.validateUser(payload);
-    return await this.authService.createToken({
-      acknowledged: true,
-      insertedId: user._id,
-    });
-  }
-
-  /**
-   * Registration route to create and generate tokens for users
-   * @param {RegisterPayload} payload the registration dto
-   */
-  @Post("register")
-  @ApiResponse({ status: 201, description: "Registration Completed" })
-  @ApiResponse({ status: 400, description: "Bad Request" })
-  @ApiResponse({ status: 401, description: "Unauthorized" })
-  async register(@Body() payload: RegisterPayload) {
-    const user = await this.profileService.create(payload);
-    return await this.authService.createToken(user);
+    return await this.authService.createToken(user._id);
   }
 }

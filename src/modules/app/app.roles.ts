@@ -1,8 +1,8 @@
 import { RolesBuilder } from "nest-access-control";
 
 export enum AppRoles {
-  DEFAULT = "DEFAULT",
   ADMIN = "ADMIN",
+  MEMBER = "MEMBER",
 }
 
 /**
@@ -10,14 +10,14 @@ export enum AppRoles {
  */
 export const roles: RolesBuilder = new RolesBuilder();
 
-// The default app role doesn't have readAny(profiles) because the profile returned provides a password.
-// To mutate the return body of mongo queries try editing the ProfileService
+// The default app role doesn't have readAny(users) because the user returned provides a password.
+// To mutate the return body of mongo queries try editing the userService
 roles
-  .grant(AppRoles.DEFAULT)
-  .readOwn("profile")
-  .updateOwn("profile")
-  .deleteOwn("profile")
   .grant(AppRoles.ADMIN)
-  .readAny("profiles")
-  .updateAny("profiles")
-  .deleteAny("profiles");
+  .readOwn("user")
+  .updateOwn("user")
+  .deleteOwn("user")
+  .grant(AppRoles.ADMIN)
+  .readAny("user")
+  .updateAny("user")
+  .deleteAny("user");
