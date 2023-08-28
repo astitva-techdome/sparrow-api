@@ -1,12 +1,16 @@
+import { Type } from "class-transformer";
 import {
   IsArray,
   IsDate,
   IsEmail,
+  IsEnum,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
+import { Role } from "../enum/roles.enum";
 
 export class User {
   @IsString()
@@ -24,12 +28,13 @@ export class User {
   @IsArray()
   @IsOptional()
   @ValidateNested({ each: true })
-  authProviders?: Array<AuthProvider>;
+  @Type(() => AuthProvider)
+  authProviders?: AuthProvider[];
 
   @IsArray()
+  @Type(() => PermissionDto)
   @ValidateNested({ each: true })
-  @IsOptional()
-  permissions?: string[];
+  permissions: PermissionDto[];
 
   @IsDate()
   @IsOptional()
@@ -41,14 +46,18 @@ export class User {
 }
 
 export class UserDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;
 
   @IsArray()
+  @Type(() => PermissionDto)
   @ValidateNested({ each: true })
-  @IsOptional()
-  roles?: string[];
+  permissions: PermissionDto[];
 }
 
 class AuthProvider {
@@ -59,4 +68,14 @@ class AuthProvider {
   @IsString()
   @IsNotEmpty()
   oAuthId: string;
+}
+
+class PermissionDto {
+  @IsEnum(Role)
+  @IsNotEmpty()
+  role: Role;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  workspaceId: string;
 }

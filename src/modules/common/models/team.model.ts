@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsDateString,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -25,7 +26,7 @@ export class Team {
   @Type(() => UserDto)
   @ValidateNested({ each: true })
   @IsOptional()
-  users?: [];
+  users?: UserDto[];
 
   @IsDateString()
   createdAt: Date;
@@ -43,6 +44,10 @@ export class Team {
 }
 
 export class TeamDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;

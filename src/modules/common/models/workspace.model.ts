@@ -2,12 +2,13 @@ import { Type } from "class-transformer";
 import {
   IsArray,
   IsDate,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
-import { CollectionDTO } from "./collection.model";
+import { CollectionDto } from "./collection.model";
 import { TeamDto } from "./team.model";
 
 export class Workspace {
@@ -16,10 +17,10 @@ export class Workspace {
   name: string;
 
   @IsArray()
-  @Type(() => CollectionDTO)
+  @Type(() => CollectionDto)
   @ValidateNested({ each: true })
   @IsOptional()
-  collection?: CollectionDTO;
+  collection?: CollectionDto;
 
   @IsArray()
   @Type(() => TeamDto)
@@ -45,6 +46,10 @@ export class Workspace {
 }
 
 export class WorkspaceDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;

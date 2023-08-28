@@ -3,6 +3,7 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -28,10 +29,18 @@ enum FormDataTypeEnum {
   FILE,
 }
 
-export class CollectionDTO {
+export class CollectionDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  totalRequests: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -47,7 +56,7 @@ class Collection {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CollectionItem)
-  items: Array<CollectionItem>;
+  items: CollectionItem[];
 
   @IsDateString()
   createdAt: Date;
@@ -77,16 +86,11 @@ class CollectionItem {
   @ValidateNested({ each: true })
   @Type(() => CollectionItem)
   @IsOptional()
-  items?: Array<CollectionItem>;
+  items?: CollectionItem[];
 
   @IsOptional()
   @Type(() => RequestMetaData)
   request?: RequestMetaData;
-
-  @IsArray()
-  @Type(() => CollectionDTO)
-  @ValidateNested({ each: true })
-  collection: CollectionDTO;
 }
 
 class RequestMetaData {
@@ -109,7 +113,7 @@ class RequestMetaData {
   @Type(() => QueryParams)
   @ValidateNested({ each: true })
   @IsOptional()
-  queryParams?: Array<QueryParams>;
+  queryParams?: QueryParams[];
 }
 
 class RequestBody {
@@ -125,7 +129,7 @@ class RequestBody {
   @Type(() => FormData)
   @ValidateNested({ each: true })
   @IsOptional()
-  formData?: Array<FormData>;
+  formData?: FormData[];
 }
 
 class FormData {
