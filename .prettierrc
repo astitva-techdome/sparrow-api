@@ -1,4 +1,5 @@
 {
   "doubleQuote": true,
-  "trailingComma": "all"
+  "trailingComma": "all",
+  "endOfLine": "lf"
 }
