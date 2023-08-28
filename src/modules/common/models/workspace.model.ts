@@ -22,11 +22,9 @@ export class Workspace {
   @IsOptional()
   collection?: CollectionDto;
 
-  @IsArray()
   @Type(() => TeamDto)
-  @ValidateNested({ each: true })
   @IsOptional()
-  team?: TeamDto[];
+  team?: TeamDto;
 
   @IsDate()
   @IsOptional()

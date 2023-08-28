@@ -50,14 +50,9 @@ export class UserDto {
   @IsNotEmpty()
   id: string;
 
-  @IsString()
+  @IsEmail()
   @IsNotEmpty()
-  name: string;
-
-  @IsArray()
-  @Type(() => PermissionDto)
-  @ValidateNested({ each: true })
-  permissions: PermissionDto[];
+  email: string;
 }
 
 class AuthProvider {

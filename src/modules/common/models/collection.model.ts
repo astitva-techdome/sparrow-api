@@ -29,20 +29,6 @@ enum FormDataTypeEnum {
   FILE,
 }
 
-export class CollectionDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  id: string;
-
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsNumber()
-  @IsNotEmpty()
-  totalRequests: number;
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Collection {
   @IsString()
@@ -71,6 +57,16 @@ class Collection {
   @IsString()
   @IsNotEmpty()
   updatedBy: string;
+}
+
+export class CollectionDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 }
 
 class CollectionItem {
