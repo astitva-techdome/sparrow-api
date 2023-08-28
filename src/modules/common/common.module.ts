@@ -1,5 +1,6 @@
 import { Global, Module } from "@nestjs/common";
 import { MongoClient, Db } from "mongodb";
+import { ContextService } from "./services/context.service";
 @Global()
 @Module({
   imports: [],
@@ -16,7 +17,8 @@ import { MongoClient, Db } from "mongodb";
         }
       },
     },
+    ContextService,
   ],
-  exports: ["DATABASE_CONNECTION"],
+  exports: ["DATABASE_CONNECTION", ContextService],
 })
 export class CommonModule {}

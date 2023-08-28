@@ -12,6 +12,7 @@ import { transformAndValidateSync } from "class-transformer-validator";
 import configuration from "@common/config/configuration";
 import { WorkspaceModule } from "../workspace/workspace.module";
 import { UserModule } from "../user/user.module";
+import { CommonModule } from "../common/common.module";
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { UserModule } from "../user/user.module";
     AuthModule,
     UserModule,
     WorkspaceModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [
