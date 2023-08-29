@@ -8,6 +8,7 @@ export default () => ({
     webtokenSecretKey: process.env.WEBTOKEN_SECRET_KEY,
     webtokenExpirationTime:
       parseInt(process.env.WEBTOKEN_EXPIRATION_TIME) || 1800,
+    defaultWorkspaceName: "My Workspace",
   },
   db: {
     url: process.env.DB_URL,

@@ -1,11 +1,38 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { TeamDto } from "@src/modules/common/models/team.model";
+import { WorkspaceType } from "@src/modules/common/models/workspace.model";
+import { Type } from "class-transformer";
+import {
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from "class-validator";
 
 export class CreateOrUpdateWorkspaceDto {
+  @IsMongoId()
+  @IsOptional()
+  userId?: string;
+
   @ApiProperty({
     example: "collection1",
   })
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty({
+    example: WorkspaceType.TEAM,
+  })
+  @IsEnum(WorkspaceType)
+  @IsNotEmpty()
+  type: WorkspaceType;
+
+  @ApiProperty({
+    example: WorkspaceType.TEAM,
+  })
+  @Type(() => TeamDto)
+  @IsOptional()
+  team?: TeamDto;
 }

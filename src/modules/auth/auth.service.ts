@@ -3,8 +3,10 @@ import { JwtService } from "@nestjs/jwt";
 import { LoginPayload } from "@auth/payload/login.payload";
 import { ConfigService } from "@nestjs/config";
 import { Db, ObjectId } from "mongodb";
-import { UserService } from "../user/user.service";
 import { Collections } from "../common/enum/database.collection.enum";
+import { ContextService } from "../common/services/context.service";
+import { createHmac } from "crypto";
+import { User } from "../common/models/user.model";
 
 /**
  * Models a typical Login/Register route return body
@@ -39,14 +41,13 @@ export class AuthService {
    * Constructor
    * @param {JwtService} jwtService jwt service
    * @param {ConfigService} configService
-   * @param {UserService} userService user service
    */
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly userService: UserService,
     @Inject("DATABASE_CONNECTION")
     private db: Db,
+    private contextService: ContextService,
   ) {
     this.expiration = this.configService.get("app.webtokenExpirationTime");
   }
@@ -58,18 +59,20 @@ export class AuthService {
    * @returns {Promise<ITokenReturnBody>} token body
    */
   async createToken(insertedId: ObjectId): Promise<ITokenReturnBody> {
-    const insertedDocument = await this.db
-      .collection(Collections.USER)
-      .findOne({
-        _id: insertedId,
-      });
+    const user = await this.db.collection(Collections.USER).findOne({
+      _id: insertedId,
+    });
+    this.contextService.set("user", user);
     return {
       expires: this.expiration,
       expiresPrettyPrint: AuthService.prettyPrintSeconds(this.expiration),
-      token: this.jwtService.sign({
-        _id: insertedId,
-        email: insertedDocument.email,
-      }),
+      token: this.jwtService.sign(
+        {
+          _id: insertedId,
+          email: user.email,
+        },
+        { secret: this.configService.get("app.webtokenSecretKey") },
+      ),
     };
   }
 
@@ -95,7 +98,7 @@ export class AuthService {
    * @returns {Promise<IUser>} registered User
    */
   async validateUser(payload: LoginPayload) {
-    const user = await this.userService.getUserByEmailAndPass(
+    const user = await this.getUserByEmailAndPass(
       payload.email,
       payload.password,
     );
@@ -105,5 +108,11 @@ export class AuthService {
       );
     }
     return user;
+  }
+  async getUserByEmailAndPass(email: string, password: string) {
+    return await this.db.collection<User>(Collections.USER).findOne({
+      email,
+      password: createHmac("sha256", password).digest("hex"),
+    });
   }
 }

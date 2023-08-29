@@ -2,6 +2,7 @@ import { Type } from "class-transformer";
 import {
   IsArray,
   IsDate,
+  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
@@ -9,22 +10,40 @@ import {
   ValidateNested,
 } from "class-validator";
 import { CollectionDto } from "./collection.model";
-import { TeamDto } from "./team.model";
+
+export enum WorkspaceType {
+  PERSONAL = "PERSONAL",
+  TEAM = "TEAM",
+}
+
+export class OwnerInformationDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsEnum(WorkspaceType)
+  @IsNotEmpty()
+  type: WorkspaceType;
+}
 
 export class Workspace {
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @Type(() => OwnerInformationDto)
+  @IsNotEmpty()
+  owner: OwnerInformationDto;
+
   @IsArray()
   @Type(() => CollectionDto)
   @ValidateNested({ each: true })
   @IsOptional()
   collection?: CollectionDto;
-
-  @Type(() => TeamDto)
-  @IsOptional()
-  team?: TeamDto;
 
   @IsDate()
   @IsOptional()

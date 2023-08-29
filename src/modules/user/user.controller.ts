@@ -28,17 +28,12 @@ export class UserController {
     private readonly authService: AuthService,
   ) {}
 
-  /**
-   * Registration route to create and generate tokens for users
-   * @param {RegisterPayload} payload the registration dto
-   */
   @Post()
   @ApiResponse({ status: 201, description: "Registration Completed" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async register(@Body() payload: RegisterPayload) {
-    const user = await this.userService.createUser(payload);
-    return await this.authService.createToken(user.insertedId);
+    return await this.userService.createUser(payload);
   }
 
   @Get(":userId")

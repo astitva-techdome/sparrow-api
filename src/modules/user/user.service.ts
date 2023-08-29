@@ -9,6 +9,12 @@ import { Collections } from "../common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { RegisterPayload } from "../auth/payload/register.payload";
 import { UpdateUserDto } from "./payload/user.payload";
+import { WorkspaceService } from "../workspace/workspace.service";
+import { CreateOrUpdateWorkspaceDto } from "../workspace/payload/workspace.payload";
+import { ConfigService } from "@nestjs/config";
+import { WorkspaceType } from "../common/models/workspace.model";
+import { User } from "../common/models/user.model";
+import { AuthService } from "@auth/auth.service";
 
 export interface IGenericMessageBody {
   message: string;
@@ -22,6 +28,9 @@ export class UserService {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
+    private readonly workspaceService: WorkspaceService,
+    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
   ) {}
 
   /**
@@ -50,7 +59,7 @@ export class UserService {
    * @returns {Promise<IUser>} queried user data
    */
   async getUserByEmailAndPass(email: string, password: string) {
-    return await this.db.collection(Collections.USER).findOne({
+    return await this.db.collection<User>(Collections.USER).findOne({
       email,
       password: createHmac("sha256", password).digest("hex"),
     });
@@ -71,9 +80,19 @@ export class UserService {
     const createdUser = await this.db.collection(Collections.USER).insertOne({
       ...payload,
       password: createHmac("sha256", payload.password).digest("hex"),
+      permissions: [],
     });
 
-    return createdUser;
+    const token = await this.authService.createToken(createdUser.insertedId);
+
+    const workspaceObj: CreateOrUpdateWorkspaceDto = {
+      name: this.configService.get("app.defaultWorkspaceName"),
+      type: WorkspaceType.PERSONAL,
+    };
+
+    await this.workspaceService.create(workspaceObj);
+
+    return token;
   }
 
   /**
@@ -88,7 +107,7 @@ export class UserService {
       payload.password = createHmac("sha256", payload.password).digest("hex");
     }
     const updatedUser = await this.db
-      .collection(Collections.USER)
+      .collection<User>(Collections.USER)
       .updateOne({ _id }, { $set: payload });
     if (!updatedUser.matchedCount) {
       throw new BadRequestException(
@@ -106,7 +125,7 @@ export class UserService {
   deleteUser(userId: string): Promise<IGenericMessageBody> {
     const _id = new ObjectId(userId);
     return this.db
-      .collection(Collections.USER)
+      .collection<User>(Collections.USER)
       .deleteOne({ _id })
       .then((user) => {
         if (user.deletedCount === 1) {

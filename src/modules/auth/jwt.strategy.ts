@@ -5,6 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { Db, ObjectId } from "mongodb";
 import { JwtPayload } from "./payload/jwt.payload";
 import { Collections } from "../common/enum/database.collection.enum";
+import { ContextService } from "../common/services/context.service";
 
 /**
  * Jwt Strategy Class
@@ -20,6 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     readonly configService: ConfigService,
     @Inject("DATABASE_CONNECTION")
     private db: Db,
+    private contextService: ContextService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -43,6 +45,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.db.collection(Collections.USER).findOne({
       _id,
     });
+
+    this.contextService.set("user", user);
 
     if (!user) {
       throw new UnauthorizedException();

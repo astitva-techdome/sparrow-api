@@ -69,24 +69,44 @@ export class CollectionDto {
   name: string;
 }
 
-class CollectionItem {
+class FormData {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  key: string;
 
-  @IsEnum(ItemTypeEnum)
+  @IsString()
   @IsNotEmpty()
-  type: ItemTypeEnum;
+  value: string;
+
+  @IsEnum(FormDataTypeEnum)
+  @IsNotEmpty()
+  type: FormDataTypeEnum;
+}
+
+class RequestBody {
+  @IsEnum(BodyModeEnum)
+  @IsNotEmpty()
+  mode: BodyModeEnum;
+
+  @IsOptional()
+  @IsString()
+  raw?: string;
 
   @IsArray()
+  @Type(() => FormData)
   @ValidateNested({ each: true })
-  @Type(() => CollectionItem)
   @IsOptional()
-  items?: CollectionItem[];
+  formData?: FormData[];
+}
 
-  @IsOptional()
-  @Type(() => RequestMetaData)
-  request?: RequestMetaData;
+class QueryParams {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
 }
 
 class RequestMetaData {
@@ -112,42 +132,22 @@ class RequestMetaData {
   queryParams?: QueryParams[];
 }
 
-class RequestBody {
-  @IsEnum(BodyModeEnum)
-  @IsNotEmpty()
-  mode: BodyModeEnum;
-
-  @IsOptional()
+class CollectionItem {
   @IsString()
-  raw?: string;
+  @IsNotEmpty()
+  name: string;
+
+  @IsEnum(ItemTypeEnum)
+  @IsNotEmpty()
+  type: ItemTypeEnum;
 
   @IsArray()
-  @Type(() => FormData)
   @ValidateNested({ each: true })
+  @Type(() => CollectionItem)
   @IsOptional()
-  formData?: FormData[];
-}
+  items?: CollectionItem[];
 
-class FormData {
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @IsString()
-  @IsNotEmpty()
-  value: string;
-
-  @IsEnum(FormDataTypeEnum)
-  @IsNotEmpty()
-  type: FormDataTypeEnum;
-}
-
-class QueryParams {
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @IsString()
-  @IsNotEmpty()
-  value: string;
+  @IsOptional()
+  @Type(() => RequestMetaData)
+  request?: RequestMetaData;
 }

@@ -3,13 +3,11 @@ import {
   Body,
   Controller,
   Delete,
-  // Delete,
   Get,
   Param,
   Post,
   Put,
   UseGuards,
-  // UseGuards,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
@@ -25,6 +23,16 @@ import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
 export class WorkSpaceController {
   constructor(private readonly workspaceService: WorkspaceService) {}
 
+  @Post()
+  @UseGuards(AuthGuard("jwt"))
+  @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
+  @ApiResponse({ status: 400, description: "Create Workspace Failed" })
+  async createWorkspace(
+    @Body() createWorkspaceDto: CreateOrUpdateWorkspaceDto,
+  ) {
+    return await this.workspaceService.create(createWorkspaceDto);
+  }
+
   @Get(":workspaceId")
   @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 200, description: "Fetch Workspace Request Received" })
@@ -37,16 +45,6 @@ export class WorkSpaceController {
       );
     }
     return workspace;
-  }
-
-  @Post()
-  @UseGuards(AuthGuard("jwt"))
-  @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
-  @ApiResponse({ status: 400, description: "Create Workspace Failed" })
-  async createWorkspace(
-    @Body() createWorkspaceDto: CreateOrUpdateWorkspaceDto,
-  ) {
-    return await this.workspaceService.create(createWorkspaceDto);
   }
 
   @Put(":workspaceId")

@@ -1,8 +1,13 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
-import { Workspace } from "../common/models/workspace.model";
+import {
+  OwnerInformationDto,
+  Workspace,
+  WorkspaceType,
+} from "../common/models/workspace.model";
 import { Collections } from "../common/enum/database.collection.enum";
 import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
+import { ContextService } from "../common/services/context.service";
 /**
  * Models a typical response for a crud operation
  */
@@ -18,10 +23,10 @@ export interface IGenericMessageBody {
  */
 @Injectable()
 export class WorkspaceService {
-  private userId: string;
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
+    private contextService: ContextService,
   ) {}
 
   /**
@@ -38,18 +43,31 @@ export class WorkspaceService {
 
   /**
    * Creates a new workspace in the database
-   * @param {CreateWorkspaceDto} workspaceData
+   * @param {CreateOrUpdateWorkspaceDto} workspaceData
    * @returns {Promise<InsertOneWriteOpResult<Workspace>>} result of the insert operation
    */
   create(workspaceData: CreateOrUpdateWorkspaceDto) {
-    const defaultParams = {
-      createdAt: new Date(),
-      createdBy: "123",
+    const ownerInfo: OwnerInformationDto = {
+      id:
+        workspaceData.type === WorkspaceType.PERSONAL
+          ? this.contextService.get("user")._id
+          : workspaceData.team.id,
+      name:
+        workspaceData.type === WorkspaceType.PERSONAL
+          ? this.contextService.get("user").name
+          : workspaceData.team.name,
+      type: workspaceData.type as WorkspaceType,
     };
-    console.log("USERID ====> ", this.userId);
+
+    const params = {
+      owner: ownerInfo,
+      createdAt: new Date(),
+      createdBy: this.contextService.get("user")._id,
+    };
+
     return this.db
       .collection<Workspace>(Collections.WORKSPACE)
-      .insertOne({ ...workspaceData, ...defaultParams });
+      .insertOne({ ...workspaceData, ...params });
   }
 
   /**
@@ -62,7 +80,7 @@ export class WorkspaceService {
     const _id = new ObjectId(id);
     const defaultParams = {
       updatedAt: new Date(),
-      updatedBy: "456",
+      updatedBy: this.contextService.get("user")._id,
     };
     return this.db
       .collection<Workspace>(Collections.WORKSPACE)
