@@ -1,18 +1,9 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
 import { Team } from "../common/models/team.model";
 import { Collections } from "../common/enum/database.collection.enum";
 import { CreateOrUpdateTeamDto } from "./payload/team.payload";
 import { ContextService } from "../common/services/context.service";
-/**
- * Models a typical response for a crud operation
- */
-export interface IGenericMessageBody {
-  /**
-   * Status message to return
-   */
-  message: string;
-}
 
 /**
  * Team Service
@@ -32,7 +23,13 @@ export class TeamService {
    */
   get(id: string) {
     const _id = new ObjectId(id);
-    return this.db.collection<Team>(Collections.TEAM).findOne({ _id });
+    const team = this.db.collection<Team>(Collections.TEAM).findOne({ _id });
+    if (!team) {
+      throw new BadRequestException(
+        "The Team with that id could not be found.",
+      );
+    }
+    return team;
   }
 
   /**
@@ -60,6 +57,13 @@ export class TeamService {
    */
   delete(id: string) {
     const _id = new ObjectId(id);
-    return this.db.collection<Team>(Collections.TEAM).deleteOne({ _id });
+    const deletedTeam = this.db
+      .collection<Team>(Collections.TEAM)
+      .deleteOne({ _id });
+    if (!deletedTeam) {
+      throw new BadRequestException(
+        "The Team with that id could not be found.",
+      );
+    }
   }
 }

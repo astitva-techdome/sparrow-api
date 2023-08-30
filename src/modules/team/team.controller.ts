@@ -5,7 +5,6 @@ import {
   Delete,
   Post,
   UseGuards,
-  BadRequestException,
   Param,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
@@ -26,7 +25,7 @@ export class TeamController {
   @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Team Failed" })
-  async createWorkspace(@Body() createTeamDto: CreateOrUpdateTeamDto) {
+  async createTeam(@Body() createTeamDto: CreateOrUpdateTeamDto) {
     return await this.teamService.create(createTeamDto);
   }
 
@@ -36,11 +35,6 @@ export class TeamController {
   @ApiResponse({ status: 400, description: "Fetch Team Request Failed" })
   async getTeam(@Param("teamId") teamId: string) {
     const team = await this.teamService.get(teamId);
-    if (!team) {
-      throw new BadRequestException(
-        "The Team with that id could not be found.",
-      );
-    }
     return team;
   }
 
@@ -49,12 +43,7 @@ export class TeamController {
   @ApiResponse({ status: 200, description: "Team Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Team Failed" })
   async deleteTeam(@Param("teamId") teamId: string) {
-    const deletedTeam = await this.teamService.delete(teamId);
-    if (!deletedTeam) {
-      throw new BadRequestException(
-        "The Team with that id could not be found.",
-      );
-    }
+    await this.teamService.delete(teamId);
     return { message: "Team deleted successfully" };
   }
 }
