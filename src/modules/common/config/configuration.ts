@@ -9,8 +9,14 @@ export default () => ({
     webtokenExpirationTime:
       parseInt(process.env.WEBTOKEN_EXPIRATION_TIME) || 1800,
     defaultWorkspaceName: "My Workspace",
+    userBlacklistPrefix: "BL_",
   },
   db: {
     url: process.env.DB_URL,
+  },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    db: process.env.REDIS_DB,
   },
 });

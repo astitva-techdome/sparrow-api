@@ -36,21 +36,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @param {any} done callback to resolve the request user with
    * @returns {Promise<boolean>} whether or not to validate the jwt token
    */
-  async validate({ iat, exp, id }: JwtPayload) {
+  async validate({ iat, exp, _id }: JwtPayload) {
     const timeDiff = exp - iat;
-    const _id = new ObjectId(id);
     if (timeDiff <= 0) {
       throw new UnauthorizedException();
     }
-    const user = await this.db.collection(Collections.USER).findOne({
-      _id,
-    });
-
-    this.contextService.set("user", user);
+    const user = await this.db.collection(Collections.USER).findOne(
+      {
+        _id: new ObjectId(_id),
+      },
+      { projection: { password: 0 } },
+    );
 
     if (!user) {
       throw new UnauthorizedException();
     }
+    this.contextService.set("user", user);
+
     return user._id;
   }
 }

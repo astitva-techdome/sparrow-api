@@ -59,9 +59,12 @@ export class AuthService {
    * @returns {Promise<ITokenReturnBody>} token body
    */
   async createToken(insertedId: ObjectId): Promise<ITokenReturnBody> {
-    const user = await this.db.collection(Collections.USER).findOne({
-      _id: insertedId,
-    });
+    const user = await this.db.collection(Collections.USER).findOne(
+      {
+        _id: insertedId,
+      },
+      { projection: { password: 0 } },
+    );
     this.contextService.set("user", user);
     return {
       expires: this.expiration,
