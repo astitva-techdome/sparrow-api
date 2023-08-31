@@ -39,6 +39,12 @@ export class TeamService {
    */
   create(teamData: CreateOrUpdateTeamDto) {
     const params = {
+      users: [
+        {
+          id: this.contextService.get("user")._id,
+          email: this.contextService.get("user").email,
+        },
+      ],
       createdAt: new Date(),
       createdBy: this.contextService.get("user")._id,
       updatedAt: new Date(),
