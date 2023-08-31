@@ -34,8 +34,7 @@ export class TeamController {
   @ApiResponse({ status: 200, description: "Fetch Team Request Received" })
   @ApiResponse({ status: 400, description: "Fetch Team Request Failed" })
   async getTeam(@Param("teamId") teamId: string) {
-    const team = await this.teamService.get(teamId);
-    return team;
+    return await this.teamService.get(teamId);
   }
 
   @Delete(":teamId")
