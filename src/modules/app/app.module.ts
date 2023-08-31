@@ -13,6 +13,7 @@ import configuration from "@common/config/configuration";
 import { WorkspaceModule } from "../workspace/workspace.module";
 import { UserModule } from "../user/user.module";
 import { CommonModule } from "../common/common.module";
+import { TeamModule } from "../team/team.module";
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { CommonModule } from "../common/common.module";
     UserModule,
     WorkspaceModule,
     CommonModule,
+    TeamModule,
   ],
   controllers: [AppController],
   providers: [
