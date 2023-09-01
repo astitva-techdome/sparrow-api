@@ -26,7 +26,6 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @UseGuards(BlacklistGuard)
   @ApiResponse({ status: 201, description: "Registration Completed" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   @ApiResponse({ status: 401, description: "Unauthorized" })

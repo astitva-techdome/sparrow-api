@@ -17,11 +17,9 @@ export class BlacklistGuard implements CanActivate {
       this.contextService.get("user")._id;
 
     const exists = await this.redis.get(userKey);
-
     if (exists) {
       return false;
     }
-
     return true;
   }
 }
