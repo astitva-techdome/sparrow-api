@@ -15,6 +15,7 @@ export class CreateOrUpdatePermissionDto {
   role: string;
 
   @ApiProperty()
+  @IsMongoId()
   @IsString()
   @IsNotEmpty()
   workspaceId: string;
