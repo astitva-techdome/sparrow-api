@@ -3,6 +3,7 @@ import { Db, ObjectId } from "mongodb";
 import { ContextService } from "../common/services/context.service";
 import { CreateOrUpdatePermissionDto } from "./payload/permission.payload";
 import { Redis } from "ioredis";
+import { Role } from "../common/enum/roles.enum";
 /**
  * Permisson Service
  */
@@ -24,13 +25,16 @@ export class PermissonService {
     const userPermissions = this.contextService.get("user").permissions;
     let flag = false;
     userPermissions.map((item: any) => {
-      if (item.workspaceId === permissionData.userId && item.role !== "admin") {
+      if (
+        item.workspaceId === permissionData.workspaceId &&
+        item.role !== Role.ADMIN
+      ) {
         throw new BadRequestException(
           "You don't have access to update Permissions for this workspace",
         );
       } else if (
         item.workspaceId === permissionData.workspaceId &&
-        item.role === "admin"
+        item.role === Role.ADMIN
       ) {
         flag = true;
       }

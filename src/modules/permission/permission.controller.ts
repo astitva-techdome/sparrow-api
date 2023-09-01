@@ -10,11 +10,11 @@ import { AuthGuard } from "@nestjs/passport";
 @ApiBearerAuth()
 @ApiTags("permission")
 @Controller("api/permission")
+@UseGuards(AuthGuard("jwt"))
 export class PermissionController {
   constructor(private readonly permissionService: PermissonService) {}
 
   @Post()
-  @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 201, description: "Permission Added Successfully" })
   @ApiResponse({ status: 400, description: "Create Permission Failed" })
   async createPermission(
