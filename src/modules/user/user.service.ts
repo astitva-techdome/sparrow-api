@@ -15,6 +15,7 @@ import { ConfigService } from "@nestjs/config";
 import { WorkspaceType } from "../common/models/workspace.model";
 import { User } from "../common/models/user.model";
 import { AuthService } from "@auth/auth.service";
+import { ContextService } from "../common/services/context.service";
 
 export interface IGenericMessageBody {
   message: string;
@@ -31,6 +32,7 @@ export class UserService {
     private readonly workspaceService: WorkspaceService,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
+    private readonly contextService: ContextService,
   ) {}
 
   /**
@@ -38,9 +40,15 @@ export class UserService {
    * @param {string} id
    * @returns {Promise<IUser>} queried user data
    */
-  getUserById(id: string) {
+  async getUserById(id: string) {
+    const authUser = this.contextService.get("user");
+    if (authUser._id.toString() === id) {
+      return authUser;
+    }
     const _id = new ObjectId(id);
-    return this.db.collection(Collections.USER).findOne({ _id });
+    return await this.db
+      .collection(Collections.USER)
+      .findOne({ _id }, { projection: { password: 0 } });
   }
 
   /**
@@ -49,7 +57,9 @@ export class UserService {
    * @returns {Promise<IUser>} queried user data
    */
   async getUserByEmail(email: string) {
-    return await this.db.collection(Collections.USER).findOne({ email });
+    return await this.db
+      .collection(Collections.USER)
+      .findOne({ email }, { projection: { password: 0 } });
   }
 
   /**

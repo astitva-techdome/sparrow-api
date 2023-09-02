@@ -14,7 +14,7 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 import { RegisterPayload } from "../auth/payload/register.payload";
 import { UpdateUserDto } from "./payload/user.payload";
-import { AuthService } from "../auth/auth.service";
+import { BlacklistGuard } from "../common/guards/blacklist.guard";
 
 /**
  * User Controller
@@ -23,10 +23,7 @@ import { AuthService } from "../auth/auth.service";
 @ApiTags("user")
 @Controller("api/user")
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   @ApiResponse({ status: 201, description: "Registration Completed" })
@@ -37,7 +34,7 @@ export class UserController {
   }
 
   @Get(":userId")
-  @UseGuards(AuthGuard("jwt"))
+  @UseGuards(AuthGuard("jwt"), BlacklistGuard)
   async getUser(@Param("userId") id: string) {
     const user = await this.userService.getUserById(id);
     if (!user) {

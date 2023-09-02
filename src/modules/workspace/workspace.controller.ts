@@ -13,6 +13,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { WorkspaceService } from "./workspace.service";
 import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
+import { BlacklistGuard } from "../common/guards/blacklist.guard";
 
 /**
  * Workspace Controller
@@ -24,7 +25,7 @@ export class WorkSpaceController {
   constructor(private readonly workspaceService: WorkspaceService) {}
 
   @Post()
-  @UseGuards(AuthGuard("jwt"))
+  @UseGuards(AuthGuard("jwt"), BlacklistGuard)
   @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Workspace Failed" })
   async createWorkspace(

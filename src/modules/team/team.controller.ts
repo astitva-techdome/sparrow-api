@@ -11,6 +11,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { TeamService } from "./team.service";
 import { CreateOrUpdateTeamDto } from "./payload/team.payload";
+import { BlacklistGuard } from "../common/guards/blacklist.guard";
 
 /**
  * Team Controller
@@ -22,7 +23,7 @@ export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
   @Post()
-  @UseGuards(AuthGuard("jwt"))
+  @UseGuards(AuthGuard("jwt"), BlacklistGuard)
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Team Failed" })
   async createTeam(@Body() createTeamDto: CreateOrUpdateTeamDto) {
