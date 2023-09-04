@@ -14,7 +14,7 @@ import { WorkspaceModule } from "../workspace/workspace.module";
 import { UserModule } from "../user/user.module";
 import { CommonModule } from "../common/common.module";
 import { TeamModule } from "../team/team.module";
-import { PermissonModule } from "../permission/permission.module";
+import { PermissionModule } from "../permission/permission.module";
 
 @Module({
   imports: [
@@ -57,7 +57,7 @@ import { PermissonModule } from "../permission/permission.module";
     WorkspaceModule,
     CommonModule,
     TeamModule,
-    PermissonModule,
+    PermissionModule,
   ],
   controllers: [AppController],
   providers: [

@@ -19,11 +19,11 @@ import { BlacklistGuard } from "../common/guards/blacklist.guard";
 @ApiBearerAuth()
 @ApiTags("team")
 @Controller("api/team")
+@UseGuards(AuthGuard("jwt"), BlacklistGuard)
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
   @Post()
-  @UseGuards(AuthGuard("jwt"), BlacklistGuard)
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Team Failed" })
   async createTeam(@Body() createTeamDto: CreateOrUpdateTeamDto) {
@@ -31,7 +31,6 @@ export class TeamController {
   }
 
   @Get(":teamId")
-  @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 200, description: "Fetch Team Request Received" })
   @ApiResponse({ status: 400, description: "Fetch Team Request Failed" })
   async getTeam(@Param("teamId") teamId: string) {
@@ -39,7 +38,6 @@ export class TeamController {
   }
 
   @Delete(":teamId")
-  @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 200, description: "Team Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Team Failed" })
   async deleteTeam(@Param("teamId") teamId: string) {

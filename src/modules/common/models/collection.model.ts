@@ -11,6 +11,7 @@ import {
   ValidateNested,
 } from "class-validator";
 import { HTTPMethods } from "fastify";
+import { ObjectId } from "mongodb";
 
 enum ItemTypeEnum {
   FOLDER,
@@ -62,7 +63,7 @@ class Collection {
 export class CollectionDto {
   @IsMongoId()
   @IsNotEmpty()
-  id: string;
+  id: ObjectId;
 
   @IsString()
   @IsNotEmpty()

@@ -4,6 +4,7 @@ import { Team } from "../common/models/team.model";
 import { Collections } from "../common/enum/database.collection.enum";
 import { CreateOrUpdateTeamDto } from "./payload/team.payload";
 import { ContextService } from "../common/services/context.service";
+import { User } from "../common/models/user.model";
 
 /**
  * Team Service
@@ -37,23 +38,41 @@ export class TeamService {
    * @param {CreateOrUpdateTeamDto} teamData
    * @returns {Promise<InsertOneWriteOpResult<Team>>} result of the insert operation
    */
-  create(teamData: CreateOrUpdateTeamDto) {
+  async create(teamData: CreateOrUpdateTeamDto) {
+    const user = this.contextService.get("user");
+    const exists = await this.doesTeamExistsForUser(user._id, teamData.name);
+    if (exists) {
+      throw new BadRequestException("The Team with that name already exists.");
+    }
     const params = {
       users: [
         {
-          id: this.contextService.get("user")._id,
-          email: this.contextService.get("user").email,
+          id: user._id,
+          email: user.email,
         },
       ],
+      owners: [user._id],
+      createdBy: user._id,
       createdAt: new Date(),
-      createdBy: this.contextService.get("user")._id,
       updatedAt: new Date(),
     };
 
-    return this.db.collection<Team>(Collections.TEAM).insertOne({
-      ...teamData,
-      ...params,
-    });
+    const createdTeam = await this.db
+      .collection<Team>(Collections.TEAM)
+      .insertOne({
+        ...teamData,
+        ...params,
+      });
+
+    await this.db.collection<User>(Collections.USER).updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          teams: [{ id: createdTeam.insertedId, name: teamData.name }],
+        },
+      },
+    );
+    return createdTeam;
   }
 
   /**
@@ -71,5 +90,16 @@ export class TeamService {
         "The Team with that id could not be found.",
       );
     }
+  }
+
+  private async doesTeamExistsForUser(userId: ObjectId, teamName: string) {
+    return await this.db.collection<User>(Collections.USER).findOne({
+      _id: userId,
+      teams: {
+        $elemMatch: {
+          name: teamName,
+        },
+      },
+    });
   }
 }

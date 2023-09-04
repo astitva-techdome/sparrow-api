@@ -1,6 +1,6 @@
 import { Controller, Body, Post, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { PermissonService } from "./permission.service";
+import { PermissionService } from "./permission.service";
 import { CreateOrUpdatePermissionDto } from "./payload/permission.payload";
 import { AuthGuard } from "@nestjs/passport";
 
@@ -12,7 +12,7 @@ import { AuthGuard } from "@nestjs/passport";
 @Controller("api/permission")
 @UseGuards(AuthGuard("jwt"))
 export class PermissionController {
-  constructor(private readonly permissionService: PermissonService) {}
+  constructor(private readonly permissionService: PermissionService) {}
 
   @Post()
   @ApiResponse({ status: 201, description: "Permission Added Successfully" })

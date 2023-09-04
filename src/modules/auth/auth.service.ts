@@ -73,7 +73,7 @@ export class AuthService {
         {
           _id: insertedId,
           email: user.email,
-          permissons: user.permissions,
+          permissions: user.permissions,
         },
         { secret: this.configService.get("app.webtokenSecretKey") },
       ),

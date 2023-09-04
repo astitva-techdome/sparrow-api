@@ -21,11 +21,11 @@ import { BlacklistGuard } from "../common/guards/blacklist.guard";
 @ApiBearerAuth()
 @ApiTags("workspace")
 @Controller("api/workspace")
+@UseGuards(AuthGuard("jwt"), BlacklistGuard)
 export class WorkSpaceController {
   constructor(private readonly workspaceService: WorkspaceService) {}
 
   @Post()
-  @UseGuards(AuthGuard("jwt"), BlacklistGuard)
   @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Workspace Failed" })
   async createWorkspace(
@@ -35,7 +35,6 @@ export class WorkSpaceController {
   }
 
   @Get(":workspaceId")
-  @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 200, description: "Fetch Workspace Request Received" })
   @ApiResponse({ status: 400, description: "Fetch Workspace Request Failed" })
   async getWorkspace(@Param("workspaceId") workspaceId: string) {
@@ -49,7 +48,6 @@ export class WorkSpaceController {
   }
 
   @Put(":workspaceId")
-  @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 200, description: "Workspace Updated Successfully" })
   @ApiResponse({ status: 400, description: "Update Workspace Failed" })
   async updateWorkspace(
@@ -69,7 +67,6 @@ export class WorkSpaceController {
   }
 
   @Delete(":workspaceId")
-  @UseGuards(AuthGuard("jwt"))
   @ApiResponse({ status: 200, description: "Workspace Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Workspace Failed" })
   async deleteWorkspace(@Param("workspaceId") workspaceId: string) {

@@ -87,11 +87,14 @@ export class UserService {
         "The account with the provided email currently exists. Please choose another one.",
       );
     }
-    const createdUser = await this.db.collection(Collections.USER).insertOne({
-      ...payload,
-      password: createHmac("sha256", payload.password).digest("hex"),
-      permissions: [],
-    });
+    const createdUser = await this.db
+      .collection<User>(Collections.USER)
+      .insertOne({
+        ...payload,
+        password: createHmac("sha256", payload.password).digest("hex"),
+        teams: [],
+        permissions: [],
+      });
 
     const token = await this.authService.createToken(createdUser.insertedId);
 

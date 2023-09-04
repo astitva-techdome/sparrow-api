@@ -9,11 +9,12 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
+import { ObjectId } from "mongodb";
 
 export class CreateOrUpdateWorkspaceDto {
   @IsMongoId()
   @IsOptional()
-  userId?: string;
+  userId?: ObjectId;
 
   @ApiProperty({
     example: "collection1",

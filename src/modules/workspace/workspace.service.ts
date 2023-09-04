@@ -8,6 +8,7 @@ import {
 import { Collections } from "../common/enum/database.collection.enum";
 import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
 import { ContextService } from "../common/services/context.service";
+import { PermissionService } from "../permission/permission.service";
 /**
  * Models a typical response for a crud operation
  */
@@ -27,6 +28,7 @@ export class WorkspaceService {
     @Inject("DATABASE_CONNECTION")
     private db: Db,
     private contextService: ContextService,
+    private permissionService: PermissionService,
   ) {}
 
   /**
@@ -46,7 +48,7 @@ export class WorkspaceService {
    * @param {CreateOrUpdateWorkspaceDto} workspaceData
    * @returns {Promise<InsertOneWriteOpResult<Workspace>>} result of the insert operation
    */
-  create(workspaceData: CreateOrUpdateWorkspaceDto) {
+  async create(workspaceData: CreateOrUpdateWorkspaceDto) {
     const ownerInfo: OwnerInformationDto = {
       id:
         workspaceData.type === WorkspaceType.PERSONAL
@@ -65,9 +67,15 @@ export class WorkspaceService {
       createdBy: this.contextService.get("user")._id,
     };
 
-    return this.db
+    await this.db
       .collection<Workspace>(Collections.WORKSPACE)
       .insertOne({ ...workspaceData, ...params });
+
+    if (workspaceData.type === WorkspaceType.TEAM) {
+      await this.permissionService.setAdminPermissionForOwner(
+        new ObjectId(workspaceData.team.id),
+      );
+    }
   }
 
   /**

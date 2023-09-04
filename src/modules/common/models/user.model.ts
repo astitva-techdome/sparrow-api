@@ -11,6 +11,8 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Role } from "../enum/roles.enum";
+import { TeamDto } from "./team.model";
+import { ObjectId } from "mongodb";
 
 export class User {
   @IsString()
@@ -36,6 +38,11 @@ export class User {
   @ValidateNested({ each: true })
   permissions: PermissionDto[];
 
+  @IsArray()
+  @Type(() => TeamDto)
+  @ValidateNested({ each: true })
+  teams: TeamDto[];
+
   @IsDate()
   @IsOptional()
   createdAt?: Date;
@@ -48,7 +55,7 @@ export class User {
 export class UserDto {
   @IsMongoId()
   @IsNotEmpty()
-  id: string;
+  id: ObjectId;
 
   @IsEmail()
   @IsNotEmpty()
@@ -72,5 +79,5 @@ class PermissionDto {
 
   @IsMongoId()
   @IsNotEmpty()
-  workspaceId: string;
+  workspaceId: ObjectId;
 }

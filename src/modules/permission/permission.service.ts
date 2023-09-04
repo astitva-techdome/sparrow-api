@@ -4,11 +4,13 @@ import { ContextService } from "../common/services/context.service";
 import { CreateOrUpdatePermissionDto } from "./payload/permission.payload";
 import { Redis } from "ioredis";
 import { Role } from "../common/enum/roles.enum";
+import { Team } from "../common/models/team.model";
+import { Collections } from "../common/enum/database.collection.enum";
 /**
- * Permisson Service
+ * Permission Service
  */
 @Injectable()
-export class PermissonService {
+export class PermissionService {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
@@ -19,7 +21,7 @@ export class PermissonService {
   /**
    * Add a new permission in user in the database
    * @param {CreateOrUpdatePermissionDto} permissionData
-   * @returns {Promise<InsertOneWriteOpResult<Permisson>>} result of the insert operation
+   * @returns {Promise<InsertOneWriteOpResult<Permission>>} result of the insert operation
    */
   async create(permissionData: CreateOrUpdatePermissionDto) {
     const userPermissions = this.contextService.get("user").permissions;
@@ -53,12 +55,26 @@ export class PermissonService {
         },
       };
       const data = this.db.collection("user").findOneAndUpdate(filter, update);
-      await this.redis.set("app.userBlacklistPrefix", permissionData.userId);
+      await this.redis.set(
+        "app.userBlacklistPrefix",
+        permissionData.userId.toString(),
+      );
       return data;
     } else {
       throw new BadRequestException(
         "You don't have access to update Permissions for this workspace",
       );
     }
+  }
+
+  async setAdminPermissionForOwner(_id: ObjectId) {
+    return this.db.collection<Team>(Collections.TEAM).findOne(
+      { _id },
+      {
+        projection: {
+          owners: 1,
+        },
+      },
+    );
   }
 }

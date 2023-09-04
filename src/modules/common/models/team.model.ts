@@ -10,6 +10,7 @@ import {
 import { WorkspaceDto } from "./workspace.model";
 import { Type } from "class-transformer";
 import { UserDto } from "./user.model";
+import { ObjectId } from "mongodb";
 
 export class Team {
   @IsString()
@@ -27,6 +28,9 @@ export class Team {
   @ValidateNested({ each: true })
   @IsOptional()
   users?: UserDto[];
+
+  @IsArray()
+  owners: string[];
 
   @IsDateString()
   createdAt: Date;
@@ -46,7 +50,7 @@ export class Team {
 export class TeamDto {
   @IsMongoId()
   @IsNotEmpty()
-  id: string;
+  id: ObjectId;
 
   @IsString()
   @IsNotEmpty()

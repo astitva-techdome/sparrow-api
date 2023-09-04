@@ -10,6 +10,7 @@ import {
   ValidateNested,
 } from "class-validator";
 import { CollectionDto } from "./collection.model";
+import { ObjectId } from "mongodb";
 
 export enum WorkspaceType {
   PERSONAL = "PERSONAL",
@@ -19,7 +20,7 @@ export enum WorkspaceType {
 export class OwnerInformationDto {
   @IsMongoId()
   @IsNotEmpty()
-  id: string;
+  id: ObjectId;
 
   @IsString()
   @IsNotEmpty()
@@ -65,7 +66,7 @@ export class Workspace {
 export class WorkspaceDto {
   @IsMongoId()
   @IsNotEmpty()
-  id: string;
+  id: ObjectId;
 
   @IsString()
   @IsNotEmpty()
