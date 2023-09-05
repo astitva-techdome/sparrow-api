@@ -5,6 +5,7 @@ import { CreateOrUpdateTeamDto } from "./payload/team.payload";
 import { Collections } from "../common/enum/database.collection.enum";
 import { User } from "../common/models/user.model";
 import { Team } from "../common/models/team.model";
+import { CreateOrUpdateTeamUserDto } from "./payload/user.payload";
 
 /**
  * Team Service
@@ -110,6 +111,23 @@ export class TeamRepository {
         "The Team with that id could not be found.",
       );
     }
+  }
+
+  async addUser(payload: CreateOrUpdateTeamUserDto) {
+    const filter = { _id: new ObjectId(payload.teamId) };
+    const previous = await this.db.collection("team").findOne(filter);
+    const updateData = [...previous.users];
+    updateData.push({
+      id: payload.userId,
+      name: payload.name,
+    });
+    const update = {
+      $set: {
+        users: updateData,
+      },
+    };
+    const data = this.db.collection("team").findOneAndUpdate(filter, update);
+    return data;
   }
 
   private async doesTeamExistsForUser(userId: ObjectId, teamName: string) {

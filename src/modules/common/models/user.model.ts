@@ -55,7 +55,7 @@ export class User {
 export class UserDto {
   @IsMongoId()
   @IsNotEmpty()
-  id: ObjectId;
+  id: string;
 
   @IsEmail()
   @IsNotEmpty()
