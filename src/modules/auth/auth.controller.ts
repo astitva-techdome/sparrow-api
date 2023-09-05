@@ -2,7 +2,7 @@ import { Controller, Body, Post } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "@auth/auth.service";
 import { LoginPayload } from "@auth/payload/login.payload";
-import { UserService } from "../user/user.service";
+import { UserService } from "../user/services/user.service";
 
 /**
  * Authentication Controller
