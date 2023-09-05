@@ -3,6 +3,7 @@ import { MongoClient, Db } from "mongodb";
 import { ContextService } from "./services/context.service";
 import { Redis } from "ioredis";
 import { ConfigService } from "@nestjs/config";
+import { RedisService } from "./services/redis.service";
 @Global()
 @Module({
   imports: [],
@@ -31,7 +32,8 @@ import { ConfigService } from "@nestjs/config";
         }),
     },
     ContextService,
+    RedisService,
   ],
-  exports: ["DATABASE_CONNECTION", Redis, ContextService],
+  exports: ["DATABASE_CONNECTION", Redis, ContextService, RedisService],
 })
 export class CommonModule {}
