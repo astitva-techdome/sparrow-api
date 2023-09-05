@@ -9,7 +9,7 @@ import { Collections } from "../common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { RegisterPayload } from "../auth/payload/register.payload";
 import { UpdateUserDto } from "./payload/user.payload";
-import { WorkspaceService } from "../workspace/workspace.service";
+import { WorkspaceService } from "../workspace/services/workspace.service";
 import { CreateOrUpdateWorkspaceDto } from "../workspace/payload/workspace.payload";
 import { ConfigService } from "@nestjs/config";
 import { WorkspaceType } from "../common/models/workspace.model";
@@ -22,10 +22,10 @@ export interface IGenericMessageBody {
 }
 
 /**
- * User Service
+ * User Repository
  */
 @Injectable()
-export class UserService {
+export class UserRepository {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
@@ -135,7 +135,7 @@ export class UserService {
    * @param {userId} param
    * @returns {Promise<IGenericMessageBody>}
    */
-  deleteUser(userId: string): Promise<IGenericMessageBody> {
+  async deleteUser(userId: string): Promise<IGenericMessageBody> {
     const _id = new ObjectId(userId);
     return this.db
       .collection<User>(Collections.USER)

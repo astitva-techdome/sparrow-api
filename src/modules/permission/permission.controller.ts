@@ -1,6 +1,6 @@
 import { Controller, Body, Post, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { PermissionService } from "./permission.service";
+import { PermissionService } from "./services/permission.service";
 import { CreateOrUpdatePermissionDto } from "./payload/permission.payload";
 import { AuthGuard } from "@nestjs/passport";
 

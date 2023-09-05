@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { WorkspaceService } from "./workspace.service";
+import { WorkspaceService } from "./services/workspace.service";
 import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
 import { BlacklistGuard } from "../common/guards/blacklist.guard";
 

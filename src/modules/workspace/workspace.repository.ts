@@ -8,7 +8,7 @@ import {
 import { Collections } from "../common/enum/database.collection.enum";
 import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
 import { ContextService } from "../common/services/context.service";
-import { PermissionService } from "../permission/permission.service";
+import { PermissionService } from "../permission/services/permission.service";
 /**
  * Models a typical response for a crud operation
  */
@@ -20,10 +20,10 @@ export interface IGenericMessageBody {
 }
 
 /**
- * Workspace Service
+ * Workspace Repository
  */
 @Injectable()
-export class WorkspaceService {
+export class WorkspaceRepository {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,

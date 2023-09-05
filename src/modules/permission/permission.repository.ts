@@ -6,16 +6,18 @@ import { Redis } from "ioredis";
 import { Role } from "../common/enum/roles.enum";
 import { Team } from "../common/models/team.model";
 import { Collections } from "../common/enum/database.collection.enum";
+import { ConfigService } from "@nestjs/config";
 /**
- * Permission Service
+ * Permission Repository
  */
 @Injectable()
-export class PermissionService {
+export class PermissionRepository {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
     private readonly contextService: ContextService,
     private readonly redis: Redis,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -56,7 +58,8 @@ export class PermissionService {
       };
       const data = this.db.collection("user").findOneAndUpdate(filter, update);
       await this.redis.set(
-        "app.userBlacklistPrefix",
+        this.configService.get("app.userBlacklistPrefix") +
+          permissionData.userId.toString(),
         permissionData.userId.toString(),
       );
       return data;
