@@ -14,6 +14,7 @@ import { RemovePermissionDto } from "./payload/removePermission.payload";
  */
 @Injectable()
 export class PermissionRepository {
+  userBlacklistPrefix: string;
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
@@ -21,7 +22,11 @@ export class PermissionRepository {
     private readonly redis: Redis,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
-  ) {}
+  ) {
+    this.userBlacklistPrefix = this.configService.get(
+      "app.userBlacklistPrefix",
+    );
+  }
 
   async userHasPermission(
     permissionArray: any,
@@ -73,21 +78,21 @@ export class PermissionRepository {
           permissions: 1,
         },
       });
-    previousPermissions.permissions.push({
+    const updatedPermissions = [...previousPermissions.permissions];
+    updatedPermissions.push({
       role: permissionData.role,
       workspaceId: permissionData.workspaceId,
     });
     const updateParams = {
       $set: {
-        permissions: previousPermissions.permissions,
+        permissions: updatedPermissions,
       },
     };
     const data = await this.db
       .collection("user")
       .findOneAndUpdate(filter, updateParams);
     await this.redisService.set(
-      this.configService.get("app.userBlacklistPrefix") +
-        permissionData.userId.toString(),
+      this.userBlacklistPrefix + permissionData.userId.toString(),
       permissionData.userId.toString(),
     );
     return data;
@@ -104,22 +109,22 @@ export class PermissionRepository {
           permissions: 1,
         },
       });
-    previousPermissions.permissions.map((item: any, value: number) => {
+    const updatedPermissions = [...previousPermissions.permissions];
+    updatedPermissions.map((item: any, value: number) => {
       if (item.workspaceId === permissionData.workspaceId) {
-        previousPermissions.permissions[value].role = permissionData.role;
+        updatedPermissions[value].role = permissionData.role;
       }
     });
     const updateParams = {
       $set: {
-        permissions: previousPermissions.permissions,
+        permissions: updatedPermissions,
       },
     };
     const data = await this.db
       .collection("user")
       .findOneAndUpdate(filter, updateParams);
     await this.redisService.set(
-      this.configService.get("app.userBlacklistPrefix") +
-        permissionData.userId.toString(),
+      this.userBlacklistPrefix + permissionData.userId.toString(),
       permissionData.userId.toString(),
     );
     return data;
@@ -136,7 +141,8 @@ export class PermissionRepository {
           permissions: 1,
         },
       });
-    const filteredPermissionsData = previousPermissions.permissions.filter(
+    const updatedPermissions = [...previousPermissions.permissions];
+    const filteredPermissionsData = updatedPermissions.filter(
       (item: any) => item.workspaceId !== permissionData.workspaceId,
     );
     const updateParams = {
@@ -148,8 +154,7 @@ export class PermissionRepository {
       .collection("user")
       .findOneAndUpdate(filter, updateParams);
     await this.redisService.set(
-      this.configService.get("app.userBlacklistPrefix") +
-        permissionData.userId.toString(),
+      this.userBlacklistPrefix + permissionData.userId.toString(),
       permissionData.userId.toString(),
     );
     return data;
