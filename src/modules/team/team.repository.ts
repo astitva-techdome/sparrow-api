@@ -6,6 +6,7 @@ import { Collections } from "../common/enum/database.collection.enum";
 import { User } from "../common/models/user.model";
 import { Team } from "../common/models/team.model";
 import { CreateOrUpdateTeamUserDto } from "./payload/user.payload";
+import { WorkspaceDto } from "../common/models/workspace.model";
 
 /**
  * Team Service
@@ -36,6 +37,7 @@ export class TeamRepository {
           name: user.name,
         },
       ],
+      workspaces: [] as WorkspaceDto[],
       owners: [user._id],
       createdBy: user._id,
       createdAt: new Date(),
@@ -113,21 +115,99 @@ export class TeamRepository {
     }
   }
 
+  async HasPermission(data: any) {
+    const user = this.contextService.get("user");
+    const ownersData = data.owners;
+    for (const item of ownersData) {
+      if (item.toString() === user._id.toString()) {
+        return true;
+      }
+    }
+    throw new BadRequestException("You don't have access");
+  }
+
   async addUser(payload: CreateOrUpdateTeamUserDto) {
-    const filter = { _id: new ObjectId(payload.teamId) };
-    const previous = await this.db.collection("team").findOne(filter);
-    const updateData = [...previous.users];
-    updateData.push({
+    const teamFilter = { _id: new ObjectId(payload.teamId) };
+    const teamData = await this.db.collection("team").findOne(teamFilter);
+    const userFilter = { _id: new ObjectId(payload.userId) };
+    const userData = await this.db.collection("user").findOne(userFilter);
+    await this.HasPermission(teamData);
+    const updatedUsers = [...teamData.users];
+    updatedUsers.push({
       id: payload.userId,
-      name: payload.name,
+      name: userData.name,
     });
-    const update = {
+    const updatedUserParams = {
       $set: {
-        users: updateData,
+        users: updatedUsers,
       },
     };
-    const data = this.db.collection("team").findOneAndUpdate(filter, update);
-    return data;
+    const responseData = await this.db
+      .collection("team")
+      .findOneAndUpdate(teamFilter, updatedUserParams);
+    const updatedTeams = [...userData.teams];
+    updatedTeams.push({
+      id: payload.teamId,
+      name: teamData.name,
+    });
+    const updateTeamsParams = {
+      $set: {
+        teams: updatedTeams,
+      },
+    };
+    await this.db
+      .collection("user")
+      .findOneAndUpdate(userFilter, updateTeamsParams);
+    const userPermissions = [...userData.permissions];
+    const teamWorkspaces = [...teamData.workspaces];
+    teamWorkspaces.map((item: any) => {
+      userPermissions.push({
+        role: "reader",
+        workspaceId: item.id,
+      });
+    });
+    const updatedPermissions = {
+      $set: {
+        permissions: userPermissions,
+      },
+    };
+    await this.db
+      .collection("user")
+      .findOneAndUpdate(userFilter, updatedPermissions);
+    return responseData;
+  }
+
+  async removeUser(payload: CreateOrUpdateTeamUserDto) {
+    const teamFilter = { _id: new ObjectId(payload.teamId) };
+    const teamData = await this.db.collection("team").findOne(teamFilter);
+    const userFilter = { _id: new ObjectId(payload.userId) };
+    const userData = await this.db.collection("user").findOne(userFilter);
+    await this.HasPermission(teamData);
+    const teamUser = [...teamData.users];
+    const filteredData = teamUser.filter(
+      (item: any) => item.id !== payload.userId,
+    );
+    const teamUpdatedParams = {
+      $set: {
+        users: filteredData,
+      },
+    };
+    const responseData = await this.db
+      .collection("team")
+      .findOneAndUpdate(teamFilter, teamUpdatedParams);
+    const userTeams = [...userData.teams];
+    const userFilteredTeams = userTeams.filter(
+      (item: any) => item.id !== payload.teamId,
+    );
+    const userUpdatedParams = {
+      $set: {
+        teams: userFilteredTeams,
+      },
+    };
+    await this.db
+      .collection("user")
+      .findOneAndUpdate(userFilter, userUpdatedParams);
+    return responseData;
   }
 
   private async doesTeamExistsForUser(userId: ObjectId, teamName: string) {

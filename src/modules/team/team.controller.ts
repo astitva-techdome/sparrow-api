@@ -12,6 +12,7 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { TeamService } from "./services/team.service";
 import { CreateOrUpdateTeamDto } from "./payload/team.payload";
 import { BlacklistGuard } from "../common/guards/blacklist.guard";
+import { TeamUserService } from "./services/team-user.service";
 
 /**
  * Team Controller
@@ -21,7 +22,10 @@ import { BlacklistGuard } from "../common/guards/blacklist.guard";
 @Controller("api/team")
 @UseGuards(AuthGuard("jwt"), BlacklistGuard)
 export class TeamController {
-  constructor(private readonly teamService: TeamService) {}
+  constructor(
+    private readonly teamService: TeamService,
+    private readonly teamUserService: TeamUserService,
+  ) {}
 
   @Post()
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
