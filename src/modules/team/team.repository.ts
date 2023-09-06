@@ -33,7 +33,7 @@ export class TeamRepository {
       users: [
         {
           id: user._id,
-          email: user.email,
+          name: user.name,
         },
       ],
       owners: [user._id],

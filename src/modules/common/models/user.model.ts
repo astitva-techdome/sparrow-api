@@ -57,9 +57,9 @@ export class UserDto {
   @IsNotEmpty()
   id: string;
 
-  @IsEmail()
+  @IsString()
   @IsNotEmpty()
-  email: string;
+  name: string;
 }
 
 class AuthProvider {
