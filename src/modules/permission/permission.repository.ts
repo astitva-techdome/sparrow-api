@@ -14,6 +14,7 @@ import { RemovePermissionDto } from "./payload/removePermission.payload";
  */
 @Injectable()
 export class PermissionRepository {
+  userBlacklistPrefix: string;
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
@@ -21,29 +22,44 @@ export class PermissionRepository {
     private readonly redis: Redis,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
-  ) {}
+  ) {
+    this.userBlacklistPrefix = this.configService.get(
+      "app.userBlacklistPrefix",
+    );
+  }
 
-  async validate(
+  async userHasPermission(
     permissionArray: any,
     permissionData: CreateOrUpdatePermissionDto,
   ) {
-    let check = false;
-    permissionArray.map((item: any) => {
+    for (const item of permissionArray) {
       if (
-        item.workspaceId === permissionData.workspaceId &&
-        item.role !== Role.ADMIN
-      ) {
-        throw new BadRequestException(
-          "You don't have access to update Permissions for this workspace",
-        );
-      } else if (
         item.workspaceId === permissionData.workspaceId &&
         item.role === Role.ADMIN
       ) {
-        check = true;
+        return true;
       }
-    });
-    return check;
+    }
+    throw new BadRequestException(
+      "You don't have access to update Permissions for this workspace",
+    );
+  }
+
+  async permissionToRemove(
+    permissionArray: any,
+    permissionData: RemovePermissionDto,
+  ) {
+    for (const item of permissionArray) {
+      if (
+        item.workspaceId === permissionData.workspaceId &&
+        item.role === Role.ADMIN
+      ) {
+        return true;
+      }
+    }
+    throw new BadRequestException(
+      "You don't have access to update Permissions for this workspace",
+    );
   }
 
   /**
@@ -53,97 +69,95 @@ export class PermissionRepository {
    */
   async create(permissionData: CreateOrUpdatePermissionDto) {
     const userPermissions = this.contextService.get("user").permissions;
-    let flag = false;
-    flag = await this.validate(userPermissions, permissionData);
-    if (flag) {
-      const filter = { _id: new ObjectId(permissionData.userId) };
-      const previous = await this.db.collection("user").findOne(filter);
-      const updateData = [...previous.permissions];
-      updateData.push({
-        role: permissionData.role,
-        workspaceId: permissionData.workspaceId,
-      });
-      const update = {
-        $set: {
-          permissions: updateData,
+    await this.userHasPermission(userPermissions, permissionData);
+    const filter = { _id: new ObjectId(permissionData.userId) };
+    const previousPermissions = await this.db
+      .collection("user")
+      .findOne(filter, {
+        projection: {
+          permissions: 1,
         },
-      };
-      const data = this.db.collection("user").findOneAndUpdate(filter, update);
-      await this.redisService.addValueInRedis(permissionData.userId.toString());
-      return data;
-    } else {
-      throw new BadRequestException(
-        "You don't have access to update Permissions for this workspace",
-      );
-    }
+      });
+    const updatedPermissions = [...previousPermissions.permissions];
+    updatedPermissions.push({
+      role: permissionData.role,
+      workspaceId: permissionData.workspaceId,
+    });
+    const updateParams = {
+      $set: {
+        permissions: updatedPermissions,
+      },
+    };
+    const data = await this.db
+      .collection("user")
+      .findOneAndUpdate(filter, updateParams);
+    await this.redisService.set(
+      this.userBlacklistPrefix + permissionData.userId.toString(),
+      permissionData.userId.toString(),
+    );
+    return data;
   }
 
   async update(permissionData: CreateOrUpdatePermissionDto) {
     const userPermissions = this.contextService.get("user").permissions;
-    let flag = false;
-    flag = await this.validate(userPermissions, permissionData);
-    if (flag) {
-      const filter = { _id: new ObjectId(permissionData.userId) };
-      const previous = await this.db.collection("user").findOne(filter);
-      const updateData = [...previous.permissions];
-      updateData.map((item: any, value: number) => {
-        if (item.workspaceId === permissionData.workspaceId) {
-          updateData[value].role = permissionData.role;
-        }
-      });
-      const update = {
-        $set: {
-          permissions: updateData,
+    await this.userHasPermission(userPermissions, permissionData);
+    const filter = { _id: new ObjectId(permissionData.userId) };
+    const previousPermissions = await this.db
+      .collection("user")
+      .findOne(filter, {
+        projection: {
+          permissions: 1,
         },
-      };
-      const data = this.db.collection("user").findOneAndUpdate(filter, update);
-      await this.redisService.addValueInRedis(permissionData.userId.toString());
-      return data;
-    } else {
-      throw new BadRequestException(
-        "You don't have access to update Permissions for this workspace",
-      );
-    }
-  }
-
-  async remove(permissionData: RemovePermissionDto) {
-    const userPermissions = this.contextService.get("user").permissions;
-    let flag = false;
-    userPermissions.map((item: any) => {
-      if (
-        item.workspaceId === permissionData.workspaceId &&
-        item.role !== Role.ADMIN
-      ) {
-        throw new BadRequestException(
-          "You don't have access to update Permissions for this workspace",
-        );
-      } else if (
-        item.workspaceId === permissionData.workspaceId &&
-        item.role === Role.ADMIN
-      ) {
-        flag = true;
+      });
+    const updatedPermissions = [...previousPermissions.permissions];
+    updatedPermissions.map((item: any, value: number) => {
+      if (item.workspaceId === permissionData.workspaceId) {
+        updatedPermissions[value].role = permissionData.role;
       }
     });
-    if (flag) {
-      const filter = { _id: new ObjectId(permissionData.userId) };
-      const previous = await this.db.collection("user").findOne(filter);
-      const updateData = [...previous.permissions];
-      const filteredData = updateData.filter(
-        (item) => item.workspaceId !== permissionData.workspaceId,
-      );
-      const update = {
-        $set: {
-          permissions: filteredData,
+    const updateParams = {
+      $set: {
+        permissions: updatedPermissions,
+      },
+    };
+    const data = await this.db
+      .collection("user")
+      .findOneAndUpdate(filter, updateParams);
+    await this.redisService.set(
+      this.userBlacklistPrefix + permissionData.userId.toString(),
+      permissionData.userId.toString(),
+    );
+    return data;
+  }
+
+  async remove(permissionData: CreateOrUpdatePermissionDto) {
+    const userPermissions = this.contextService.get("user").permissions;
+    await this.permissionToRemove(userPermissions, permissionData);
+    const filter = { _id: new ObjectId(permissionData.userId) };
+    const previousPermissions = await this.db
+      .collection("user")
+      .findOne(filter, {
+        projection: {
+          permissions: 1,
         },
-      };
-      const data = this.db.collection("user").findOneAndUpdate(filter, update);
-      await this.redisService.addValueInRedis(permissionData.userId.toString());
-      return data;
-    } else {
-      throw new BadRequestException(
-        "You don't have access to update Permissions for this workspace",
-      );
-    }
+      });
+    const updatedPermissions = [...previousPermissions.permissions];
+    const filteredPermissionsData = updatedPermissions.filter(
+      (item: any) => item.workspaceId !== permissionData.workspaceId,
+    );
+    const updateParams = {
+      $set: {
+        permissions: filteredPermissionsData,
+      },
+    };
+    const data = await this.db
+      .collection("user")
+      .findOneAndUpdate(filter, updateParams);
+    await this.redisService.set(
+      this.userBlacklistPrefix + permissionData.userId.toString(),
+      permissionData.userId.toString(),
+    );
+    return data;
   }
 
   async setAdminPermissionForOwner(_id: ObjectId) {

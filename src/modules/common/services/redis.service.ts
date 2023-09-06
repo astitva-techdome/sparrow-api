@@ -1,17 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { Redis } from "ioredis";
-import { ConfigService } from "@nestjs/config";
 @Injectable()
 export class RedisService {
-  constructor(
-    private readonly redis: Redis,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly redis: Redis) {}
 
-  async addValueInRedis(id: string) {
-    await this.redis.set(
-      this.configService.get("app.userBlacklistPrefix") + id,
-      id,
-    );
+  async set(key: string, value?: string, ttl?: number) {
+    if (ttl && ttl > 0) {
+      await this.redis.set(key, value, "EX", ttl);
+    } else {
+      await this.redis.set(key, value);
+    }
+    return;
   }
 }
