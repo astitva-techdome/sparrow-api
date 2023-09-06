@@ -68,15 +68,18 @@ export class PermissionRepository {
     const filter = { _id: new ObjectId(permissionData.userId) };
     const previousPermissions = await this.db
       .collection("user")
-      .findOne(filter);
-    const currentUserPermissions = [...previousPermissions.permissions];
-    currentUserPermissions.push({
+      .findOne(filter, {
+        projection: {
+          permissions: 1,
+        },
+      });
+    previousPermissions.permissions.push({
       role: permissionData.role,
       workspaceId: permissionData.workspaceId,
     });
     const updateParams = {
       $set: {
-        permissions: currentUserPermissions,
+        permissions: previousPermissions.permissions,
       },
     };
     const data = await this.db
@@ -96,16 +99,19 @@ export class PermissionRepository {
     const filter = { _id: new ObjectId(permissionData.userId) };
     const previousPermissions = await this.db
       .collection("user")
-      .findOne(filter);
-    const currentUserPermissions = [...previousPermissions.permissions];
-    currentUserPermissions.map((item: any, value: number) => {
+      .findOne(filter, {
+        projection: {
+          permissions: 1,
+        },
+      });
+    previousPermissions.permissions.map((item: any, value: number) => {
       if (item.workspaceId === permissionData.workspaceId) {
-        currentUserPermissions[value].role = permissionData.role;
+        previousPermissions.permissions[value].role = permissionData.role;
       }
     });
     const updateParams = {
       $set: {
-        permissions: currentUserPermissions,
+        permissions: previousPermissions.permissions,
       },
     };
     const data = await this.db
@@ -119,16 +125,19 @@ export class PermissionRepository {
     return data;
   }
 
-  async remove(permissionData: RemovePermissionDto) {
+  async remove(permissionData: CreateOrUpdatePermissionDto) {
     const userPermissions = this.contextService.get("user").permissions;
     await this.permissionToRemove(userPermissions, permissionData);
     const filter = { _id: new ObjectId(permissionData.userId) };
     const previousPermissions = await this.db
       .collection("user")
-      .findOne(filter);
-    const currentUserPermissions = [...previousPermissions.permissions];
-    const filteredPermissionsData = currentUserPermissions.filter(
-      (item) => item.workspaceId !== permissionData.workspaceId,
+      .findOne(filter, {
+        projection: {
+          permissions: 1,
+        },
+      });
+    const filteredPermissionsData = previousPermissions.permissions.filter(
+      (item: any) => item.workspaceId !== permissionData.workspaceId,
     );
     const updateParams = {
       $set: {
