@@ -57,7 +57,7 @@ export class UserDto {
   @IsNotEmpty()
   id: string;
 
-  @IsString()
+  @IsEmail()
   @IsNotEmpty()
   email: string;
 
@@ -76,7 +76,7 @@ class AuthProvider {
   oAuthId: string;
 }
 
-class PermissionDto {
+export class PermissionDto {
   @IsEnum(Role)
   @IsNotEmpty()
   role: Role;

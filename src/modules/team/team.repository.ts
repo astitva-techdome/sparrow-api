@@ -1,13 +1,11 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
 import { ContextService } from "../common/services/context.service";
-import { CreateOrUpdateTeamDto } from "./payload/team.payload";
+import { CreateOrUpdateTeamDto, TeamDto } from "./payload/team.payload";
 import { Collections } from "../common/enum/database.collection.enum";
 import { User } from "../common/models/user.model";
 import { Team } from "../common/models/team.model";
-import { CreateOrUpdateTeamUserDto } from "./payload/user.payload";
 import { WorkspaceDto } from "../common/models/workspace.model";
-import { Role } from "../common/enum/roles.enum";
 import { PermissionService } from "../permission/services/permission.service";
 
 /**
@@ -129,113 +127,20 @@ export class TeamRepository {
     throw new BadRequestException("You don't have access");
   }
 
-  async addUser(payload: CreateOrUpdateTeamUserDto) {
-    const teamFilter = { _id: new ObjectId(payload.teamId) };
+  async findTeamByTeamId(id: ObjectId) {
     const teamData = await this.db
       .collection(Collections.TEAM)
-      .findOne(teamFilter);
-    const userFilter = { _id: new ObjectId(payload.userId) };
-    const userData = await this.db
-      .collection(Collections.USER)
-      .findOne(userFilter);
-    await this.HasPermission(teamData.owners);
-    const updatedUsers = [...teamData.users];
-    updatedUsers.push({
-      id: payload.userId,
-      email: userData.email,
-      name: userData.name,
-    });
-    const updatedUserParams = {
-      $set: {
-        users: updatedUsers,
-      },
-    };
-    const responseData = await this.db
-      .collection(Collections.TEAM)
-      .findOneAndUpdate(teamFilter, updatedUserParams);
-    const updatedTeams = [...userData.teams];
-    updatedTeams.push({
-      id: payload.teamId,
-      name: teamData.name,
-    });
-    const updateTeamsParams = {
-      $set: {
-        teams: updatedTeams,
-      },
-    };
-    await this.db
-      .collection(Collections.USER)
-      .findOneAndUpdate(userFilter, updateTeamsParams);
-    const userPermissions = [...userData.permissions];
-    const teamWorkspaces = [...teamData.workspaces];
-    teamWorkspaces.map((item: any) => {
-      userPermissions.push({
-        role: Role.READER,
-        workspaceId: item.id,
-      });
-    });
-    const updatedPermissions = {
-      $set: {
-        permissions: userPermissions,
-      },
-    };
-    await this.db
-      .collection(Collections.USER)
-      .findOneAndUpdate(userFilter, updatedPermissions);
-    return responseData;
+      .findOne({ _id: id });
+    return teamData;
   }
 
-  async removeUser(payload: CreateOrUpdateTeamUserDto) {
-    const teamFilter = { _id: new ObjectId(payload.teamId) };
-    const teamData = await this.db
-      .collection(Collections.TEAM)
-      .findOne(teamFilter);
-    const userFilter = { _id: new ObjectId(payload.userId) };
-    const userData = await this.db
-      .collection(Collections.USER)
-      .findOne(userFilter);
-    const teamOwners = teamData.owners;
-    await this.HasPermission(teamOwners);
-    const teamUser = [...teamData.users];
-    const filteredData = teamUser.filter((item) => item.id !== payload.userId);
-    const teamUpdatedParams = {
-      $set: {
-        users: filteredData,
-      },
+  async updateTeamById(id: ObjectId, updateParams: TeamDto) {
+    const updatedTeamParams = {
+      $set: updateParams,
     };
     const responseData = await this.db
       .collection(Collections.TEAM)
-      .findOneAndUpdate(teamFilter, teamUpdatedParams);
-    const userTeams = [...userData.teams];
-    const userFilteredTeams = userTeams.filter(
-      (item) => item.id !== payload.teamId,
-    );
-    const userUpdatedParams = {
-      $set: {
-        teams: userFilteredTeams,
-      },
-    };
-    await this.db
-      .collection(Collections.USER)
-      .findOneAndUpdate(userFilter, userUpdatedParams);
-    const userPermissions = [...teamData.workspaces];
-    for (const item of userPermissions) {
-      this.permissionService.remove({
-        userId: userData._id.toString(),
-        workspaceId: item.id,
-      });
-    }
-    const filteredOwner = teamOwners.filter(
-      (id: string) => id.toString() !== payload.userId.toString(),
-    );
-    const updatedOwnerParams = {
-      $set: {
-        owners: filteredOwner,
-      },
-    };
-    await this.db
-      .collection(Collections.TEAM)
-      .findOneAndUpdate(teamFilter, updatedOwnerParams);
+      .findOneAndUpdate({ _id: id }, updatedTeamParams);
     return responseData;
   }
 

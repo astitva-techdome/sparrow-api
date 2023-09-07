@@ -8,7 +8,7 @@ import { Db, ObjectId } from "mongodb";
 import { Collections } from "../common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { RegisterPayload } from "../auth/payload/register.payload";
-import { UpdateUserDto } from "./payload/user.payload";
+import { UpdateUserDto, UserDto } from "./payload/user.payload";
 import { WorkspaceService } from "../workspace/services/workspace.service";
 import { CreateOrUpdateWorkspaceDto } from "../workspace/payload/workspace.payload";
 import { ConfigService } from "@nestjs/config";
@@ -149,5 +149,22 @@ export class UserRepository {
           );
         }
       });
+  }
+
+  async findUserByUserId(id: ObjectId) {
+    const userData = await this.db
+      .collection(Collections.USER)
+      .findOne({ _id: id });
+    return userData;
+  }
+
+  async updateUserById(id: ObjectId, updateParams: UserDto) {
+    const updatedUserParams = {
+      $set: updateParams,
+    };
+    const responseData = await this.db
+      .collection(Collections.USER)
+      .findOneAndUpdate({ _id: id }, updatedUserParams);
+    return responseData;
   }
 }

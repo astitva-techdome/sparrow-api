@@ -1,5 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, Matches, MinLength } from "class-validator";
+import { TeamDto } from "@src/modules/common/models/team.model";
+import { PermissionDto } from "@src/modules/common/models/user.model";
+import { Type } from "class-transformer";
+import {
+  IsArray,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+} from "class-validator";
 
 export class UpdateUserDto {
   /**
@@ -17,4 +28,24 @@ export class UpdateUserDto {
   @IsNotEmpty()
   @MinLength(8)
   password: string;
+}
+
+export class UserDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsArray()
+  @IsOptional()
+  @Type(() => PermissionDto)
+  permissions?: PermissionDto[];
+
+  @IsArray()
+  @IsOptional()
+  @Type(() => TeamDto)
+  teams?: TeamDto[];
 }
