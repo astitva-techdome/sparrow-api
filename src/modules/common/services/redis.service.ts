@@ -5,7 +5,7 @@ export class RedisService {
   constructor(private readonly redis: Redis) {}
 
   async set(key: string, value?: string, ttl?: number) {
-    if (ttl && ttl > 0) {
+    if (ttl) {
       await this.redis.set(key, value, "EX", ttl);
     } else {
       await this.redis.set(key, value);

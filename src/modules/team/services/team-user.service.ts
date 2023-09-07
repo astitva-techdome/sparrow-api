@@ -17,4 +17,8 @@ export class TeamUserService {
   async addUser(teamData: CreateOrUpdateTeamUserDto) {
     return await this.teamRepository.addUser(teamData);
   }
+
+  async removeUser(teamData: CreateOrUpdateTeamUserDto) {
+    return await this.teamRepository.removeUser(teamData);
+  }
 }

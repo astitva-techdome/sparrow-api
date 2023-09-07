@@ -1,7 +1,10 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
 import { ContextService } from "../common/services/context.service";
-import { CreateOrUpdatePermissionDto } from "./payload/permission.payload";
+import {
+  CreateOrUpdatePermissionDto,
+  PermissionDto,
+} from "./payload/permission.payload";
 import { Redis } from "ioredis";
 import { Role } from "../common/enum/roles.enum";
 import { Team } from "../common/models/team.model";
@@ -29,7 +32,7 @@ export class PermissionRepository {
   }
 
   async userHasPermission(
-    permissionArray: any,
+    permissionArray: [PermissionDto],
     permissionData: CreateOrUpdatePermissionDto,
   ) {
     for (const item of permissionArray) {
@@ -46,7 +49,7 @@ export class PermissionRepository {
   }
 
   async permissionToRemove(
-    permissionArray: any,
+    permissionArray: [PermissionDto],
     permissionData: RemovePermissionDto,
   ) {
     for (const item of permissionArray) {
@@ -72,7 +75,7 @@ export class PermissionRepository {
     await this.userHasPermission(userPermissions, permissionData);
     const filter = { _id: new ObjectId(permissionData.userId) };
     const previousPermissions = await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOne(filter, {
         projection: {
           permissions: 1,
@@ -89,11 +92,10 @@ export class PermissionRepository {
       },
     };
     const data = await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOneAndUpdate(filter, updateParams);
     await this.redisService.set(
       this.userBlacklistPrefix + permissionData.userId.toString(),
-      permissionData.userId.toString(),
     );
     return data;
   }
@@ -103,7 +105,7 @@ export class PermissionRepository {
     await this.userHasPermission(userPermissions, permissionData);
     const filter = { _id: new ObjectId(permissionData.userId) };
     const previousPermissions = await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOne(filter, {
         projection: {
           permissions: 1,
@@ -121,21 +123,20 @@ export class PermissionRepository {
       },
     };
     const data = await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOneAndUpdate(filter, updateParams);
     await this.redisService.set(
       this.userBlacklistPrefix + permissionData.userId.toString(),
-      permissionData.userId.toString(),
     );
     return data;
   }
 
-  async remove(permissionData: CreateOrUpdatePermissionDto) {
+  async remove(permissionData: RemovePermissionDto) {
     const userPermissions = this.contextService.get("user").permissions;
     await this.permissionToRemove(userPermissions, permissionData);
     const filter = { _id: new ObjectId(permissionData.userId) };
     const previousPermissions = await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOne(filter, {
         projection: {
           permissions: 1,
@@ -143,7 +144,7 @@ export class PermissionRepository {
       });
     const updatedPermissions = [...previousPermissions.permissions];
     const filteredPermissionsData = updatedPermissions.filter(
-      (item: any) => item.workspaceId !== permissionData.workspaceId,
+      (item) => item.workspaceId !== permissionData.workspaceId,
     );
     const updateParams = {
       $set: {
@@ -151,11 +152,10 @@ export class PermissionRepository {
       },
     };
     const data = await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOneAndUpdate(filter, updateParams);
     await this.redisService.set(
       this.userBlacklistPrefix + permissionData.userId.toString(),
-      permissionData.userId.toString(),
     );
     return data;
   }

@@ -19,3 +19,8 @@ export class CreateOrUpdatePermissionDto {
   @IsNotEmpty()
   workspaceId: string;
 }
+
+export interface PermissionDto {
+  role: string;
+  workspaceId: string;
+}

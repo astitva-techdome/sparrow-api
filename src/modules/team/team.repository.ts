@@ -7,6 +7,8 @@ import { User } from "../common/models/user.model";
 import { Team } from "../common/models/team.model";
 import { CreateOrUpdateTeamUserDto } from "./payload/user.payload";
 import { WorkspaceDto } from "../common/models/workspace.model";
+import { Role } from "../common/enum/roles.enum";
+import { PermissionService } from "../permission/services/permission.service";
 
 /**
  * Team Service
@@ -17,6 +19,7 @@ export class TeamRepository {
     @Inject("DATABASE_CONNECTION")
     private db: Db,
     private readonly contextService: ContextService,
+    private readonly permissionService: PermissionService,
   ) {}
 
   /**
@@ -34,6 +37,7 @@ export class TeamRepository {
       users: [
         {
           id: user._id,
+          email: user.email,
           name: user.name,
         },
       ],
@@ -115,10 +119,9 @@ export class TeamRepository {
     }
   }
 
-  async HasPermission(data: any) {
+  async HasPermission(data: Array<string>) {
     const user = this.contextService.get("user");
-    const ownersData = data.owners;
-    for (const item of ownersData) {
+    for (const item of data) {
       if (item.toString() === user._id.toString()) {
         return true;
       }
@@ -128,13 +131,18 @@ export class TeamRepository {
 
   async addUser(payload: CreateOrUpdateTeamUserDto) {
     const teamFilter = { _id: new ObjectId(payload.teamId) };
-    const teamData = await this.db.collection("team").findOne(teamFilter);
+    const teamData = await this.db
+      .collection(Collections.TEAM)
+      .findOne(teamFilter);
     const userFilter = { _id: new ObjectId(payload.userId) };
-    const userData = await this.db.collection("user").findOne(userFilter);
-    await this.HasPermission(teamData);
+    const userData = await this.db
+      .collection(Collections.USER)
+      .findOne(userFilter);
+    await this.HasPermission(teamData.owners);
     const updatedUsers = [...teamData.users];
     updatedUsers.push({
       id: payload.userId,
+      email: userData.email,
       name: userData.name,
     });
     const updatedUserParams = {
@@ -143,7 +151,7 @@ export class TeamRepository {
       },
     };
     const responseData = await this.db
-      .collection("team")
+      .collection(Collections.TEAM)
       .findOneAndUpdate(teamFilter, updatedUserParams);
     const updatedTeams = [...userData.teams];
     updatedTeams.push({
@@ -156,13 +164,13 @@ export class TeamRepository {
       },
     };
     await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOneAndUpdate(userFilter, updateTeamsParams);
     const userPermissions = [...userData.permissions];
     const teamWorkspaces = [...teamData.workspaces];
     teamWorkspaces.map((item: any) => {
       userPermissions.push({
-        role: "reader",
+        role: Role.READER,
         workspaceId: item.id,
       });
     });
@@ -172,32 +180,35 @@ export class TeamRepository {
       },
     };
     await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOneAndUpdate(userFilter, updatedPermissions);
     return responseData;
   }
 
   async removeUser(payload: CreateOrUpdateTeamUserDto) {
     const teamFilter = { _id: new ObjectId(payload.teamId) };
-    const teamData = await this.db.collection("team").findOne(teamFilter);
+    const teamData = await this.db
+      .collection(Collections.TEAM)
+      .findOne(teamFilter);
     const userFilter = { _id: new ObjectId(payload.userId) };
-    const userData = await this.db.collection("user").findOne(userFilter);
-    await this.HasPermission(teamData);
+    const userData = await this.db
+      .collection(Collections.USER)
+      .findOne(userFilter);
+    const teamOwners = teamData.owners;
+    await this.HasPermission(teamOwners);
     const teamUser = [...teamData.users];
-    const filteredData = teamUser.filter(
-      (item: any) => item.id !== payload.userId,
-    );
+    const filteredData = teamUser.filter((item) => item.id !== payload.userId);
     const teamUpdatedParams = {
       $set: {
         users: filteredData,
       },
     };
     const responseData = await this.db
-      .collection("team")
+      .collection(Collections.TEAM)
       .findOneAndUpdate(teamFilter, teamUpdatedParams);
     const userTeams = [...userData.teams];
     const userFilteredTeams = userTeams.filter(
-      (item: any) => item.id !== payload.teamId,
+      (item) => item.id !== payload.teamId,
     );
     const userUpdatedParams = {
       $set: {
@@ -205,8 +216,26 @@ export class TeamRepository {
       },
     };
     await this.db
-      .collection("user")
+      .collection(Collections.USER)
       .findOneAndUpdate(userFilter, userUpdatedParams);
+    const userPermissions = [...teamData.workspaces];
+    for (const item of userPermissions) {
+      this.permissionService.remove({
+        userId: userData._id.toString(),
+        workspaceId: item.id,
+      });
+    }
+    const filteredOwner = teamOwners.filter(
+      (id: string) => id.toString() !== payload.userId.toString(),
+    );
+    const updatedOwnerParams = {
+      $set: {
+        owners: filteredOwner,
+      },
+    };
+    await this.db
+      .collection(Collections.TEAM)
+      .findOneAndUpdate(teamFilter, updatedOwnerParams);
     return responseData;
   }
 
