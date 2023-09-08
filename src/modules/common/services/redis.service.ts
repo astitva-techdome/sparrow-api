@@ -6,9 +6,9 @@ export class RedisService {
 
   async set(key: string, value?: string, ttl?: number) {
     if (ttl) {
-      await this.redis.set(key, value, "EX", ttl);
+      await this.redis.set(key, value ?? 1, "EX", ttl);
     } else {
-      await this.redis.set(key, value);
+      await this.redis.set(key, value ?? 1);
     }
     return;
   }

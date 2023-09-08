@@ -3,7 +3,6 @@ import {
   Inject,
   Injectable,
   NotAcceptableException,
-  forwardRef,
 } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
 import { Collections } from "../common/enum/database.collection.enum";
@@ -30,7 +29,6 @@ export class UserRepository {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
-    @Inject(forwardRef(() => WorkspaceService))
     private readonly workspaceService: WorkspaceService,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,

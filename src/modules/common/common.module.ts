@@ -4,6 +4,7 @@ import { ContextService } from "./services/context.service";
 import { Redis } from "ioredis";
 import { ConfigService } from "@nestjs/config";
 import { RedisService } from "./services/redis.service";
+import { CommonUserRepository } from "./repository/common-user.repository";
 @Global()
 @Module({
   imports: [],
@@ -33,7 +34,14 @@ import { RedisService } from "./services/redis.service";
     },
     ContextService,
     RedisService,
+    CommonUserRepository,
   ],
-  exports: ["DATABASE_CONNECTION", Redis, ContextService, RedisService],
+  exports: [
+    "DATABASE_CONNECTION",
+    Redis,
+    ContextService,
+    RedisService,
+    CommonUserRepository,
+  ],
 })
 export class CommonModule {}

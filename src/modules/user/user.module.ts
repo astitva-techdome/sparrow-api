@@ -1,4 +1,4 @@
-import { Module, forwardRef } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { UserService } from "./services/user.service";
 import { UserController } from "./user.controller";
 import { JwtService } from "@nestjs/jwt";
@@ -8,9 +8,8 @@ import { PermissionService } from "../permission/services/permission.service";
 import { UserRepository } from "./user.repository";
 import { WorkspaceRepository } from "../workspace/workspace.repository";
 import { PermissionRepository } from "../permission/permission.repository";
-import { PermissionModule } from "../permission/permission.module";
 @Module({
-  imports: [UserModule, forwardRef(() => PermissionModule)],
+  imports: [UserModule],
   providers: [
     UserService,
     AuthService,
