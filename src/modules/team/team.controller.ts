@@ -13,6 +13,7 @@ import { TeamService } from "./services/team.service";
 import { CreateOrUpdateTeamDto } from "./payload/team.payload";
 import { BlacklistGuard } from "../common/guards/blacklist.guard";
 import { TeamUserService } from "./services/team-user.service";
+import { CreateOrUpdateTeamUserDto } from "./payload/teamUser.payload";
 
 /**
  * Team Controller
@@ -47,5 +48,19 @@ export class TeamController {
   async deleteTeam(@Param("teamId") teamId: string) {
     await this.teamService.delete(teamId);
     return { message: "Team deleted successfully" };
+  }
+
+  @Post("addUser")
+  @ApiResponse({ status: 201, description: "Team Created Successfully" })
+  @ApiResponse({ status: 400, description: "Create Team Failed" })
+  async addUserInTeam(@Body() addTeamUserDto: CreateOrUpdateTeamUserDto) {
+    return await this.teamUserService.addUser(addTeamUserDto);
+  }
+
+  @Post("removeUser")
+  @ApiResponse({ status: 201, description: "Team Created Successfully" })
+  @ApiResponse({ status: 400, description: "Create Team Failed" })
+  async removeUserInTeam(@Body() removeTeamUserDto: CreateOrUpdateTeamUserDto) {
+    return await this.teamUserService.removeUser(removeTeamUserDto);
   }
 }

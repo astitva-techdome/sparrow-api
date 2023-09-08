@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { TeamRepository } from "../team.repository";
-import { CreateOrUpdateTeamUserDto } from "../payload/user.payload";
+import { CreateOrUpdateTeamUserDto } from "../payload/teamUser.payload";
 import { ObjectId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { Role } from "@src/modules/common/enum/roles.enum";
