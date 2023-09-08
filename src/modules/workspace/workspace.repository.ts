@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, forwardRef } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
 import {
   OwnerInformationDto,
@@ -26,6 +26,7 @@ export interface IGenericMessageBody {
 export class WorkspaceRepository {
   constructor(
     @Inject("DATABASE_CONNECTION")
+    @Inject(forwardRef(() => PermissionService))
     private db: Db,
     private contextService: ContextService,
     private permissionService: PermissionService,
