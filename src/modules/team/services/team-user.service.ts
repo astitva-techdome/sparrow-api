@@ -97,10 +97,7 @@ export class TeamUserService {
       users: filteredData,
       owners: filteredOwner,
     };
-    const updatedTeamResponse = await this.teamRepository.updateTeamById(
-      teamFilter,
-      teamUpdatedParams,
-    );
+    await this.teamRepository.updateTeamById(teamFilter, teamUpdatedParams);
     const userTeams = [...userData.teams];
     const userFilteredTeams = userTeams.filter(
       (item) => item.id !== payload.teamId,
@@ -119,6 +116,6 @@ export class TeamUserService {
         workspaceId: item.id,
       });
     }
-    return updatedTeamResponse;
+    return "User Removed";
   }
 }

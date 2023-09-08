@@ -50,17 +50,20 @@ export class TeamController {
     return { message: "Team deleted successfully" };
   }
 
-  @Post("addUser")
+  @Post("user")
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Team Failed" })
   async addUserInTeam(@Body() addTeamUserDto: CreateOrUpdateTeamUserDto) {
     return await this.teamUserService.addUser(addTeamUserDto);
   }
 
-  @Post("removeUser")
+  @Delete(":teamId/user/:userId")
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Team Failed" })
-  async removeUserInTeam(@Body() removeTeamUserDto: CreateOrUpdateTeamUserDto) {
-    return await this.teamUserService.removeUser(removeTeamUserDto);
+  async removeUserInTeam(
+    @Param("teamId") teamId: string,
+    @Param("userId") userId: string,
+  ) {
+    return await this.teamUserService.removeUser({ teamId, userId });
   }
 }
