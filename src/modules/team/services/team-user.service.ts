@@ -2,10 +2,10 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { TeamRepository } from "../team.repository";
 import { CreateOrUpdateTeamUserDto } from "../payload/user.payload";
 import { ObjectId } from "mongodb";
-import { UserRepository } from "@src/modules/user/user.repository";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { Role } from "@src/modules/common/enum/roles.enum";
 import { PermissionService } from "@src/modules/permission/services/permission.service";
+import { CommonUserRepository } from "@src/modules/common/repository/common-user.repository";
 
 /**
  * Team User Service
@@ -14,9 +14,9 @@ import { PermissionService } from "@src/modules/permission/services/permission.s
 export class TeamUserService {
   constructor(
     private readonly teamRepository: TeamRepository,
-    private readonly userRepository: UserRepository,
     private readonly contextService: ContextService,
     private readonly permissionService: PermissionService,
+    private readonly commonUserRepository: CommonUserRepository,
   ) {}
 
   async HasPermission(data: Array<string>) {
@@ -38,7 +38,9 @@ export class TeamUserService {
     const teamFilter = new ObjectId(payload.teamId);
     const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
     const userFilter = new ObjectId(payload.userId);
-    const userData = await this.userRepository.findUserByUserId(userFilter);
+    const userData = await this.commonUserRepository.findUserByUserId(
+      userFilter,
+    );
     await this.HasPermission(teamData.owners);
     const updatedUsers = [...teamData.users];
     updatedUsers.push({
@@ -70,7 +72,10 @@ export class TeamUserService {
       teams: updatedTeams,
       permissions: userPermissions,
     };
-    await this.userRepository.updateUserById(userFilter, updateUserParams);
+    await this.commonUserRepository.updateUserById(
+      userFilter,
+      updateUserParams,
+    );
     return updatedTeamResponse;
   }
 
@@ -78,7 +83,9 @@ export class TeamUserService {
     const teamFilter = new ObjectId(payload.teamId);
     const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
     const userFilter = new ObjectId(payload.userId);
-    const userData = await this.userRepository.findUserByUserId(userFilter);
+    const userData = await this.commonUserRepository.findUserByUserId(
+      userFilter,
+    );
     const teamOwners = teamData.owners;
     await this.HasPermission(teamOwners);
     const teamUser = [...teamData.users];
@@ -101,7 +108,10 @@ export class TeamUserService {
     const userUpdatedParams = {
       teams: userFilteredTeams,
     };
-    await this.userRepository.updateUserById(userFilter, userUpdatedParams);
+    await this.commonUserRepository.updateUserById(
+      userFilter,
+      userUpdatedParams,
+    );
     const userPermissions = [...teamData.workspaces];
     for (const item of userPermissions) {
       await this.permissionService.remove({
