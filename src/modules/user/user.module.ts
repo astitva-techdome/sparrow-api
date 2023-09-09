@@ -9,7 +9,7 @@ import { UserRepository } from "./user.repository";
 import { WorkspaceRepository } from "../workspace/workspace.repository";
 import { PermissionRepository } from "../permission/permission.repository";
 @Module({
-  imports: [],
+  imports: [UserModule],
   providers: [
     UserService,
     AuthService,

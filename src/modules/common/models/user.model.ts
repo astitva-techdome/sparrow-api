@@ -55,11 +55,15 @@ export class User {
 export class UserDto {
   @IsMongoId()
   @IsNotEmpty()
-  id: ObjectId;
+  id: string;
 
   @IsEmail()
   @IsNotEmpty()
   email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 }
 
 class AuthProvider {
@@ -72,7 +76,7 @@ class AuthProvider {
   oAuthId: string;
 }
 
-class PermissionDto {
+export class PermissionDto {
   @IsEnum(Role)
   @IsNotEmpty()
   role: Role;

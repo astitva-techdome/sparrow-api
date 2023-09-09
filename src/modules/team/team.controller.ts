@@ -12,6 +12,8 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { TeamService } from "./services/team.service";
 import { CreateOrUpdateTeamDto } from "./payload/team.payload";
 import { BlacklistGuard } from "../common/guards/blacklist.guard";
+import { TeamUserService } from "./services/team-user.service";
+import { CreateOrUpdateTeamUserDto } from "./payload/teamUser.payload";
 
 /**
  * Team Controller
@@ -21,7 +23,10 @@ import { BlacklistGuard } from "../common/guards/blacklist.guard";
 @Controller("api/team")
 @UseGuards(AuthGuard("jwt"), BlacklistGuard)
 export class TeamController {
-  constructor(private readonly teamService: TeamService) {}
+  constructor(
+    private readonly teamService: TeamService,
+    private readonly teamUserService: TeamUserService,
+  ) {}
 
   @Post()
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
@@ -43,5 +48,22 @@ export class TeamController {
   async deleteTeam(@Param("teamId") teamId: string) {
     await this.teamService.delete(teamId);
     return { message: "Team deleted successfully" };
+  }
+
+  @Post("user")
+  @ApiResponse({ status: 201, description: "Team Created Successfully" })
+  @ApiResponse({ status: 400, description: "Create Team Failed" })
+  async addUserInTeam(@Body() addTeamUserDto: CreateOrUpdateTeamUserDto) {
+    return await this.teamUserService.addUser(addTeamUserDto);
+  }
+
+  @Delete(":teamId/user/:userId")
+  @ApiResponse({ status: 201, description: "Team Created Successfully" })
+  @ApiResponse({ status: 400, description: "Create Team Failed" })
+  async removeUserInTeam(
+    @Param("teamId") teamId: string,
+    @Param("userId") userId: string,
+  ) {
+    return await this.teamUserService.removeUser({ teamId, userId });
   }
 }

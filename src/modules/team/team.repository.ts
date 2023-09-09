@@ -1,10 +1,12 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
 import { ContextService } from "../common/services/context.service";
-import { CreateOrUpdateTeamDto } from "./payload/team.payload";
+import { CreateOrUpdateTeamDto, TeamDto } from "./payload/team.payload";
 import { Collections } from "../common/enum/database.collection.enum";
 import { User } from "../common/models/user.model";
 import { Team } from "../common/models/team.model";
+import { WorkspaceDto } from "../common/models/workspace.model";
+import { PermissionService } from "../permission/services/permission.service";
 
 /**
  * Team Service
@@ -15,6 +17,7 @@ export class TeamRepository {
     @Inject("DATABASE_CONNECTION")
     private db: Db,
     private readonly contextService: ContextService,
+    private readonly permissionService: PermissionService,
   ) {}
 
   /**
@@ -33,8 +36,10 @@ export class TeamRepository {
         {
           id: user._id,
           email: user.email,
+          name: user.name,
         },
       ],
+      workspaces: [] as WorkspaceDto[],
       owners: [user._id],
       createdBy: user._id,
       createdAt: new Date(),
@@ -110,6 +115,33 @@ export class TeamRepository {
         "The Team with that id could not be found.",
       );
     }
+  }
+
+  async HasPermission(data: Array<string>) {
+    const user = this.contextService.get("user");
+    for (const item of data) {
+      if (item.toString() === user._id.toString()) {
+        return true;
+      }
+    }
+    throw new BadRequestException("You don't have access");
+  }
+
+  async findTeamByTeamId(id: ObjectId) {
+    const teamData = await this.db
+      .collection(Collections.TEAM)
+      .findOne({ _id: id });
+    return teamData;
+  }
+
+  async updateTeamById(id: ObjectId, updateParams: TeamDto) {
+    const updatedTeamParams = {
+      $set: updateParams,
+    };
+    const responseData = await this.db
+      .collection(Collections.TEAM)
+      .findOneAndUpdate({ _id: id }, updatedTeamParams);
+    return responseData;
   }
 
   private async doesTeamExistsForUser(userId: ObjectId, teamName: string) {
