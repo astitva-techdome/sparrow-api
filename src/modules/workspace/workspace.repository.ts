@@ -8,7 +8,6 @@ import {
 import { Collections } from "../common/enum/database.collection.enum";
 import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
 import { ContextService } from "../common/services/context.service";
-import { PermissionService } from "../permission/services/permission.service";
 /**
  * Models a typical response for a crud operation
  */
@@ -28,7 +27,6 @@ export class WorkspaceRepository {
     @Inject("DATABASE_CONNECTION")
     private db: Db,
     private contextService: ContextService,
-    private permissionService: PermissionService,
   ) {}
 
   /**
@@ -72,9 +70,9 @@ export class WorkspaceRepository {
       .insertOne({ ...workspaceData, ...params });
 
     if (workspaceData.type === WorkspaceType.TEAM) {
-      await this.permissionService.setAdminPermissionForOwner(
-        new ObjectId(workspaceData.team.id),
-      );
+      // await this.permissionService.setAdminPermissionForOwner(
+      //   new ObjectId(workspaceData.team.id),
+      // );
     }
   }
 

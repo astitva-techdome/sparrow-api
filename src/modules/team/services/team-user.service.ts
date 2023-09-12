@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { Role } from "@src/modules/common/enum/roles.enum";
 import { PermissionService } from "@src/modules/permission/services/permission.service";
-import { CommonUserRepository } from "@src/modules/common/repository/common-user.repository";
+import { UserRepository } from "@src/modules/user/user.repository";
 
 /**
  * Team User Service
@@ -16,7 +16,7 @@ export class TeamUserService {
     private readonly teamRepository: TeamRepository,
     private readonly contextService: ContextService,
     private readonly permissionService: PermissionService,
-    private readonly commonUserRepository: CommonUserRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async HasPermission(data: Array<string>) {
@@ -38,9 +38,7 @@ export class TeamUserService {
     const teamFilter = new ObjectId(payload.teamId);
     const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
     const userFilter = new ObjectId(payload.userId);
-    const userData = await this.commonUserRepository.findUserByUserId(
-      userFilter,
-    );
+    const userData = await this.userRepository.findUserByUserId(userFilter);
     await this.HasPermission(teamData.owners);
     const updatedUsers = [...teamData.users];
     updatedUsers.push({
@@ -72,10 +70,7 @@ export class TeamUserService {
       teams: updatedTeams,
       permissions: userPermissions,
     };
-    await this.commonUserRepository.updateUserById(
-      userFilter,
-      updateUserParams,
-    );
+    await this.userRepository.updateUserById(userFilter, updateUserParams);
     return updatedTeamResponse;
   }
 
@@ -83,9 +78,7 @@ export class TeamUserService {
     const teamFilter = new ObjectId(payload.teamId);
     const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
     const userFilter = new ObjectId(payload.userId);
-    const userData = await this.commonUserRepository.findUserByUserId(
-      userFilter,
-    );
+    const userData = await this.userRepository.findUserByUserId(userFilter);
     const teamOwners = teamData.owners;
     await this.HasPermission(teamOwners);
     const teamUser = [...teamData.users];
@@ -105,10 +98,7 @@ export class TeamUserService {
     const userUpdatedParams = {
       teams: userFilteredTeams,
     };
-    await this.commonUserRepository.updateUserById(
-      userFilter,
-      userUpdatedParams,
-    );
+    await this.userRepository.updateUserById(userFilter, userUpdatedParams);
     const userPermissions = [...teamData.workspaces];
     for (const item of userPermissions) {
       await this.permissionService.remove({
