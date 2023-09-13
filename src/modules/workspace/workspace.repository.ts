@@ -1,14 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
-import {
-  OwnerInformationDto,
-  Workspace,
-  WorkspaceType,
-} from "../common/models/workspace.model";
+import { Workspace } from "../common/models/workspace.model";
 import { Collections } from "../common/enum/database.collection.enum";
 import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
 import { ContextService } from "../common/services/context.service";
-import { PermissionService } from "../permission/services/permission.service";
+// import { PermissionService } from "../permission/services/permission.service";
 /**
  * Models a typical response for a crud operation
  */
@@ -27,8 +23,7 @@ export class WorkspaceRepository {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
-    private contextService: ContextService,
-    private permissionService: PermissionService,
+    private contextService: ContextService, // private permissionService: PermissionService,
   ) {}
 
   /**
@@ -43,39 +38,11 @@ export class WorkspaceRepository {
       .findOne({ _id });
   }
 
-  /**
-   * Creates a new workspace in the database
-   * @param {CreateOrUpdateWorkspaceDto} workspaceData
-   * @returns {Promise<InsertOneWriteOpResult<Workspace>>} result of the insert operation
-   */
-  async create(workspaceData: CreateOrUpdateWorkspaceDto) {
-    const ownerInfo: OwnerInformationDto = {
-      id:
-        workspaceData.type === WorkspaceType.PERSONAL
-          ? this.contextService.get("user")._id
-          : workspaceData.team.id,
-      name:
-        workspaceData.type === WorkspaceType.PERSONAL
-          ? this.contextService.get("user").name
-          : workspaceData.team.name,
-      type: workspaceData.type as WorkspaceType,
-    };
-
-    const params = {
-      owner: ownerInfo,
-      createdAt: new Date(),
-      createdBy: this.contextService.get("user")._id,
-    };
-
-    await this.db
-      .collection<Workspace>(Collections.WORKSPACE)
-      .insertOne({ ...workspaceData, ...params });
-
-    if (workspaceData.type === WorkspaceType.TEAM) {
-      await this.permissionService.setAdminPermissionForOwner(
-        new ObjectId(workspaceData.team.id),
-      );
-    }
+  async addWorkspace(params: Workspace) {
+    const response = await this.db
+      .collection(Collections.WORKSPACE)
+      .insertOne(params);
+    return response;
   }
 
   /**

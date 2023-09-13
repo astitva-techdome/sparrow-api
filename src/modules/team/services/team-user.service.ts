@@ -62,12 +62,28 @@ export class TeamUserService {
     });
     const userPermissions = [...userData.permissions];
     const teamWorkspaces = [...teamData.workspaces];
-    teamWorkspaces.map((item: any) => {
-      userPermissions.push({
-        role: Role.READER,
-        workspaceId: item.id,
-      });
-    });
+    for (const item of teamWorkspaces) {
+      if (
+        payload.role &&
+        payload.workspaceId.toString() === item.id.toString()
+      ) {
+        userPermissions.push({
+          role: payload.role,
+          workspaceId: item.id,
+        });
+      } else {
+        userPermissions.push({
+          role: Role.READER,
+          workspaceId: item.id,
+        });
+      }
+    }
+    // teamWorkspaces.map((item: any) => {
+    //   userPermissions.push({
+    //     role: payload.role ?? Role.READER,
+    //     workspaceId: item.id,
+    //   });
+    // });
     const updateUserParams = {
       teams: updatedTeams,
       permissions: userPermissions,

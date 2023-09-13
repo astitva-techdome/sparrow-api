@@ -14,6 +14,8 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { WorkspaceService } from "./services/workspace.service";
 import { CreateOrUpdateWorkspaceDto } from "./payload/workspace.payload";
 import { BlacklistGuard } from "../common/guards/blacklist.guard";
+import { PermissionService } from "../permission/services/permission.service";
+import { AddWorkspaceUserDto } from "./payload/workspaceUser.payload";
 
 /**
  * Workspace Controller
@@ -23,7 +25,10 @@ import { BlacklistGuard } from "../common/guards/blacklist.guard";
 @Controller("api/workspace")
 @UseGuards(AuthGuard("jwt"), BlacklistGuard)
 export class WorkSpaceController {
-  constructor(private readonly workspaceService: WorkspaceService) {}
+  constructor(
+    private readonly workspaceService: WorkspaceService,
+    private readonly permissionService: PermissionService,
+  ) {}
 
   @Post()
   @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
@@ -77,5 +82,21 @@ export class WorkSpaceController {
       );
     }
     return { message: "Workspace deleted successfully" };
+  }
+
+  @Post(":workspaceId/user/:userId")
+  @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
+  @ApiResponse({ status: 400, description: "Create Workspace Failed" })
+  async addUserWorkspace(
+    @Param("workspaceId") workspaceId: string,
+    @Param("userId") userId: string,
+    @Body() data: AddWorkspaceUserDto,
+  ) {
+    const params = {
+      userId: userId,
+      workspaceId: workspaceId,
+      role: data.role,
+    };
+    return await this.permissionService.create(params);
   }
 }

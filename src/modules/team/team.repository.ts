@@ -6,7 +6,6 @@ import { Collections } from "../common/enum/database.collection.enum";
 import { User } from "../common/models/user.model";
 import { Team } from "../common/models/team.model";
 import { WorkspaceDto } from "../common/models/workspace.model";
-import { PermissionService } from "../permission/services/permission.service";
 
 /**
  * Team Service
@@ -17,7 +16,6 @@ export class TeamRepository {
     @Inject("DATABASE_CONNECTION")
     private db: Db,
     private readonly contextService: ContextService,
-    private readonly permissionService: PermissionService,
   ) {}
 
   /**

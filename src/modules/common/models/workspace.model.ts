@@ -20,11 +20,11 @@ export enum WorkspaceType {
 export class OwnerInformationDto {
   @IsMongoId()
   @IsNotEmpty()
-  id: ObjectId;
+  id: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name?: string;
 
   @IsEnum(WorkspaceType)
   @IsNotEmpty()

@@ -11,6 +11,8 @@ import { ConfigService } from "@nestjs/config";
 import { CommonUserRepository } from "@src/modules/common/repository/common-user.repository";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { RedisService } from "@src/modules/common/services/redis.service";
+import { WorkspaceType } from "@src/modules/common/models/workspace.model";
+import { TeamUserService } from "@src/modules/team/services/team-user.service";
 /**
  * Permission Service
  */
@@ -23,6 +25,7 @@ export class PermissionService {
     private readonly commonUserRepository: CommonUserRepository,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
+    private readonly teamUserService: TeamUserService,
   ) {
     this.userBlacklistPrefix = this.configService.get(
       "app.userBlacklistPrefix",
@@ -35,7 +38,7 @@ export class PermissionService {
   ) {
     for (const item of permissionArray) {
       if (
-        item.workspaceId === permissionData.workspaceId &&
+        item.workspaceId.toString() === permissionData.workspaceId.toString() &&
         item.role === Role.ADMIN
       ) {
         return true;
@@ -71,20 +74,36 @@ export class PermissionService {
   async create(permissionData: CreateOrUpdatePermissionDto) {
     const userPermissions = this.contextService.get("user").permissions;
     await this.userHasPermission(userPermissions, permissionData);
-    const filter = new ObjectId(permissionData.userId);
-    const userData = await this.commonUserRepository.findUserByUserId(filter);
-    const updatedPermissions = [...userData.permissions];
-    updatedPermissions.push({
-      role: permissionData.role,
-      workspaceId: permissionData.workspaceId,
-    });
-    const updatedPermissionParams = {
-      permissions: updatedPermissions,
-    };
-    const response = await this.commonUserRepository.updateUserById(
-      filter,
-      updatedPermissionParams,
+    // const filter = new ObjectId(permissionData.userId);
+    const workspaceId = new ObjectId(permissionData.workspaceId);
+    const workspaceData = await this.commonUserRepository.findWorkspaceById(
+      workspaceId,
     );
+    if (workspaceData.owner.type === WorkspaceType.PERSONAL) {
+      throw new BadRequestException(
+        "You cannot add memebers in Personal Workspace.",
+      );
+    }
+    const permissionParams = {
+      teamId: workspaceData.owner.id,
+      role: permissionData.role,
+      userId: permissionData.userId,
+      workspaceId: permissionData.workspaceId,
+    };
+    const response = await this.teamUserService.addUser(permissionParams);
+    // const userData = await this.commonUserRepository.findUserByUserId(filter);
+    // const updatedPermissions = [...userData.permissions];
+    // updatedPermissions.push({
+    //   role: permissionData.role,
+    //   workspaceId: permissionData.workspaceId,
+    // });
+    // const updatedPermissionParams = {
+    //   permissions: updatedPermissions,
+    // };
+    // const response = await this.commonUserRepository.updateUserById(
+    //   filter,
+    //   updatedPermissionParams,
+    // );
     await this.redisService.set(
       this.userBlacklistPrefix + permissionData.userId.toString(),
     );

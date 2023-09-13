@@ -4,10 +4,10 @@ import { UserController } from "./user.controller";
 import { JwtService } from "@nestjs/jwt";
 import { WorkspaceService } from "../workspace/services/workspace.service";
 import { AuthService } from "../auth/auth.service";
-import { PermissionService } from "../permission/services/permission.service";
 import { UserRepository } from "./user.repository";
 import { WorkspaceRepository } from "../workspace/workspace.repository";
-import { PermissionRepository } from "../permission/permission.repository";
+import { TeamUserService } from "../team/services/team-user.service";
+import { TeamRepository } from "../team/team.repository";
 @Module({
   imports: [UserModule],
   providers: [
@@ -15,10 +15,12 @@ import { PermissionRepository } from "../permission/permission.repository";
     AuthService,
     JwtService,
     WorkspaceService,
-    PermissionService,
+    // PermissionService,
     UserRepository,
     WorkspaceRepository,
-    PermissionRepository,
+    // PermissionRepository,
+    TeamUserService,
+    TeamRepository,
   ],
   exports: [UserService],
   controllers: [UserController],
