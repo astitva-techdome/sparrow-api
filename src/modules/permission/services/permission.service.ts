@@ -14,6 +14,7 @@ import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { TeamUserService } from "@src/modules/team/services/team-user.service";
 import { UserRepository } from "@src/modules/user/user.repository";
 import { WorkspaceRepository } from "@src/modules/workspace/workspace.repository";
+import { TeamRepository } from "@src/modules/team/team.repository";
 /**
  * Permission Service
  */
@@ -27,6 +28,7 @@ export class PermissionService {
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
     private readonly teamUserService: TeamUserService,
+    private readonly teamRepository: TeamRepository,
     private readonly workspaceRepository: WorkspaceRepository,
   ) {
     this.userBlacklistPrefix = this.configService.get(
@@ -178,5 +180,19 @@ export class PermissionService {
 
   async setAdminPermissionForOwner(_id: ObjectId) {
     return await this.permissionRepository.setAdminPermissionForOwner(_id);
+  }
+
+  async isTeamOwner(id: ObjectId) {
+    const data = await this.teamRepository.findTeamByTeamId(id);
+    const userId = this.contextService.get("user")._id;
+    if (data) {
+      for (const item of data.owners) {
+        if (item.toString() === userId.toString()) {
+          return data;
+        }
+      }
+      throw new BadRequestException("You don't have access");
+    }
+    throw new BadRequestException("Team doesn't exist");
   }
 }

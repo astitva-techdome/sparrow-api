@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { WorkspaceRepository } from "../workspace.repository";
 import { CreateOrUpdateWorkspaceDto } from "../payload/workspace.payload";
 import {
@@ -30,20 +30,6 @@ export class WorkspaceService {
     return await this.workspaceRepository.get(id);
   }
 
-  async HasPermission(id: ObjectId) {
-    const data = await this.teamRepository.findTeamByTeamId(id);
-    const userId = this.contextService.get("user")._id;
-    if (data) {
-      for (const item of data.owners) {
-        if (item.toString() === userId.toString()) {
-          return true;
-        }
-      }
-      throw new BadRequestException("You don't have access");
-    }
-    throw new BadRequestException("Team doesn't exist");
-  }
-
   /**
    * Creates a new workspace in the database
    * @param {CreateOrUpdateWorkspaceDto} workspaceData
@@ -51,11 +37,11 @@ export class WorkspaceService {
    */
   async create(workspaceData: CreateOrUpdateWorkspaceDto) {
     const userId = this.contextService.get("user")._id;
-    const teamIDFilter = new ObjectId(workspaceData.id);
+    const teamId = new ObjectId(workspaceData.id);
+    let teamData;
     if (workspaceData.type === WorkspaceType.TEAM) {
-      await this.HasPermission(teamIDFilter);
+      teamData = await this.permissionService.isTeamOwner(teamId);
     }
-    const teamData = await this.teamRepository.findTeamByTeamId(teamIDFilter);
     const ownerInfo: OwnerInformationDto = {
       id:
         workspaceData.type === WorkspaceType.PERSONAL
@@ -83,21 +69,7 @@ export class WorkspaceService {
       const updateTeamParams = {
         workspaces: teamWorkspaces,
       };
-      await this.teamRepository.updateTeamById(teamIDFilter, updateTeamParams);
-      // const userIdFilter = new ObjectId(userId);
-      // const userData = await this.userRepository.findUserByUserId(userIdFilter);
-      // const updatedPermissions = [...userData.permissions];
-      // updatedPermissions.push({
-      //   role: Role.ADMIN,
-      //   workspaceId: response.insertedId,
-      // });
-      // const updatedPermissionParams = {
-      //   permissions: updatedPermissions,
-      // };
-      // await this.userRepository.updateUserById(
-      //   userIdFilter,
-      //   updatedPermissionParams,
-      // );
+      await this.teamRepository.updateTeamById(teamId, updateTeamParams);
       const addPermissionPayload = {
         role: Role.ADMIN,
         workspaceId: response.insertedId.toString(),
