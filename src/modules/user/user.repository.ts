@@ -1,20 +1,10 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotAcceptableException,
-} from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
 import { Collections } from "../common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { RegisterPayload } from "../auth/payload/register.payload";
 import { UpdateUserDto, UserDto } from "./payload/user.payload";
-import { WorkspaceService } from "../workspace/services/workspace.service";
-import { CreateOrUpdateWorkspaceDto } from "../workspace/payload/workspace.payload";
-import { ConfigService } from "@nestjs/config";
-import { WorkspaceType } from "../common/models/workspace.model";
 import { User } from "../common/models/user.model";
-import { AuthService } from "@auth/auth.service";
 import { ContextService } from "../common/services/context.service";
 
 export interface IGenericMessageBody {
@@ -29,9 +19,6 @@ export class UserRepository {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
-    private readonly workspaceService: WorkspaceService,
-    private readonly configService: ConfigService,
-    private readonly authService: AuthService,
     private readonly contextService: ContextService,
   ) {}
 
@@ -81,12 +68,6 @@ export class UserRepository {
    * @returns {Promise<IUser>} created user data
    */
   async createUser(payload: RegisterPayload) {
-    const user = await this.getUserByEmail(payload.email);
-    if (user) {
-      throw new NotAcceptableException(
-        "The account with the provided email currently exists. Please choose another one.",
-      );
-    }
     const createdUser = await this.db
       .collection<User>(Collections.USER)
       .insertOne({
@@ -96,16 +77,7 @@ export class UserRepository {
         permissions: [],
       });
 
-    const token = await this.authService.createToken(createdUser.insertedId);
-
-    const workspaceObj: CreateOrUpdateWorkspaceDto = {
-      name: this.configService.get("app.defaultWorkspaceName"),
-      type: WorkspaceType.PERSONAL,
-    };
-
-    await this.workspaceService.create(workspaceObj);
-
-    return token;
+    return createdUser;
   }
 
   /**

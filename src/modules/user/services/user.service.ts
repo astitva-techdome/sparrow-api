@@ -1,7 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotAcceptableException } from "@nestjs/common";
 import { UpdateUserDto } from "../payload/user.payload";
 import { UserRepository } from "../user.repository";
 import { RegisterPayload } from "@src/modules/auth/payload/register.payload";
+import { CreateOrUpdateWorkspaceDto } from "@src/modules/workspace/payload/workspace.payload";
+import { ConfigService } from "@nestjs/config";
+import { WorkspaceType } from "@src/modules/common/models/workspace.model";
+import { WorkspaceService } from "@src/modules/workspace/services/workspace.service";
+import { AuthService } from "@src/modules/auth/auth.service";
 
 export interface IGenericMessageBody {
   message: string;
@@ -11,7 +16,12 @@ export interface IGenericMessageBody {
  */
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly configService: ConfigService,
+    private readonly workspaceService: WorkspaceService,
+    private readonly authService: AuthService,
+  ) {}
 
   /**
    * Fetches a user from database by UUID
@@ -47,7 +57,21 @@ export class UserService {
    * @returns {Promise<IUser>} created user data
    */
   async createUser(payload: RegisterPayload) {
-    return await this.userRepository.createUser(payload);
+    const user = await this.getUserByEmail(payload.email);
+    if (user) {
+      throw new NotAcceptableException(
+        "The account with the provided email currently exists. Please choose another one.",
+      );
+    }
+    const createdUser = await this.userRepository.createUser(payload);
+    const token = await this.authService.createToken(createdUser.insertedId);
+    const workspaceObj: CreateOrUpdateWorkspaceDto = {
+      name: this.configService.get("app.defaultWorkspaceName"),
+      type: WorkspaceType.PERSONAL,
+    };
+
+    await this.workspaceService.create(workspaceObj);
+    return token;
   }
 
   /**
