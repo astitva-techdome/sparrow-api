@@ -158,6 +158,24 @@ export class PermissionService {
     return response;
   }
 
+  async addPermissionInUser(payload: CreateOrUpdatePermissionDto) {
+    const userIdFilter = new ObjectId(payload.userId);
+    const userData = await this.userRepository.findUserByUserId(userIdFilter);
+    const updatedPermissions = [...userData.permissions];
+    updatedPermissions.push({
+      role: Role.ADMIN,
+      workspaceId: payload.workspaceId,
+    });
+    const updatedPermissionParams = {
+      permissions: updatedPermissions,
+    };
+    const permissionResponse = await this.userRepository.updateUserById(
+      userIdFilter,
+      updatedPermissionParams,
+    );
+    return permissionResponse;
+  }
+
   async setAdminPermissionForOwner(_id: ObjectId) {
     return await this.permissionRepository.setAdminPermissionForOwner(_id);
   }

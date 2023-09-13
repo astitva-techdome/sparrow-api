@@ -9,7 +9,7 @@ import { ContextService } from "@src/modules/common/services/context.service";
 import { ObjectId } from "mongodb";
 import { Role } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/team/team.repository";
-import { UserRepository } from "@src/modules/user/user.repository";
+import { PermissionService } from "@src/modules/permission/services/permission.service";
 /**
  * Workspace Service
  */
@@ -18,8 +18,8 @@ export class WorkspaceService {
   constructor(
     private readonly workspaceRepository: WorkspaceRepository,
     private readonly contextService: ContextService,
-    private readonly userRepository: UserRepository,
     private readonly teamRepository: TeamRepository,
+    private readonly permissionService: PermissionService,
   ) {}
 
   /**
@@ -84,20 +84,26 @@ export class WorkspaceService {
         workspaces: teamWorkspaces,
       };
       await this.teamRepository.updateTeamById(teamIDFilter, updateTeamParams);
-      const userIdFilter = new ObjectId(userId);
-      const userData = await this.userRepository.findUserByUserId(userIdFilter);
-      const updatedPermissions = [...userData.permissions];
-      updatedPermissions.push({
+      // const userIdFilter = new ObjectId(userId);
+      // const userData = await this.userRepository.findUserByUserId(userIdFilter);
+      // const updatedPermissions = [...userData.permissions];
+      // updatedPermissions.push({
+      //   role: Role.ADMIN,
+      //   workspaceId: response.insertedId,
+      // });
+      // const updatedPermissionParams = {
+      //   permissions: updatedPermissions,
+      // };
+      // await this.userRepository.updateUserById(
+      //   userIdFilter,
+      //   updatedPermissionParams,
+      // );
+      const addPermissionPayload = {
         role: Role.ADMIN,
-        workspaceId: response.insertedId,
-      });
-      const updatedPermissionParams = {
-        permissions: updatedPermissions,
+        workspaceId: response.insertedId.toString(),
+        userId: userId.toString(),
       };
-      await this.userRepository.updateUserById(
-        userIdFilter,
-        updatedPermissionParams,
-      );
+      await this.permissionService.addPermissionInUser(addPermissionPayload);
     }
     return response;
   }
