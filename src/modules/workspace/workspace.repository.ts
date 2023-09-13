@@ -45,6 +45,13 @@ export class WorkspaceRepository {
     return response;
   }
 
+  async findWorkspaceById(id: ObjectId) {
+    const response = await this.db
+      .collection(Collections.WORKSPACE)
+      .findOne({ _id: id });
+    return response;
+  }
+
   /**
    * Updates an existing workspace in the database by UUID
    * @param {string} id

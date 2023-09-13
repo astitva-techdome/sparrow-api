@@ -2,7 +2,6 @@ import { Controller, Body, Post } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "@auth/auth.service";
 import { LoginPayload } from "@auth/payload/login.payload";
-import { UserService } from "../user/services/user.service";
 
 /**
  * Authentication Controller
@@ -13,12 +12,8 @@ export class AuthController {
   /**
    * Constructor
    * @param {AuthService} authService authentication service
-   * @param {UserService} userService user service
    */
-  constructor(
-    private readonly authService: AuthService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   /**
    * Login route to validate and create tokens for users

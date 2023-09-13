@@ -8,11 +8,12 @@ import { ObjectId } from "mongodb";
 import { RemovePermissionDto } from "../payload/removePermission.payload";
 import { Role } from "@src/modules/common/enum/roles.enum";
 import { ConfigService } from "@nestjs/config";
-import { CommonUserRepository } from "@src/modules/common/repository/common-user.repository";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { RedisService } from "@src/modules/common/services/redis.service";
 import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { TeamUserService } from "@src/modules/team/services/team-user.service";
+import { UserRepository } from "@src/modules/user/user.repository";
+import { WorkspaceRepository } from "@src/modules/workspace/workspace.repository";
 /**
  * Permission Service
  */
@@ -22,10 +23,11 @@ export class PermissionService {
   constructor(
     private readonly permissionRepository: PermissionRepository,
     private readonly contextService: ContextService,
-    private readonly commonUserRepository: CommonUserRepository,
+    private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
     private readonly teamUserService: TeamUserService,
+    private readonly workspaceRepository: WorkspaceRepository,
   ) {
     this.userBlacklistPrefix = this.configService.get(
       "app.userBlacklistPrefix",
@@ -76,7 +78,7 @@ export class PermissionService {
     await this.userHasPermission(userPermissions, permissionData);
     // const filter = new ObjectId(permissionData.userId);
     const workspaceId = new ObjectId(permissionData.workspaceId);
-    const workspaceData = await this.commonUserRepository.findWorkspaceById(
+    const workspaceData = await this.workspaceRepository.findWorkspaceById(
       workspaceId,
     );
     if (workspaceData.owner.type === WorkspaceType.PERSONAL) {
@@ -114,7 +116,7 @@ export class PermissionService {
     const userPermissions = this.contextService.get("user").permissions;
     await this.hasPermissionToRemove(userPermissions, permissionData);
     const filter = new ObjectId(permissionData.userId);
-    const userData = await this.commonUserRepository.findUserByUserId(filter);
+    const userData = await this.userRepository.findUserByUserId(filter);
     const updatedPermissions = [...userData.permissions];
     const filteredPermissionsData = updatedPermissions.filter(
       (item) => item.workspaceId !== permissionData.workspaceId,
@@ -122,7 +124,7 @@ export class PermissionService {
     const updatedPermissionParams = {
       permissions: filteredPermissionsData,
     };
-    const response = await this.commonUserRepository.updateUserById(
+    const response = await this.userRepository.updateUserById(
       filter,
       updatedPermissionParams,
     );
@@ -136,7 +138,7 @@ export class PermissionService {
     const userPermissions = this.contextService.get("user").permissions;
     await this.userHasPermission(userPermissions, permissionData);
     const filter = new ObjectId(permissionData.userId);
-    const userData = await this.commonUserRepository.findUserByUserId(filter);
+    const userData = await this.userRepository.findUserByUserId(filter);
     const updatedPermissions = [...userData.permissions];
     updatedPermissions.map((item: any, value: number) => {
       if (item.workspaceId === permissionData.workspaceId) {
@@ -146,7 +148,7 @@ export class PermissionService {
     const updatedPermissionParams = {
       permissions: updatedPermissions,
     };
-    const response = await this.commonUserRepository.updateUserById(
+    const response = await this.userRepository.updateUserById(
       filter,
       updatedPermissionParams,
     );
