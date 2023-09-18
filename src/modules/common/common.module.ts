@@ -4,6 +4,7 @@ import { ContextService } from "./services/context.service";
 import { Redis } from "ioredis";
 import { ConfigService } from "@nestjs/config";
 import { RedisService } from "./services/redis.service";
+import { AzureServiceBusService } from "./services/azureBusService/azure-service-bus.service";
 @Global()
 @Module({
   imports: [],
@@ -31,9 +32,21 @@ import { RedisService } from "./services/redis.service";
           db: configService.get("redis.db"),
         }),
     },
+    AzureServiceBusService,
     ContextService,
     RedisService,
+    {
+      provide: "QUEUE_NAME",
+      useValue: "",
+    },
   ],
-  exports: ["DATABASE_CONNECTION", Redis, ContextService, RedisService],
+  exports: [
+    "DATABASE_CONNECTION",
+    "QUEUE_NAME",
+    Redis,
+    ContextService,
+    RedisService,
+    AzureServiceBusService,
+  ],
 })
 export class CommonModule {}
