@@ -1,56 +1,49 @@
 import { Injectable } from "@nestjs/common";
 import {
+  ProcessErrorArgs,
   ServiceBusClient,
+  ServiceBusReceivedMessage,
   ServiceBusReceiver,
   ServiceBusSender,
 } from "@azure/service-bus";
-import { QUEUE } from "../../enum/queue.enum";
-import { WorkspaceHandler } from "./handlers/workspace.handler";
 
 @Injectable()
 export class AzureServiceBusService {
   private readonly sbClient: ServiceBusClient;
   private sender: ServiceBusSender;
   private receiver: ServiceBusReceiver;
-
-  // private readonly
   private readonly connectionString: string;
-
-  constructor(private readonly workspaceHandler: WorkspaceHandler) {
-    this.connectionString =
-      "Endpoint=sb://sparrow-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=PIfthMfnQm1E1A+MpjlZh4EnRhcOUSDad+ASbAikdhs=";
+  constructor() {
+    this.connectionString = process.env.AZURE_CONNECTION_STRING;
     this.sbClient = new ServiceBusClient(this.connectionString);
-    this.subscribe(QUEUE.EVENT);
   }
 
-  async createSender(queueName: string) {
-    this.sender = this.sbClient.createSender(queueName);
+  async createSender(topicName: string) {
+    this.sender = this.sbClient.createSender(topicName);
     return;
   }
 
-  async subscribe(queueName: string) {
-    this.receiver = this.sbClient.createReceiver(queueName, {
-      receiveMode: "receiveAndDelete",
-    });
-    this.receiver.subscribe({
-      processMessage: async (data) =>
-        await this.workspaceHandler.workspaceMessageSuccess(data.body),
-      processError: async (err) =>
-        await this.workspaceHandler.workspaceMessageFailure(err),
-    });
-  }
-
-  async sendMessage(queueName: string, message: any): Promise<void> {
-    this.createSender(queueName);
+  async sendMessage(topicName: string, message: any): Promise<void> {
+    this.createSender(topicName);
     const messageBody = {
       contentType: "application/json",
       body: message,
     };
     await this.sender.sendMessages(messageBody);
+    await this.sender.close();
     return;
   }
-  //   await delay(20000);
-  //   await this.receiver.close();
-  //   await this.sender.close();
-  //   await this.sbClient.close();
+
+  async receiveSubscriber(
+    topicName: string,
+    subscription: string,
+    processMessage: (arg0: ServiceBusReceivedMessage) => void,
+    processError: (arg0: ProcessErrorArgs) => void,
+  ) {
+    this.receiver = this.sbClient.createReceiver(topicName, subscription);
+    this.receiver.subscribe({
+      processMessage: async (data) => await processMessage(data.body),
+      processError: async (err) => await processError(err),
+    });
+  }
 }

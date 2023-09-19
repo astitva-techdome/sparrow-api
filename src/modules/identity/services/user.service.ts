@@ -71,8 +71,7 @@ export class UserService {
       name: this.configService.get("app.defaultWorkspaceName"),
       type: WorkspaceType.PERSONAL,
     };
-    await this.azureServiceBusService.sendMessage("eventbus", workspaceObj);
-    // await this.changeService();
+    await this.azureServiceBusService.sendMessage("commontopic", workspaceObj);
     // await this.workspaceService.create(workspaceObj);
     return token;
   }

@@ -5,7 +5,6 @@ import { Redis } from "ioredis";
 import { ConfigService } from "@nestjs/config";
 import { RedisService } from "./services/redis.service";
 import { AzureServiceBusService } from "./services/azureBus/azure-service-bus.service";
-import { WorkspaceHandler } from "./services/azureBus/handlers/workspace.handler";
 import { WorkspaceModule } from "../workspace/workspace.module";
 
 @Global()
@@ -38,7 +37,6 @@ import { WorkspaceModule } from "../workspace/workspace.module";
     AzureServiceBusService,
     ContextService,
     RedisService,
-    WorkspaceHandler,
   ],
   exports: [
     "DATABASE_CONNECTION",
