@@ -4,10 +4,13 @@ import { ContextService } from "./services/context.service";
 import { Redis } from "ioredis";
 import { ConfigService } from "@nestjs/config";
 import { RedisService } from "./services/redis.service";
-import { AzureServiceBusService } from "./services/azureBusService/azure-service-bus.service";
+import { AzureServiceBusService } from "./services/azureBus/azure-service-bus.service";
+import { WorkspaceHandler } from "./services/azureBus/handlers/workspace.handler";
+import { WorkspaceModule } from "../workspace/workspace.module";
+
 @Global()
 @Module({
-  imports: [],
+  imports: [WorkspaceModule],
   controllers: [],
   providers: [
     {
@@ -35,14 +38,10 @@ import { AzureServiceBusService } from "./services/azureBusService/azure-service
     AzureServiceBusService,
     ContextService,
     RedisService,
-    {
-      provide: "QUEUE_NAME",
-      useValue: "",
-    },
+    WorkspaceHandler,
   ],
   exports: [
     "DATABASE_CONNECTION",
-    "QUEUE_NAME",
     Redis,
     ContextService,
     RedisService,

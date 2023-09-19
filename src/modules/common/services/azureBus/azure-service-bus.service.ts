@@ -5,59 +5,52 @@ import {
   ServiceBusSender,
 } from "@azure/service-bus";
 import { QUEUE } from "../../enum/queue.enum";
-import { WorkspaceHandler } from "./workspace.handler";
+import { WorkspaceHandler } from "./handlers/workspace.handler";
 
 @Injectable()
 export class AzureServiceBusService {
   private readonly sbClient: ServiceBusClient;
   private sender: ServiceBusSender;
   private receiver: ServiceBusReceiver;
-  private readonly workspaceHandler: WorkspaceHandler;
+
   // private readonly
   private readonly connectionString: string;
 
-  constructor() {
+  constructor(private readonly workspaceHandler: WorkspaceHandler) {
     this.connectionString =
       "Endpoint=sb://sparrow-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=PIfthMfnQm1E1A+MpjlZh4EnRhcOUSDad+ASbAikdhs=";
     this.sbClient = new ServiceBusClient(this.connectionString);
+    this.subscribe(QUEUE.EVENT);
   }
 
-  async createSenderAndReceiver(queueName: string) {
+  async createSender(queueName: string) {
     this.sender = this.sbClient.createSender(queueName);
+    return;
+  }
+
+  async subscribe(queueName: string) {
     this.receiver = this.sbClient.createReceiver(queueName, {
       receiveMode: "receiveAndDelete",
     });
-    this.subscribe(queueName);
-  }
-
-  async subscribe(queue: string) {
-    switch (queue) {
-      case QUEUE.EVENT:
-        this.receiver.subscribe({
-          processMessage: (data) =>
-            this.workspaceHandler.workspaceMessageSuccess(data),
-          processError: (err) =>
-            this.workspaceHandler.workspaceMessageFailure(err),
-        });
-        break;
-      default:
-        break;
-    }
+    this.receiver.subscribe({
+      processMessage: async (data) =>
+        await this.workspaceHandler.workspaceMessageSuccess(data.body),
+      processError: async (err) =>
+        await this.workspaceHandler.workspaceMessageFailure(err),
+    });
   }
 
   async sendMessage(queueName: string, message: any): Promise<void> {
-    this.createSenderAndReceiver(queueName);
+    this.createSender(queueName);
     const messageBody = {
       contentType: "application/json",
       body: message,
     };
     await this.sender.sendMessages(messageBody);
-    await this.sender.close();
+    return;
   }
-
-  // async receiveMessage(): Promise<string | null> {
-  //   const messages = await this.receiver.receiveMessages(1);
+  //   await delay(20000);
   //   await this.receiver.close();
-  //   return messages.length > 0 ? messages[0].body : null;
-  // }
+  //   await this.sender.close();
+  //   await this.sbClient.close();
 }

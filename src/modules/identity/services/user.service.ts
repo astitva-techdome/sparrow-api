@@ -5,7 +5,7 @@ import { RegisterPayload } from "../payloads/register.payload";
 import { ConfigService } from "@nestjs/config";
 import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
-import { AzureServiceBusService } from "@src/modules/common/services/azureBusService/azure-service-bus.service";
+import { AzureServiceBusService } from "@src/modules/common/services/azureBus/azure-service-bus.service";
 export interface IGenericMessageBody {
   message: string;
 }

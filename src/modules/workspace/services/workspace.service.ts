@@ -11,7 +11,6 @@ import { Role } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
-import { AzureServiceBusService } from "@src/modules/common/services/azureBusService/azure-service-bus.service";
 
 /**
  * Workspace Service
@@ -23,7 +22,6 @@ export class WorkspaceService {
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
     private readonly permissionService: PermissionService,
-    private readonly azureServiceBusService: AzureServiceBusService,
   ) {}
 
   /**
@@ -32,41 +30,6 @@ export class WorkspaceService {
    */
   async get(id: string) {
     return await this.workspaceRepository.get(id);
-  }
-
-  async eventReciever() {
-    // const connectionString =
-    //   "Endpoint=sb://sparrow-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=PIfthMfnQm1E1A+MpjlZh4EnRhcOUSDad+ASbAikdhs=";
-    // const queueName = "eventbus";
-    // const sbClient = new ServiceBusClient(connectionString);
-    // const receiver = sbClient.createReceiver(queueName, {
-    //   receiveMode: "peekLock",
-    // });
-    // const response = await this.azureServiceBusService.receiveMessage(
-    //   queueName,
-    // );
-    // await this.create(response);
-    // receiver.subscribe({
-    //   processMessage: this.myMessageHandler,
-    //   processError: this.myErrorHandler,
-    // });
-    // const messages = await receiver.receiveMessages(1);
-    // await receiver.completeMessage(
-    //   messages as unknown as ServiceBusReceivedMessage,
-    // );
-    // await receiver.close();
-    // await sbClient.close();
-    // await this.create(messages)
-  }
-
-  async myMessageHandler(messageReceived: any) {
-    console.log(`Received message: ${messageReceived.body}`);
-    await this.create(messageReceived.body);
-  }
-
-  // function to handle any errors
-  async myErrorHandler(error: any) {
-    console.log(error);
   }
 
   async checkPermissions(teamData: Team) {

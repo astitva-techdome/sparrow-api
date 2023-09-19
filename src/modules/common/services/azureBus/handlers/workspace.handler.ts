@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { WorkspaceService } from "@src/modules/workspace/services/workspace.service";
-// import { Redis } from "ioredis";
+
 @Injectable()
 export class WorkspaceHandler {
   constructor(private readonly workspaceService: WorkspaceService) {}
