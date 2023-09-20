@@ -1,13 +1,11 @@
 import { Controller, Body, Post, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
-// import { PermissionService } from "./services/permission.service";
 import { PermissionService } from "../services/permission.service";
-// import { CreateOrUpdatePermissionDto } from "./payload/permission.payload";
 import { CreateOrUpdatePermissionDto } from "../../identity/payloads/permission.payload";
 import { AuthGuard } from "@nestjs/passport";
 
 /**
- * Team Controller
+ * Permission Controller
  */
 @ApiBearerAuth()
 @ApiTags("permission")

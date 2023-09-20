@@ -14,7 +14,6 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { WorkspaceService } from "../services/workspace.service";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import { BlacklistGuard } from "../../common/guards/blacklist.guard";
-// import { PermissionService } from "../permission/services/permission.service";
 import { PermissionService } from "../services/permission.service";
 import { AddWorkspaceUserDto } from "../payloads/workspaceUser.payload";
 

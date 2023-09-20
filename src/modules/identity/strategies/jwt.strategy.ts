@@ -3,11 +3,8 @@ import { PassportStrategy } from "@nestjs/passport";
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Db, ObjectId } from "mongodb";
-// import { JwtPayload } from "./payload/jwt.payload";
 import { JwtPayload } from "../payloads/jwt.payload";
-// import { Collections } from "../common/enum/database.collection.enum";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
-// import { ContextService } from "../common/services/context.service";
 import { ContextService } from "@src/modules/common/services/context.service";
 
 /**

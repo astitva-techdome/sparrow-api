@@ -1,13 +1,9 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-// import { TeamRepository } from "../team.repository";
 import { TeamRepository } from "../repositories/team.repository";
-// import { CreateOrUpdateTeamUserDto } from "../payload/teamUser.payload";
 import { CreateOrUpdateTeamUserDto } from "../payloads/teamUser.payload";
 import { ObjectId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { Role } from "@src/modules/common/enum/roles.enum";
-// import { PermissionService } from "@src/modules/permission/services/permission.service";
-// import { UserRepository } from "@src/modules/user/user.repository";
 import { UserRepository } from "../repositories/user.repository";
 
 /**
@@ -18,7 +14,6 @@ export class TeamUserService {
   constructor(
     private readonly teamRepository: TeamRepository,
     private readonly contextService: ContextService,
-    // private readonly permissionService: PermissionService,
     private readonly userRepository: UserRepository,
   ) {}
 
@@ -79,12 +74,6 @@ export class TeamUserService {
         });
       }
     }
-    // teamWorkspaces.map((item: any) => {
-    //   userPermissions.push({
-    //     role: payload.role ?? Role.READER,
-    //     workspaceId: item.id,
-    //   });
-    // });
     const updateUserParams = {
       teams: updatedTeams,
       permissions: userPermissions,
@@ -118,13 +107,6 @@ export class TeamUserService {
       teams: userFilteredTeams,
     };
     await this.userRepository.updateUserById(userFilter, userUpdatedParams);
-    // const userPermissions = [...teamData.workspaces];
-    // for (const item of userPermissions) {
-    //   // await this.permissionService.remove({
-    //   //   userId: userData._id.toString(),
-    //   //   workspaceId: item.id,
-    //   // });
-    // }
     return "User Removed";
   }
 }

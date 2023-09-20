@@ -9,15 +9,10 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
-// import { TeamService } from "./services/team.service";
 import { TeamService } from "../services/team.service";
-// import { CreateOrUpdateTeamDto } from "./payload/team.payload";
 import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
 import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
-// import { BlacklistGuard } from "../common/guards/blacklist.guard";
-// import { TeamUserService } from "./services/team-user.service";
 import { TeamUserService } from "../services/team-user.service";
-// import { CreateOrUpdateTeamUserDto } from "./payload/teamUser.payload";
 import { CreateOrUpdateTeamUserDto } from "../payloads/teamUser.payload";
 
 /**

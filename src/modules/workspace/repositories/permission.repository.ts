@@ -1,9 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
-
-// import { Team } from "../common/models/team.model";
 import { Team } from "@src/modules/common/models/team.model";
-// import { Collections } from "../common/enum/database.collection.enum";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 /**
  * Permission Repository

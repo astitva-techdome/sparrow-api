@@ -23,7 +23,6 @@ import { ContextService } from "@src/modules/common/services/context.service";
 import { RedisService } from "@src/modules/common/services/redis.service";
 import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { UserRepository } from "../../identity/repositories/user.repository";
-// import { WorkspaceRepository } from "@src/modules/workspace/workspace.repository";
 import { WorkspaceRepository } from "@src/modules/workspace/repositories/workspace.repository";
 import { TeamRepository } from "../../identity/repositories/team.repository";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
@@ -49,13 +48,10 @@ export class PermissionService {
     );
   }
 
-  async userHasPermission(
-    permissionArray: [PermissionDto],
-    permissionData: CreateOrUpdatePermissionDto,
-  ) {
+  async userHasPermission(permissionArray: [PermissionDto], userId: ObjectId) {
     for (const item of permissionArray) {
       if (
-        item.workspaceId.toString() === permissionData.workspaceId.toString() &&
+        item.userId.toString() === userId.toString() &&
         item.role === Role.ADMIN
       ) {
         return true;
@@ -72,7 +68,7 @@ export class PermissionService {
   ) {
     for (const item of permissionArray) {
       if (
-        item.workspaceId === permissionData.workspaceId &&
+        item.userId.toString() === permissionData.workspaceId.toString() &&
         item.role === Role.ADMIN
       ) {
         return true;
@@ -89,24 +85,19 @@ export class PermissionService {
    * @returns {Promise<InsertOneWriteOpResult<Permission>>} result of the insert operation
    */
   async create(permissionData: CreateOrUpdatePermissionDto) {
-    const userPermissions = this.contextService.get("user").permissions;
-    await this.userHasPermission(userPermissions, permissionData);
+    const currentUserId = this.contextService.get("user")._id;
     new ObjectId(permissionData.userId);
     const workspaceId = new ObjectId(permissionData.workspaceId);
     const workspaceData = await this.workspaceRepository.findWorkspaceById(
       workspaceId,
     );
+    const userPermissions = workspaceData.permissions;
+    await this.userHasPermission(userPermissions, currentUserId);
     if (workspaceData.owner.type === WorkspaceType.PERSONAL) {
       throw new BadRequestException(
         "You cannot add memebers in Personal Workspace.",
       );
     }
-    // const permissionParams = {
-    //   // teamId: workspaceData.owner.id,
-    //   role: permissionData.role,
-    //   userId: permissionData.userId,
-    //   workspaceId: permissionData.workspaceId,
-    // };
     workspaceData.permissions.push({
       role: permissionData.role,
       userId: permissionData.userId,
@@ -168,7 +159,8 @@ export class PermissionService {
 
   async update(permissionData: CreateOrUpdatePermissionDto) {
     const userPermissions = this.contextService.get("user").permissions;
-    await this.userHasPermission(userPermissions, permissionData);
+    const currentUserId = this.contextService.get("user")._id;
+    await this.userHasPermission(userPermissions, currentUserId);
     const filter = new ObjectId(permissionData.userId);
     const userData = await this.userRepository.findUserByUserId(filter);
     const updatedPermissions = [...userData.permissions];

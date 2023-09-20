@@ -45,8 +45,6 @@ import { TeamController } from "./controllers/team.controller";
     TeamService,
     TeamUserService,
     TeamRepository,
-    // PermissionService,
-    // PermissionRepository,
   ],
   exports: [
     PassportModule.register({ defaultStrategy: "jwt" }),
@@ -56,14 +54,7 @@ import { TeamController } from "./controllers/team.controller";
     TeamService,
     TeamUserService,
     TeamRepository,
-    // PermissionService,
-    // PermissionRepository,
   ],
-  controllers: [
-    AuthController,
-    UserController,
-    // PermissionController,
-    TeamController,
-  ],
+  controllers: [AuthController, UserController, TeamController],
 })
 export class IdentityModule {}

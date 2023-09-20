@@ -27,5 +27,5 @@ export class PermissionDto {
 
   @IsMongoId()
   @IsNotEmpty()
-  workspaceId: string;
+  userId: string;
 }

@@ -17,12 +17,9 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
-    // private readonly workspaceService: WorkspaceService,
     private readonly authService: AuthService,
     private readonly azureServiceBusService: AzureServiceBusService,
-  ) {
-    // new AzureServiceBusService("eventbus");
-  }
+  ) {}
 
   /**
    * Fetches a user from database by UUID
@@ -58,7 +55,6 @@ export class UserService {
    * @returns {Promise<IUser>} created user data
    */
   async createUser(payload: RegisterPayload) {
-    // const queueName = "eventbus";
     const user = await this.getUserByEmail(payload.email);
     if (user) {
       throw new NotAcceptableException(
@@ -72,7 +68,6 @@ export class UserService {
       type: WorkspaceType.PERSONAL,
     };
     await this.azureServiceBusService.sendMessage("commontopic", workspaceObj);
-    // await this.workspaceService.create(workspaceObj);
     return token;
   }
 

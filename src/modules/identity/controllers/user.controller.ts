@@ -11,13 +11,9 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
-// import { UserService } from "./services/user.service";
 import { UserService } from "../services/user.service";
-// import { RegisterPayload } from "../auth/payload/register.payload";
 import { RegisterPayload } from "../payloads/register.payload";
-// import { UpdateUserDto } from "./payload/user.payload";
 import { UpdateUserDto } from "../payloads/user.payload";
-// import { BlacklistGuard } from "../common/guards/blacklist.guard";
 import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 
 /**

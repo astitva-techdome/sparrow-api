@@ -4,7 +4,6 @@ import { Workspace } from "../../common/models/workspace.model";
 import { Collections } from "../../common/enum/database.collection.enum";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import { ContextService } from "../../common/services/context.service";
-// import { PermissionService } from "../permission/services/permission.service";
 /**
  * Models a typical response for a crud operation
  */
