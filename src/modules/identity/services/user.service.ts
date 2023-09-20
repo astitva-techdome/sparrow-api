@@ -5,7 +5,8 @@ import { RegisterPayload } from "../payloads/register.payload";
 import { ConfigService } from "@nestjs/config";
 import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
-import { AzureServiceBusService } from "@src/modules/common/services/azureBus/azure-service-bus.service";
+import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
+import { TOPIC } from "@src/modules/common/enum/topic.enum";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -18,7 +19,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
-    private readonly azureServiceBusService: AzureServiceBusService,
+    private readonly azureBusService: AzureBusService,
   ) {}
 
   /**
@@ -67,7 +68,10 @@ export class UserService {
       name: this.configService.get("app.defaultWorkspaceName"),
       type: WorkspaceType.PERSONAL,
     };
-    await this.azureServiceBusService.sendMessage("commontopic", workspaceObj);
+    await this.azureBusService.sendMessage(
+      TOPIC.CREATE_USER_WORKSPACE_TOPIC,
+      workspaceObj,
+    );
     return token;
   }
 

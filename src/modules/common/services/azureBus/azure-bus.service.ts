@@ -8,7 +8,7 @@ import {
 } from "@azure/service-bus";
 
 @Injectable()
-export class AzureServiceBusService {
+export class AzureBusService {
   private readonly sbClient: ServiceBusClient;
   private sender: ServiceBusSender;
   private receiver: ServiceBusReceiver;

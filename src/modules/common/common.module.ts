@@ -4,7 +4,7 @@ import { ContextService } from "./services/context.service";
 import { Redis } from "ioredis";
 import { ConfigService } from "@nestjs/config";
 import { RedisService } from "./services/redis.service";
-import { AzureServiceBusService } from "./services/azureBus/azure-service-bus.service";
+import { AzureBusService } from "./services/azureBus/azure-bus.service";
 import { WorkspaceModule } from "../workspace/workspace.module";
 
 @Global()
@@ -34,7 +34,7 @@ import { WorkspaceModule } from "../workspace/workspace.module";
           db: configService.get("redis.db"),
         }),
     },
-    AzureServiceBusService,
+    AzureBusService,
     ContextService,
     RedisService,
   ],
@@ -43,7 +43,7 @@ import { WorkspaceModule } from "../workspace/workspace.module";
     Redis,
     ContextService,
     RedisService,
-    AzureServiceBusService,
+    AzureBusService,
   ],
 })
 export class CommonModule {}

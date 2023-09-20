@@ -19,4 +19,7 @@ export default () => ({
     port: process.env.REDIS_PORT,
     db: process.env.REDIS_DB,
   },
+  azure: {
+    connectionString: process.env.AZURE_CONNECTION_STRING,
+  },
 });

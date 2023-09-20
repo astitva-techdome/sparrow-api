@@ -2,18 +2,22 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { WorkspaceService } from "../services/workspace.service";
 import { ServiceBusClient } from "@azure/service-bus";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
-import { AzureServiceBusService } from "@src/modules/common/services/azureBus/azure-service-bus.service";
+import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { SUBSCRIPTION } from "@src/modules/common/enum/subscription.enum";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class WorkspaceHandler {
   private readonly sbClient: ServiceBusClient;
   constructor(
     private readonly workspaceService: WorkspaceService,
-    private readonly azureServiceBusService: AzureServiceBusService,
+    private readonly azureBusService: AzureBusService,
+    private readonly configService: ConfigService,
   ) {
-    this.sbClient = new ServiceBusClient(process.env.AZURE_CONNECTION_STRING);
-    this.subscribe(TOPIC.COMMON);
+    this.sbClient = new ServiceBusClient(
+      this.configService.get("azure.connectionString"),
+    );
+    this.subscribe(TOPIC.CREATE_USER_WORKSPACE_TOPIC);
   }
   workspaceMessageSuccess = async (data: any) => {
     await this.workspaceService.create(data);
@@ -22,9 +26,9 @@ export class WorkspaceHandler {
     throw new BadRequestException(err);
   };
   async subscribe(topicName: string) {
-    await this.azureServiceBusService.receiveSubscriber(
+    await this.azureBusService.receiveSubscriber(
       topicName,
-      SUBSCRIPTION.WORKSPACE,
+      SUBSCRIPTION.CREATE_USER_WORKSPACE_SUBSCRIPTION,
       this.workspaceMessageSuccess,
       this.workspaceMessageFailure,
     );

@@ -16,12 +16,7 @@ import { WorkspaceHandler } from "./handlers/workspace.handler";
     PermissionRepository,
     WorkspaceHandler,
   ],
-  exports: [
-    WorkspaceService,
-    WorkspaceRepository,
-    PermissionService,
-    PermissionRepository,
-  ],
+  exports: [],
   controllers: [WorkSpaceController, PermissionController],
 })
 export class WorkspaceModule {}
