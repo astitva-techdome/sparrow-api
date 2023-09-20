@@ -34,11 +34,6 @@ export class User {
   authProviders?: AuthProvider[];
 
   @IsArray()
-  @Type(() => PermissionDto)
-  @ValidateNested({ each: true })
-  permissions: PermissionDto[];
-
-  @IsArray()
   @Type(() => TeamDto)
   @ValidateNested({ each: true })
   teams: TeamDto[];

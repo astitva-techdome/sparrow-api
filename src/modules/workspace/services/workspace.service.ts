@@ -1,12 +1,28 @@
 import { Injectable } from "@nestjs/common";
-import { WorkspaceRepository } from "../workspace.repository";
-import { CreateOrUpdateWorkspaceDto } from "../payload/workspace.payload";
+import { WorkspaceRepository } from "../repositories/workspace.repository";
+import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
+import {
+  OwnerInformationDto,
+  WorkspaceType,
+} from "@src/modules/common/models/workspace.model";
+import { ContextService } from "@src/modules/common/services/context.service";
+import { ObjectId } from "mongodb";
+import { Role } from "@src/modules/common/enum/roles.enum";
+import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
+import { PermissionService } from "@src/modules/workspace/services/permission.service";
+import { Team } from "@src/modules/common/models/team.model";
+
 /**
  * Workspace Service
  */
 @Injectable()
 export class WorkspaceService {
-  constructor(private readonly workspaceRepository: WorkspaceRepository) {}
+  constructor(
+    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly contextService: ContextService,
+    private readonly teamRepository: TeamRepository,
+    private readonly permissionService: PermissionService,
+  ) {}
 
   /**
    * Fetches a workspace from database by UUID
@@ -16,13 +32,93 @@ export class WorkspaceService {
     return await this.workspaceRepository.get(id);
   }
 
+  async checkPermissions(teamData: Team) {
+    const teamOwners = teamData.owners;
+    const teamUsers = teamData.users;
+    const permissionArray = [];
+    for (const item of teamOwners) {
+      for (const user of teamUsers) {
+        let permissionObject;
+        if (user.id.toString() === item.toString()) {
+          permissionObject = {
+            role: Role.ADMIN,
+            id: user.id,
+          };
+          permissionArray.push(permissionObject);
+        } else {
+          permissionObject = {
+            role: Role.READER,
+            id: user.id,
+          };
+          permissionArray.push(permissionObject);
+        }
+      }
+    }
+    return permissionArray;
+  }
+
   /**
    * Creates a new workspace in the database
    * @param {CreateOrUpdateWorkspaceDto} workspaceData
    * @returns {Promise<InsertOneWriteOpResult<Workspace>>} result of the insert operation
    */
   async create(workspaceData: CreateOrUpdateWorkspaceDto) {
-    return await this.workspaceRepository.create(workspaceData);
+    const userId = this.contextService.get("user")._id;
+    const teamId = new ObjectId(workspaceData.id);
+    let teamData;
+    let permissionDataForTeam;
+    if (workspaceData.type === WorkspaceType.TEAM) {
+      teamData = await this.permissionService.isTeamOwner(teamId);
+      permissionDataForTeam = await this.checkPermissions(
+        teamData as unknown as Team,
+      );
+    }
+    const ownerInfo: OwnerInformationDto = {
+      id:
+        workspaceData.type === WorkspaceType.PERSONAL
+          ? userId
+          : workspaceData.id,
+      name:
+        workspaceData.type === WorkspaceType.PERSONAL
+          ? this.contextService.get("user").name
+          : teamData.name,
+      type: workspaceData.type as WorkspaceType,
+    };
+    const permissionForUser = [
+      {
+        role: Role.ADMIN,
+        userId: userId,
+      },
+    ];
+    const params = {
+      name: workspaceData.name,
+      owner: ownerInfo,
+      permissions:
+        workspaceData.type === WorkspaceType.PERSONAL
+          ? permissionForUser
+          : permissionDataForTeam,
+      createdAt: new Date(),
+      createdBy: userId,
+    };
+    const response = await this.workspaceRepository.addWorkspace(params);
+    if (workspaceData.type === WorkspaceType.TEAM) {
+      const teamWorkspaces = [...teamData.workspaces];
+      teamWorkspaces.push({
+        id: response.insertedId,
+        name: workspaceData.name,
+      });
+      const updateTeamParams = {
+        workspaces: teamWorkspaces,
+      };
+      await this.teamRepository.updateTeamById(teamId, updateTeamParams);
+      const addPermissionPayload = {
+        role: Role.ADMIN,
+        workspaceId: response.insertedId.toString(),
+        userId: userId.toString(),
+      };
+      await this.permissionService.addPermissionInUser(addPermissionPayload);
+    }
+    return response;
   }
 
   /**
