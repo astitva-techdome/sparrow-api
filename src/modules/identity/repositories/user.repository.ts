@@ -1,15 +1,10 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
-// import { Collections } from "../common/enum/database.collection.enum";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { createHmac } from "crypto";
-// import { RegisterPayload } from "../auth/payload/register.payload";
 import { RegisterPayload } from "../payloads/register.payload";
-// import { UpdateUserDto, UserDto } from "./payload/user.payload";
 import { UpdateUserDto, UserDto } from "../payloads/user.payload";
-// import { User } from "../common/models/user.model";
 import { User } from "@src/modules/common/models/user.model";
-// import { ContextService } from "../common/services/context.service";
 import { ContextService } from "@src/modules/common/services/context.service";
 
 export interface IGenericMessageBody {

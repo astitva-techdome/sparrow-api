@@ -1,21 +1,10 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-// import { PermissionRepository } from "../permission.repository";
 import { PermissionRepository } from "../repositories/permission.repository";
-// import {
-//   CreateOrUpdatePermissionDto,
-//   PermissionDto,
-// } from "../payload/permission.payload";
-// import {
-//   CreateOrUpdatePermissionDto,
-//   PermissionDto,
-// } from "../../identity/payloads/permission.payload";
 import {
   CreateOrUpdatePermissionDto,
   PermissionDto,
 } from "../payloads/permission.payload";
 import { ObjectId } from "mongodb";
-// import { RemovePermissionDto } from "../payload/removePermission.payload";
-// import { RemovePermissionDto } from "../payloads/removePermission.payload";
 import { RemovePermissionDto } from "../payloads/removePermission.payload";
 import { Role } from "@src/modules/common/enum/roles.enum";
 import { ConfigService } from "@nestjs/config";

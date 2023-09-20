@@ -22,7 +22,7 @@ export class WorkspaceRepository {
   constructor(
     @Inject("DATABASE_CONNECTION")
     private db: Db,
-    private contextService: ContextService, // private permissionService: PermissionService,
+    private contextService: ContextService,
   ) {}
 
   /**
