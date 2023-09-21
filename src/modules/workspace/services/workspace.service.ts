@@ -111,12 +111,6 @@ export class WorkspaceService {
         workspaces: teamWorkspaces,
       };
       await this.teamRepository.updateTeamById(teamId, updateTeamParams);
-      const addPermissionPayload = {
-        role: Role.ADMIN,
-        workspaceId: response.insertedId.toString(),
-        userId: userId.toString(),
-      };
-      await this.permissionService.addPermissionInUser(addPermissionPayload);
     }
     return response;
   }
