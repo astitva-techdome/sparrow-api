@@ -69,7 +69,7 @@ export class UserService {
       type: WorkspaceType.PERSONAL,
     };
     await this.azureBusService.sendMessage(
-      TOPIC.CREATE_USER_WORKSPACE_TOPIC,
+      TOPIC.USER_CREATED_TOPIC,
       workspaceObj,
     );
     return token;
