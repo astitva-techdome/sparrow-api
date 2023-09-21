@@ -2,7 +2,10 @@ import { Inject, Injectable } from "@nestjs/common";
 import { Db, ObjectId } from "mongodb";
 import { Workspace } from "../../common/models/workspace.model";
 import { Collections } from "../../common/enum/database.collection.enum";
-import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
+import {
+  CreateOrUpdateWorkspaceDto,
+  WorkspaceDtoForIdDocument,
+} from "../payloads/workspace.payload";
 import { ContextService } from "../../common/services/context.service";
 /**
  * Models a typical response for a crud operation
@@ -48,6 +51,29 @@ export class WorkspaceRepository {
     const response = await this.db
       .collection(Collections.WORKSPACE)
       .findOne({ _id: id });
+    return response;
+  }
+
+  async findWorkspacesByIdArray(IdArray: Array<ObjectId>) {
+    const response = await this.db
+      .collection(Collections.WORKSPACE)
+      .find({ _id: { $in: IdArray } })
+      .toArray();
+    return response;
+  }
+
+  async updateWorkspaceById(
+    id: ObjectId,
+    updatedWorkspace: WorkspaceDtoForIdDocument,
+  ) {
+    const response = await this.db
+      .collection(Collections.WORKSPACE)
+      .findOneAndUpdate(
+        { _id: id },
+        {
+          $set: updatedWorkspace,
+        },
+      );
     return response;
   }
 

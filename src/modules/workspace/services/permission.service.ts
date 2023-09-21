@@ -10,13 +10,20 @@ import { Role } from "@src/modules/common/enum/roles.enum";
 import { ConfigService } from "@nestjs/config";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { RedisService } from "@src/modules/common/services/redis.service";
-import { WorkspaceType } from "@src/modules/common/models/workspace.model";
+import {
+  WorkspaceDto,
+  WorkspaceType,
+} from "@src/modules/common/models/workspace.model";
 import { UserRepository } from "../../identity/repositories/user.repository";
 import { WorkspaceRepository } from "@src/modules/workspace/repositories/workspace.repository";
 import { TeamRepository } from "../../identity/repositories/team.repository";
-import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
+import {
+  CreateOrUpdateWorkspaceDto,
+  WorkspaceDtoForIdDocument,
+} from "../payloads/workspace.payload";
 import { UserDto } from "@src/modules/common/models/user.model";
 import { TeamDto } from "@src/modules/identity/payloads/team.payload";
+import { isString } from "class-validator";
 /**
  * Permission Service
  */
@@ -187,6 +194,36 @@ export class PermissionService {
       updatedPermissionParams,
     );
     return permissionResponse;
+  }
+
+  async addPermissionInWorkspace(
+    workspaceArray: WorkspaceDto[],
+    userId: string,
+  ) {
+    const updatedIdArray = [];
+    for (const item of workspaceArray) {
+      if (isString(item.id)) updatedIdArray.push(new ObjectId(item.id));
+      else updatedIdArray.push(item.id);
+    }
+    const workspaceDataArray =
+      await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
+    for (let index = 0; index < workspaceDataArray.length; index++) {
+      workspaceDataArray[index].permissions.push({
+        role: Role.READER,
+        userId: userId,
+      });
+    }
+    const workspaceDataPromises = [];
+
+    for (const item of workspaceDataArray) {
+      workspaceDataPromises.push(
+        this.workspaceRepository.updateWorkspaceById(
+          new ObjectId(item._id),
+          item as WorkspaceDtoForIdDocument,
+        ),
+      );
+    }
+    Promise.all(workspaceDataPromises);
   }
 
   async setAdminPermissionForOwner(_id: ObjectId) {

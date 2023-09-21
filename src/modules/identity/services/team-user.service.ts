@@ -3,8 +3,9 @@ import { TeamRepository } from "../repositories/team.repository";
 import { CreateOrUpdateTeamUserDto } from "../payloads/teamUser.payload";
 import { ObjectId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
-import { Role } from "@src/modules/common/enum/roles.enum";
 import { UserRepository } from "../repositories/user.repository";
+import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
+import { TOPIC } from "@src/modules/common/enum/topic.enum";
 
 /**
  * Team User Service
@@ -15,6 +16,7 @@ export class TeamUserService {
     private readonly teamRepository: TeamRepository,
     private readonly contextService: ContextService,
     private readonly userRepository: UserRepository,
+    private readonly azureBusService: AzureBusService,
   ) {}
 
   async HasPermission(data: Array<string>) {
@@ -56,27 +58,17 @@ export class TeamUserService {
       id: payload.teamId,
       name: teamData.name,
     });
-    const userPermissions = [...userData.permissions];
     const teamWorkspaces = [...teamData.workspaces];
-    for (const item of teamWorkspaces) {
-      if (
-        payload.role &&
-        payload.workspaceId.toString() === item.id.toString()
-      ) {
-        userPermissions.push({
-          role: payload.role,
-          workspaceId: item.id,
-        });
-      } else {
-        userPermissions.push({
-          role: Role.READER,
-          workspaceId: item.id,
-        });
-      }
-    }
+    const message = {
+      teamWorkspaces: teamWorkspaces,
+      userId: userData._id,
+    };
+    await this.azureBusService.sendMessage(
+      TOPIC.USER_ADDED_TO_TEAM_TOPIC,
+      message,
+    );
     const updateUserParams = {
       teams: updatedTeams,
-      permissions: userPermissions,
     };
     await this.userRepository.updateUserById(userFilter, updateUserParams);
     return updatedTeamResponse;

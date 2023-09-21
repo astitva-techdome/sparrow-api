@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
+import { PermissionDto } from "./permission.payload";
 
 export class CreateOrUpdateWorkspaceDto {
   @ApiProperty({
@@ -39,6 +40,44 @@ export class CreateOrUpdateWorkspaceDto {
   @IsOptional()
   @IsArray()
   users?: string[];
+
+  @IsOptional()
+  @IsArray()
+  permissions?: PermissionDto[];
+
+  @IsDateString()
+  @IsOptional()
+  createdAt?: Date;
+
+  @IsMongoId()
+  @IsOptional()
+  createdBy?: string;
+}
+
+export class WorkspaceDtoForIdDocument {
+  @IsMongoId()
+  @IsOptional()
+  id?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @IsEnum(WorkspaceType)
+  @IsNotEmpty()
+  type?: WorkspaceType;
+
+  @IsArray()
+  @IsOptional()
+  owners?: string[];
+
+  @IsOptional()
+  @IsArray()
+  users?: string[];
+
+  @IsOptional()
+  @IsArray()
+  permissions?: PermissionDto[];
 
   @IsDateString()
   @IsOptional()
