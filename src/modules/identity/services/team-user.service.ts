@@ -29,6 +29,15 @@ export class TeamUserService {
     throw new BadRequestException("You don't have access");
   }
 
+  async isUserTeamMember(userId: string, userArray: Array<any>) {
+    for (const item of userArray) {
+      if (item.id.toString() === userId) return true;
+    }
+    throw new BadRequestException(
+      "User is not part of team, first add user in Team",
+    );
+  }
+
   /**
    * Add a new user in the team
    * @param {CreateOrUpdateTeamUserDto} payload
@@ -100,5 +109,30 @@ export class TeamUserService {
     };
     await this.userRepository.updateUserById(userFilter, userUpdatedParams);
     return "User Removed";
+  }
+
+  async addOwner(payload: CreateOrUpdateTeamUserDto) {
+    const teamFilter = new ObjectId(payload.teamId);
+    const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
+    const teamOwners = [...teamData.owners];
+    await this.HasPermission(teamOwners);
+    await this.isUserTeamMember(payload.userId, teamData.users);
+    teamOwners.push(new ObjectId(payload.userId));
+    const updatedTeamData = {
+      owners: teamOwners,
+    };
+    const response = await this.teamRepository.updateTeamById(
+      teamFilter,
+      updatedTeamData,
+    );
+    const message = {
+      userId: payload.userId,
+      teamWorkspaces: teamData.workspaces,
+    };
+    await this.azureBusService.sendMessage(
+      TOPIC.TEAM_OWNER_ADDED_TOPIC,
+      message,
+    );
+    return response;
   }
 }

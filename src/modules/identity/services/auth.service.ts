@@ -35,7 +35,7 @@ export class AuthService {
    * Time in seconds when the token is to expire
    * @type {string}
    */
-  private readonly expiration: string;
+  private readonly expiration: number;
 
   /**
    * Constructor
@@ -67,13 +67,16 @@ export class AuthService {
     );
     this.contextService.set("user", user);
     return {
-      expires: this.expiration,
-      expiresPrettyPrint: AuthService.prettyPrintSeconds(this.expiration),
+      expires: this.expiration.toString(),
+      expiresPrettyPrint: AuthService.prettyPrintSeconds(
+        this.expiration.toString(),
+      ),
       token: this.jwtService.sign(
         {
           _id: insertedId,
           email: user.email,
           permissions: user.permissions,
+          exp: Date.now() / 1000 + this.expiration,
         },
         { secret: this.configService.get("app.webtokenSecretKey") },
       ),

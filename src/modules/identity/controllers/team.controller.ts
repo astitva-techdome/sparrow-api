@@ -50,8 +50,8 @@ export class TeamController {
   }
 
   @Post(":teamId/user/:userId")
-  @ApiResponse({ status: 201, description: "Team Created Successfully" })
-  @ApiResponse({ status: 400, description: "Create Team Failed" })
+  @ApiResponse({ status: 201, description: "User Added Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to add user" })
   async addUserInTeam(
     @Param("teamId") teamId: string,
     @Param("userId") userId: string,
@@ -67,5 +67,15 @@ export class TeamController {
     @Param("userId") userId: string,
   ) {
     return await this.teamUserService.removeUser({ teamId, userId });
+  }
+
+  @Post(":teamId/owner/:userId")
+  @ApiResponse({ status: 201, description: "Team Owner Added Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to add team owner" })
+  async addTeamOwner(
+    @Param("teamId") teamId: string,
+    @Param("userId") userId: string,
+  ) {
+    return await this.teamUserService.addOwner({ teamId, userId });
   }
 }
