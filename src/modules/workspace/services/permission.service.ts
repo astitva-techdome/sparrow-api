@@ -202,8 +202,11 @@ export class PermissionService {
   ) {
     const updatedIdArray = [];
     for (const item of workspaceArray) {
-      if (isString(item.id)) updatedIdArray.push(new ObjectId(item.id));
-      else updatedIdArray.push(item.id);
+      if (!isString(item.id)) {
+        updatedIdArray.push(item.id);
+        continue;
+      }
+      updatedIdArray.push(new ObjectId(item.id));
     }
     const workspaceDataArray =
       await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
@@ -214,7 +217,6 @@ export class PermissionService {
       });
     }
     const workspaceDataPromises = [];
-
     for (const item of workspaceDataArray) {
       workspaceDataPromises.push(
         this.workspaceRepository.updateWorkspaceById(
@@ -223,7 +225,7 @@ export class PermissionService {
         ),
       );
     }
-    Promise.all(workspaceDataPromises);
+    await Promise.all(workspaceDataPromises);
   }
 
   async setAdminPermissionForOwner(_id: ObjectId) {
