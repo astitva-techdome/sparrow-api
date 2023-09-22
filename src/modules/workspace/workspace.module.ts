@@ -8,6 +8,7 @@ import { PermissionRepository } from "./repositories/permission.repository";
 import { PermissionController } from "./controllers/permission.controller";
 import { WorkspaceHandler } from "./handlers/workspace.handler";
 import { PermissionHandler } from "./handlers/permission.handler";
+import { OwnerPermissionHandler } from "./handlers/ownerPermisson.handler";
 @Module({
   imports: [IdentityModule],
   providers: [
@@ -17,6 +18,7 @@ import { PermissionHandler } from "./handlers/permission.handler";
     PermissionRepository,
     WorkspaceHandler,
     PermissionHandler,
+    OwnerPermissionHandler,
   ],
   exports: [],
   controllers: [WorkSpaceController, PermissionController],

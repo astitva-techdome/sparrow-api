@@ -96,7 +96,7 @@ export class PermissionService {
     }
     workspaceData.permissions.push({
       role: permissionData.role,
-      userId: permissionData.userId,
+      id: permissionData.userId,
     });
     await this.workspaceRepository.update(
       workspaceId.toString(),
@@ -213,7 +213,7 @@ export class PermissionService {
     for (let index = 0; index < workspaceDataArray.length; index++) {
       workspaceDataArray[index].permissions.push({
         role: Role.READER,
-        userId: userId,
+        id: userId,
       });
     }
     const workspaceDataPromises = [];
@@ -226,6 +226,64 @@ export class PermissionService {
       );
     }
     await Promise.all(workspaceDataPromises);
+  }
+
+  async updatePermissionForOwner(
+    workspaceArray: WorkspaceDto[],
+    userId: string,
+  ) {
+    const updatedIdArray = [];
+    for (const item of workspaceArray) {
+      if (!isString(item.id)) {
+        updatedIdArray.push(item.id);
+        continue;
+      }
+      updatedIdArray.push(new ObjectId(item.id));
+    }
+    const workspaceDataArray =
+      await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
+    for (let index = 0; index < workspaceDataArray.length; index++) {
+      const permissionLength: Array<WorkspaceDto> =
+        workspaceDataArray[index].permissions;
+      for (let flag = 0; flag < permissionLength.length; flag++) {
+        if (
+          workspaceDataArray[index].permissions[flag].id.toString() ===
+          userId.toString()
+        ) {
+          workspaceDataArray[index].permissions[flag].role = Role.ADMIN;
+        }
+      }
+    }
+    const workspaceDataPromises = [];
+    for (const item of workspaceDataArray) {
+      workspaceDataPromises.push(
+        this.workspaceRepository.updateWorkspaceById(
+          new ObjectId(item._id),
+          item as WorkspaceDtoForIdDocument,
+        ),
+      );
+    }
+    await Promise.all(workspaceDataPromises);
+  }
+
+  async updatePermissionInWorkspace(payload: CreateOrUpdatePermissionDto) {
+    await this.isWorkspaceAdmin(new ObjectId(payload.workspaceId));
+    const workspaceData = await this.workspaceRepository.findWorkspaceById(
+      new ObjectId(payload.workspaceId),
+    );
+    const workspacePermissions = [...workspaceData.permissions];
+    for (let index = 0; index < workspacePermissions.length; index++) {
+      if (workspacePermissions[index].id.toString() === payload.userId) {
+        workspacePermissions[index].role = payload.role;
+      }
+    }
+    const updatedPermissionParams = {
+      permissions: workspacePermissions,
+    };
+    await this.workspaceRepository.updateWorkspaceById(
+      new ObjectId(payload.workspaceId),
+      updatedPermissionParams,
+    );
   }
 
   async setAdminPermissionForOwner(_id: ObjectId) {
@@ -244,5 +302,23 @@ export class PermissionService {
       throw new BadRequestException("You don't have access");
     }
     throw new BadRequestException("Team doesn't exist");
+  }
+
+  async isWorkspaceAdmin(id: ObjectId) {
+    const currentUserId = this.contextService.get("user")._id;
+    const workspaceData = await this.workspaceRepository.findWorkspaceById(id);
+    if (workspaceData) {
+      const workspacePermissions = [...workspaceData.permissions];
+      for (const item of workspacePermissions) {
+        if (
+          item.id.toString() === currentUserId.toString() &&
+          item.role === Role.ADMIN
+        ) {
+          return true;
+        }
+      }
+      throw new BadRequestException("You don't have access");
+    }
+    throw new BadRequestException("Workspace dosen't exist");
   }
 }

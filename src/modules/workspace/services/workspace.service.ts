@@ -87,7 +87,7 @@ export class WorkspaceService {
     const permissionForUser = [
       {
         role: Role.ADMIN,
-        userId: userId,
+        id: userId,
       },
     ];
     const params = {
