@@ -108,6 +108,15 @@ export class TeamUserService {
       teams: userFilteredTeams,
     };
     await this.userRepository.updateUserById(userFilter, userUpdatedParams);
+    const teamWorkspaces = [...teamData.workspaces];
+    const message = {
+      teamWorkspaces: teamWorkspaces,
+      userId: userData._id,
+    };
+    await this.azureBusService.sendMessage(
+      TOPIC.USER_REMOVED_FROM_TEAM_TOPIC,
+      message,
+    );
     return "User Removed";
   }
 
