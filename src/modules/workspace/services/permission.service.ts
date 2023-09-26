@@ -153,49 +153,6 @@ export class PermissionService {
     return response;
   }
 
-  async update(permissionData: CreateOrUpdatePermissionDto) {
-    const userPermissions = this.contextService.get("user").permissions;
-    const currentUserId = this.contextService.get("user")._id;
-    await this.userHasPermission(userPermissions, currentUserId);
-    const filter = new ObjectId(permissionData.userId);
-    const userData = await this.userRepository.findUserByUserId(filter);
-    const updatedPermissions = [...userData.permissions];
-    updatedPermissions.map((item: any, value: number) => {
-      if (item.workspaceId === permissionData.workspaceId) {
-        updatedPermissions[value].role = permissionData.role;
-      }
-    });
-    const updatedPermissionParams = {
-      permissions: updatedPermissions,
-    };
-    const response = await this.userRepository.updateUserById(
-      filter,
-      updatedPermissionParams,
-    );
-    await this.redisService.set(
-      this.userBlacklistPrefix + permissionData.userId.toString(),
-    );
-    return response;
-  }
-
-  async addPermissionInUser(payload: CreateOrUpdatePermissionDto) {
-    const userIdFilter = new ObjectId(payload.userId);
-    const userData = await this.userRepository.findUserByUserId(userIdFilter);
-    const updatedPermissions = [...userData.permissions];
-    updatedPermissions.push({
-      role: Role.ADMIN,
-      workspaceId: payload.workspaceId,
-    });
-    const updatedPermissionParams = {
-      permissions: updatedPermissions,
-    };
-    const permissionResponse = await this.userRepository.updateUserById(
-      userIdFilter,
-      updatedPermissionParams,
-    );
-    return permissionResponse;
-  }
-
   async addPermissionInWorkspace(
     workspaceArray: WorkspaceDto[],
     userId: string,
@@ -215,6 +172,37 @@ export class PermissionService {
         role: Role.READER,
         id: userId,
       });
+    }
+    const workspaceDataPromises = [];
+    for (const item of workspaceDataArray) {
+      workspaceDataPromises.push(
+        this.workspaceRepository.updateWorkspaceById(
+          new ObjectId(item._id),
+          item as WorkspaceDtoForIdDocument,
+        ),
+      );
+    }
+    await Promise.all(workspaceDataPromises);
+  }
+
+  async removePermissionInWorkspace(
+    workspaceArray: WorkspaceDto[],
+    userId: string,
+  ) {
+    const updatedIdArray = [];
+    for (const item of workspaceArray) {
+      if (!isString(item.id)) {
+        updatedIdArray.push(item.id);
+        continue;
+      }
+      updatedIdArray.push(new ObjectId(item.id));
+    }
+    const workspaceDataArray =
+      await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
+    for (let index = 0; index < workspaceDataArray.length; index++) {
+      workspaceDataArray[index].permissions = workspaceDataArray[
+        index
+      ].permissions.filter((item: any) => item.id.toString() !== userId);
     }
     const workspaceDataPromises = [];
     for (const item of workspaceDataArray) {
@@ -283,6 +271,30 @@ export class PermissionService {
     await this.workspaceRepository.updateWorkspaceById(
       new ObjectId(payload.workspaceId),
       updatedPermissionParams,
+    );
+    await this.redisService.set(
+      this.userBlacklistPrefix + payload.userId.toString(),
+    );
+  }
+
+  async removeSinglePermissionInWorkspace(payload: RemovePermissionDto) {
+    await this.isWorkspaceAdmin(new ObjectId(payload.workspaceId));
+    const workspaceData = await this.workspaceRepository.findWorkspaceById(
+      new ObjectId(payload.workspaceId),
+    );
+    const workspacePermissions = [...workspaceData.permissions];
+    const filteredPermissionsData = workspacePermissions.filter(
+      (item) => item.id.toString() !== payload.userId.toString(),
+    );
+    const updatedPermissionParams = {
+      permissions: filteredPermissionsData,
+    };
+    await this.workspaceRepository.updateWorkspaceById(
+      new ObjectId(payload.workspaceId),
+      updatedPermissionParams,
+    );
+    await this.redisService.set(
+      this.userBlacklistPrefix + payload.userId.toString(),
     );
   }
 

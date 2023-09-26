@@ -9,6 +9,7 @@ import { PermissionController } from "./controllers/permission.controller";
 import { WorkspaceHandler } from "./handlers/workspace.handler";
 import { PermissionHandler } from "./handlers/permission.handler";
 import { OwnerPermissionHandler } from "./handlers/ownerPermisson.handler";
+import { RemovePermissionHandler } from "./handlers/removePermission.handler";
 @Module({
   imports: [IdentityModule],
   providers: [
@@ -19,6 +20,7 @@ import { OwnerPermissionHandler } from "./handlers/ownerPermisson.handler";
     WorkspaceHandler,
     PermissionHandler,
     OwnerPermissionHandler,
+    RemovePermissionHandler,
   ],
   exports: [],
   controllers: [WorkSpaceController, PermissionController],

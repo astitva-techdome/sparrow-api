@@ -85,8 +85,8 @@ export class WorkSpaceController {
   }
 
   @Post(":workspaceId/user/:userId")
-  @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
-  @ApiResponse({ status: 400, description: "Create Workspace Failed" })
+  @ApiResponse({ status: 201, description: "User Added Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to Add User" })
   async addUserWorkspace(
     @Param("workspaceId") workspaceId: string,
     @Param("userId") userId: string,
@@ -98,5 +98,21 @@ export class WorkSpaceController {
       role: data.role,
     };
     return await this.permissionService.create(params);
+  }
+
+  @Delete(":workspaceId/user/:userId")
+  @ApiResponse({ status: 201, description: "Removed User Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to remove user" })
+  async removerUserWorkspace(
+    @Param("workspaceId") workspaceId: string,
+    @Param("userId") userId: string,
+  ) {
+    const params = {
+      userId: userId,
+      workspaceId: workspaceId,
+    };
+    return await this.permissionService.removeSinglePermissionInWorkspace(
+      params,
+    );
   }
 }
