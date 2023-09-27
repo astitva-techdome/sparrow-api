@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import {
@@ -33,10 +33,7 @@ export class WorkspaceService {
   async get(id: string) {
     const data = await this.workspaceRepository.get(id);
     if (!data) {
-      return new ApiResponseService(
-        "Workspace Not Found",
-        HttpStatusCode.NOT_FOUND,
-      );
+      throw new BadRequestException("Workspace Not Found");
     }
     return new ApiResponseService("Success", HttpStatusCode.OK, data);
   }
@@ -137,10 +134,7 @@ export class WorkspaceService {
   async update(id: string, updates: CreateOrUpdateWorkspaceDto) {
     const data = await this.workspaceRepository.update(id, updates);
     if (!data) {
-      return new ApiResponseService(
-        "Workspace Not Found",
-        HttpStatusCode.NOT_FOUND,
-      );
+      throw new BadRequestException("Workspace Not Found");
     }
     return new ApiResponseService("Workspace Updated", HttpStatusCode.OK, data);
   }
@@ -153,10 +147,7 @@ export class WorkspaceService {
   async delete(id: string) {
     const data = await this.workspaceRepository.delete(id);
     if (!data) {
-      return new ApiResponseService(
-        "Workspace Not Found",
-        HttpStatusCode.NOT_FOUND,
-      );
+      throw new BadRequestException("Workspace Not Found");
     }
     return new ApiResponseService("Workspace Deleted", HttpStatusCode.OK);
   }

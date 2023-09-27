@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { UpdateUserDto } from "../payloads/user.payload";
 import { UserRepository } from "../repositories/user.repository";
 import { RegisterPayload } from "../payloads/register.payload";
@@ -32,11 +32,7 @@ export class UserService {
   async getUserById(id: string) {
     const data = await this.userRepository.getUserById(id);
     if (!data) {
-      return new ApiResponseService(
-        "User not found",
-        HttpStatusCode.BAD_REQUEST,
-        data,
-      );
+      throw new BadRequestException("User not found");
     }
     return new ApiResponseService("Success", HttpStatusCode.OK, data);
   }
@@ -68,9 +64,9 @@ export class UserService {
   async createUser(payload: RegisterPayload) {
     const user = await this.getUserByEmail(payload.email);
     if (user) {
-      const message =
-        "The account with the provided email currently exists. Please choose another one.";
-      return new ApiResponseService(message, HttpStatusCode.CONFLICT);
+      throw new BadRequestException(
+        "The account with the provided email currently exists. Please choose another one.",
+      );
     }
     const createdUser = await this.userRepository.createUser(payload);
     const data: any = await this.authService.createToken(
