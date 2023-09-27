@@ -1,9 +1,17 @@
-import { Controller, Body, Post, UseGuards, Put, Param } from "@nestjs/common";
+import {
+  Controller,
+  Body,
+  Post,
+  UseGuards,
+  Put,
+  Param,
+  Res,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { PermissionService } from "../services/permission.service";
 import { CreateOrUpdatePermissionDto } from "../../identity/payloads/permission.payload";
 import { AuthGuard } from "@nestjs/passport";
-
+import { FastifyReply } from "fastify";
 /**
  * Permission Controller
  */
@@ -30,13 +38,13 @@ export class PermissionController {
     @Param("workspaceId") workspaceId: string,
     @Param("userId") userId: string,
     @Body() role: string,
+    @Res() res: FastifyReply,
   ) {
-    const updatedWorkspace =
-      await this.permissionService.updatePermissionInWorkspace({
-        workspaceId,
-        userId,
-        role,
-      });
-    return updatedWorkspace;
+    const data = await this.permissionService.updatePermissionInWorkspace({
+      workspaceId,
+      userId,
+      role,
+    });
+    res.status(data.httpStatusCode).send(data);
   }
 }

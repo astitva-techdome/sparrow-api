@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Res,
   UseGuards,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
@@ -16,6 +16,7 @@ import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import { BlacklistGuard } from "../../common/guards/blacklist.guard";
 import { PermissionService } from "../services/permission.service";
 import { AddWorkspaceUserDto } from "../payloads/workspaceUser.payload";
+import { FastifyReply } from "fastify";
 
 /**
  * Workspace Controller
@@ -35,21 +36,21 @@ export class WorkSpaceController {
   @ApiResponse({ status: 400, description: "Create Workspace Failed" })
   async createWorkspace(
     @Body() createWorkspaceDto: CreateOrUpdateWorkspaceDto,
+    @Res() res: FastifyReply,
   ) {
-    return await this.workspaceService.create(createWorkspaceDto);
+    const data = await this.workspaceService.create(createWorkspaceDto);
+    res.status(data.httpStatusCode).send(data);
   }
 
   @Get(":workspaceId")
   @ApiResponse({ status: 200, description: "Fetch Workspace Request Received" })
   @ApiResponse({ status: 400, description: "Fetch Workspace Request Failed" })
-  async getWorkspace(@Param("workspaceId") workspaceId: string) {
-    const workspace = await this.workspaceService.get(workspaceId);
-    if (!workspace) {
-      throw new BadRequestException(
-        "The workspace with that id could not be found.",
-      );
-    }
-    return workspace;
+  async getWorkspace(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+  ) {
+    const data = await this.workspaceService.get(workspaceId);
+    res.status(data.httpStatusCode).send(data);
   }
 
   @Put(":workspaceId")
@@ -58,30 +59,24 @@ export class WorkSpaceController {
   async updateWorkspace(
     @Param("workspaceId") workspaceId: string,
     @Body() updateWorkspaceDto: CreateOrUpdateWorkspaceDto,
+    @Res() res: FastifyReply,
   ) {
-    const updatedWorkspace = await this.workspaceService.update(
+    const data = await this.workspaceService.update(
       workspaceId,
       updateWorkspaceDto,
     );
-    if (!updatedWorkspace) {
-      throw new BadRequestException(
-        "The workspace with that id could not be found.",
-      );
-    }
-    return updatedWorkspace;
+    res.status(data.httpStatusCode).send(data);
   }
 
   @Delete(":workspaceId")
   @ApiResponse({ status: 200, description: "Workspace Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Workspace Failed" })
-  async deleteWorkspace(@Param("workspaceId") workspaceId: string) {
-    const deletedWorkspace = await this.workspaceService.delete(workspaceId);
-    if (!deletedWorkspace) {
-      throw new BadRequestException(
-        "The workspace with that id could not be found.",
-      );
-    }
-    return { message: "Workspace deleted successfully" };
+  async deleteWorkspace(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+  ) {
+    const data = await this.workspaceService.delete(workspaceId);
+    res.status(data.httpStatusCode).send(data);
   }
 
   @Post(":workspaceId/user/:userId")
@@ -91,13 +86,15 @@ export class WorkSpaceController {
     @Param("workspaceId") workspaceId: string,
     @Param("userId") userId: string,
     @Body() data: AddWorkspaceUserDto,
+    @Res() res: FastifyReply,
   ) {
     const params = {
       userId: userId,
       workspaceId: workspaceId,
       role: data.role,
     };
-    return await this.permissionService.create(params);
+    const response = await this.permissionService.create(params);
+    res.status(response.httpStatusCode).send(response);
   }
 
   @Delete(":workspaceId/user/:userId")
@@ -106,13 +103,15 @@ export class WorkSpaceController {
   async removerUserWorkspace(
     @Param("workspaceId") workspaceId: string,
     @Param("userId") userId: string,
+    @Res() res: FastifyReply,
   ) {
     const params = {
       userId: userId,
       workspaceId: workspaceId,
     };
-    return await this.permissionService.removeSinglePermissionInWorkspace(
+    const data = await this.permissionService.removeSinglePermissionInWorkspace(
       params,
     );
+    res.status(data.httpStatusCode).send(data);
   }
 }

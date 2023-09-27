@@ -11,6 +11,8 @@ import { Role } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 
 /**
  * Workspace Service
@@ -29,7 +31,14 @@ export class WorkspaceService {
    * @param {string} id
    */
   async get(id: string) {
-    return await this.workspaceRepository.get(id);
+    const data = await this.workspaceRepository.get(id);
+    if (!data) {
+      return new ApiResponseService(
+        "Workspace Not Found",
+        HttpStatusCode.NOT_FOUND,
+      );
+    }
+    return new ApiResponseService("Success", HttpStatusCode.OK, data);
   }
 
   async checkPermissions(teamData: Team) {
@@ -112,7 +121,11 @@ export class WorkspaceService {
       };
       await this.teamRepository.updateTeamById(teamId, updateTeamParams);
     }
-    return response;
+    return new ApiResponseService(
+      "Workspace Created",
+      HttpStatusCode.CREATED,
+      response,
+    );
   }
 
   /**
@@ -122,7 +135,14 @@ export class WorkspaceService {
    * @returns {Promise<UpdateWriteOpResult>} result of the update operation
    */
   async update(id: string, updates: CreateOrUpdateWorkspaceDto) {
-    return await this.workspaceRepository.update(id, updates);
+    const data = await this.workspaceRepository.update(id, updates);
+    if (!data) {
+      return new ApiResponseService(
+        "Workspace Not Found",
+        HttpStatusCode.NOT_FOUND,
+      );
+    }
+    return new ApiResponseService("Workspace Updated", HttpStatusCode.OK, data);
   }
 
   /**
@@ -131,6 +151,13 @@ export class WorkspaceService {
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
   async delete(id: string) {
-    return await this.workspaceRepository.delete(id);
+    const data = await this.workspaceRepository.delete(id);
+    if (!data) {
+      return new ApiResponseService(
+        "Workspace Not Found",
+        HttpStatusCode.NOT_FOUND,
+      );
+    }
+    return new ApiResponseService("Workspace Deleted", HttpStatusCode.OK);
   }
 }

@@ -24,6 +24,8 @@ import {
 import { UserDto } from "@src/modules/common/models/user.model";
 import { TeamDto } from "@src/modules/identity/payloads/team.payload";
 import { isString } from "class-validator";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 /**
  * Permission Service
  */
@@ -128,7 +130,7 @@ export class PermissionService {
     await this.redisService.set(
       this.userBlacklistPrefix + permissionData.userId.toString(),
     );
-    return "User Added";
+    return new ApiResponseService("User Added", HttpStatusCode.OK);
   }
 
   async remove(permissionData: RemovePermissionDto) {
@@ -275,6 +277,7 @@ export class PermissionService {
     await this.redisService.set(
       this.userBlacklistPrefix + payload.userId.toString(),
     );
+    return new ApiResponseService("Permission Update", HttpStatusCode.OK);
   }
 
   async removeSinglePermissionInWorkspace(payload: RemovePermissionDto) {
@@ -296,6 +299,7 @@ export class PermissionService {
     await this.redisService.set(
       this.userBlacklistPrefix + payload.userId.toString(),
     );
+    return new ApiResponseService("User Removed", HttpStatusCode.OK);
   }
 
   async setAdminPermissionForOwner(_id: ObjectId) {

@@ -1,4 +1,4 @@
-import { Injectable, NotAcceptableException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { UpdateUserDto } from "../payloads/user.payload";
 import { UserRepository } from "../repositories/user.repository";
 import { RegisterPayload } from "../payloads/register.payload";
@@ -7,6 +7,8 @@ import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
 import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -28,7 +30,15 @@ export class UserService {
    * @returns {Promise<IUser>} queried user data
    */
   async getUserById(id: string) {
-    return await this.userRepository.getUserById(id);
+    const data = await this.userRepository.getUserById(id);
+    if (!data) {
+      return new ApiResponseService(
+        "User not found",
+        HttpStatusCode.BAD_REQUEST,
+        data,
+      );
+    }
+    return new ApiResponseService("Success", HttpStatusCode.OK, data);
   }
 
   /**
@@ -58,12 +68,14 @@ export class UserService {
   async createUser(payload: RegisterPayload) {
     const user = await this.getUserByEmail(payload.email);
     if (user) {
-      throw new NotAcceptableException(
-        "The account with the provided email currently exists. Please choose another one.",
-      );
+      const message =
+        "The account with the provided email currently exists. Please choose another one.";
+      return new ApiResponseService(message, HttpStatusCode.CONFLICT);
     }
     const createdUser = await this.userRepository.createUser(payload);
-    const token = await this.authService.createToken(createdUser.insertedId);
+    const data: any = await this.authService.createToken(
+      createdUser.insertedId,
+    );
     const workspaceObj = {
       name: this.configService.get("app.defaultWorkspaceName"),
       type: WorkspaceType.PERSONAL,
@@ -72,7 +84,7 @@ export class UserService {
       TOPIC.USER_CREATED_TOPIC,
       workspaceObj,
     );
-    return token;
+    return new ApiResponseService("User Created", HttpStatusCode.CREATED, data);
   }
 
   /**
@@ -82,7 +94,8 @@ export class UserService {
    * @returns {Promise<IUser>} mutated User data
    */
   async updateUser(userId: string, payload: UpdateUserDto) {
-    return await this.userRepository.updateUser(userId, payload);
+    const data = await this.userRepository.updateUser(userId, payload);
+    return new ApiResponseService("User Updated", HttpStatusCode.OK, data);
   }
 
   /**
@@ -90,7 +103,8 @@ export class UserService {
    * @param {userId} param
    * @returns {Promise<IGenericMessageBody>}
    */
-  async deleteUser(userId: string): Promise<IGenericMessageBody> {
-    return await this.userRepository.deleteUser(userId);
+  async deleteUser(userId: string) {
+    const data: any = await this.userRepository.deleteUser(userId);
+    return new ApiResponseService("User Deleted", HttpStatusCode.OK, data);
   }
 }

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Res,
   UseGuards,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
@@ -15,7 +15,7 @@ import { UserService } from "../services/user.service";
 import { RegisterPayload } from "../payloads/register.payload";
 import { UpdateUserDto } from "../payloads/user.payload";
 import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
-
+import { FastifyReply } from "fastify";
 /**
  * User Controller
  */
@@ -29,20 +29,16 @@ export class UserController {
   @ApiResponse({ status: 201, description: "Registration Completed" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  async register(@Body() payload: RegisterPayload) {
-    return await this.userService.createUser(payload);
+  async register(@Body() payload: RegisterPayload, @Res() res: FastifyReply) {
+    const data = await this.userService.createUser(payload);
+    res.status(data.httpStatusCode).send(data);
   }
 
   @Get(":userId")
   @UseGuards(AuthGuard("jwt"), BlacklistGuard)
-  async getUser(@Param("userId") id: string) {
-    const user = await this.userService.getUserById(id);
-    if (!user) {
-      throw new BadRequestException(
-        "The user with that ID could not be found.",
-      );
-    }
-    return user;
+  async getUser(@Param("userId") id: string, @Res() res: FastifyReply) {
+    const data = await this.userService.getUserById(id);
+    res.status(data.httpStatusCode).send(data);
   }
 
   @Put(":userId")
@@ -50,13 +46,16 @@ export class UserController {
   async updateUser(
     @Param("userId") id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @Res() res: FastifyReply,
   ) {
-    return await this.userService.updateUser(id, updateUserDto);
+    const data = await this.userService.updateUser(id, updateUserDto);
+    res.status(data.httpStatusCode).send(data);
   }
 
   @Delete(":userId")
   @UseGuards(AuthGuard("jwt"))
-  async deleteUser(@Param("userId") id: string) {
-    return await this.userService.deleteUser(id);
+  async deleteUser(@Param("userId") id: string, @Res() res: FastifyReply) {
+    const data = await this.userService.deleteUser(id);
+    res.status(data.httpStatusCode).send(data);
   }
 }

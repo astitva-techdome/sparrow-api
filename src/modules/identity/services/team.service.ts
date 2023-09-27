@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
 import { TeamRepository } from "../repositories/team.repository";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 
 /**
  * Team Service
@@ -15,7 +17,8 @@ export class TeamService {
    * @returns {Promise<InsertOneWriteOpResult<Team>>} result of the insert operation
    */
   async create(teamData: CreateOrUpdateTeamDto) {
-    return await this.teamRepository.create(teamData);
+    const data = await this.teamRepository.create(teamData);
+    return new ApiResponseService("Team Created", HttpStatusCode.CREATED, data);
   }
 
   /**
@@ -24,7 +27,8 @@ export class TeamService {
    * @returns {Promise<Team>} queried team data
    */
   async get(id: string) {
-    return await this.teamRepository.get(id);
+    const data = await this.teamRepository.get(id);
+    return new ApiResponseService("Sucess", HttpStatusCode.OK, data);
   }
 
   /**
@@ -42,6 +46,7 @@ export class TeamService {
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
   async delete(id: string) {
-    return await this.teamRepository.delete(id);
+    const data = await this.teamRepository.delete(id);
+    return new ApiResponseService("Team Deleted", HttpStatusCode.OK, data);
   }
 }

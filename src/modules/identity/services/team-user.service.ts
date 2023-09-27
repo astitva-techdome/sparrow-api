@@ -6,6 +6,8 @@ import { ContextService } from "@src/modules/common/services/context.service";
 import { UserRepository } from "../repositories/user.repository";
 import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 
 /**
  * Team User Service
@@ -80,7 +82,11 @@ export class TeamUserService {
       teams: updatedTeams,
     };
     await this.userRepository.updateUserById(userFilter, updateUserParams);
-    return updatedTeamResponse;
+    return new ApiResponseService(
+      "User Added in Team",
+      HttpStatusCode.OK,
+      updatedTeamResponse,
+    );
   }
 
   async removeUser(payload: CreateOrUpdateTeamUserDto) {
@@ -117,7 +123,7 @@ export class TeamUserService {
       TOPIC.USER_REMOVED_FROM_TEAM_TOPIC,
       message,
     );
-    return "User Removed";
+    return new ApiResponseService("User Removed", HttpStatusCode.OK);
   }
 
   async addOwner(payload: CreateOrUpdateTeamUserDto) {
@@ -142,6 +148,6 @@ export class TeamUserService {
       TOPIC.TEAM_OWNER_ADDED_TOPIC,
       message,
     );
-    return response;
+    return new ApiResponseService("Owner added", HttpStatusCode.OK, response);
   }
 }
