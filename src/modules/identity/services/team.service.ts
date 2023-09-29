@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
 import { TeamRepository } from "../repositories/team.repository";
-import { ApiResponseService } from "@src/modules/common/services/api-response.service";
-import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
+import { DeleteResult, InsertOneResult, UpdateResult, WithId } from "mongodb";
+import { Team } from "@src/modules/common/models/team.model";
 
 /**
  * Team Service
@@ -16,9 +16,15 @@ export class TeamService {
    * @param {CreateOrUpdateTeamDto} teamData
    * @returns {Promise<InsertOneWriteOpResult<Team>>} result of the insert operation
    */
-  async create(teamData: CreateOrUpdateTeamDto) {
-    const data = await this.teamRepository.create(teamData);
-    return new ApiResponseService("Team Created", HttpStatusCode.CREATED, data);
+  async create(
+    teamData: CreateOrUpdateTeamDto,
+  ): Promise<InsertOneResult<Team>> {
+    try {
+      const data = await this.teamRepository.create(teamData);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   /**
@@ -26,9 +32,13 @@ export class TeamService {
    * @param {string} id
    * @returns {Promise<Team>} queried team data
    */
-  async get(id: string) {
-    const data = await this.teamRepository.get(id);
-    return new ApiResponseService("Sucess", HttpStatusCode.OK, data);
+  async get(id: string): Promise<WithId<Team>> {
+    try {
+      const data = await this.teamRepository.get(id);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   /**
@@ -36,8 +46,16 @@ export class TeamService {
    * @param {string} id
    * @returns {Promise<ITeam>} mutated team data
    */
-  async update(id: string, payload: CreateOrUpdateTeamDto) {
-    return await this.teamRepository.update(id, payload);
+  async update(
+    id: string,
+    payload: CreateOrUpdateTeamDto,
+  ): Promise<UpdateResult<Team>> {
+    try {
+      const data = await this.teamRepository.update(id, payload);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   /**
@@ -45,8 +63,12 @@ export class TeamService {
    * @param {string} id
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
-  async delete(id: string) {
-    const data = await this.teamRepository.delete(id);
-    return new ApiResponseService("Team Deleted", HttpStatusCode.OK, data);
+  async delete(id: string): Promise<DeleteResult> {
+    try {
+      const data = await this.teamRepository.delete(id);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }

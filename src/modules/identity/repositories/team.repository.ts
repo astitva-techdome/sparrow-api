@@ -1,5 +1,12 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { Db, ObjectId } from "mongodb";
+import {
+  Db,
+  DeleteResult,
+  InsertOneResult,
+  ObjectId,
+  UpdateResult,
+  WithId,
+} from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { CreateOrUpdateTeamDto, TeamDto } from "../payloads/team.payload";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
@@ -23,7 +30,9 @@ export class TeamRepository {
    * @param {CreateOrUpdateTeamDto} teamData
    * @returns {Promise<InsertOneWriteOpResult<Team>>} result of the insert operation
    */
-  async create(teamData: CreateOrUpdateTeamDto) {
+  async create(
+    teamData: CreateOrUpdateTeamDto,
+  ): Promise<InsertOneResult<Team>> {
     const user = this.contextService.get("user");
     const exists = await this.doesTeamExistsForUser(user._id, teamData.name);
     if (exists) {
@@ -67,7 +76,7 @@ export class TeamRepository {
    * @param {string} id
    * @returns {Promise<Team>} queried team data
    */
-  async get(id: string) {
+  async get(id: string): Promise<WithId<Team>> {
     const _id = new ObjectId(id);
     const team = await this.db
       .collection<Team>(Collections.TEAM)
@@ -85,7 +94,10 @@ export class TeamRepository {
    * @param {string} id
    * @returns {Promise<ITeam>} mutated team data
    */
-  async update(id: string, payload: CreateOrUpdateTeamDto) {
+  async update(
+    id: string,
+    payload: CreateOrUpdateTeamDto,
+  ): Promise<UpdateResult<Team>> {
     const _id = new ObjectId(id);
     const updatedTeam = await this.db
       .collection<Team>(Collections.TEAM)
@@ -103,7 +115,7 @@ export class TeamRepository {
    * @param {string} id
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
-  async delete(id: string) {
+  async delete(id: string): Promise<DeleteResult> {
     const _id = new ObjectId(id);
     const deletedTeam = await this.db
       .collection<Team>(Collections.TEAM)
@@ -113,9 +125,10 @@ export class TeamRepository {
         "The Team with that id could not be found.",
       );
     }
+    return deletedTeam;
   }
 
-  async HasPermission(data: Array<string>) {
+  async HasPermission(data: Array<string>): Promise<boolean> {
     const user = this.contextService.get("user");
     for (const item of data) {
       if (item.toString() === user._id.toString()) {
@@ -125,21 +138,24 @@ export class TeamRepository {
     throw new BadRequestException("You don't have access");
   }
 
-  async findTeamByTeamId(id: ObjectId) {
+  async findTeamByTeamId(id: ObjectId): Promise<WithId<Team>> {
     const teamData = await this.db
-      .collection(Collections.TEAM)
+      .collection<Team>(Collections.TEAM)
       .findOne({ _id: id });
     return teamData;
   }
 
-  async updateTeamById(id: ObjectId, updateParams: TeamDto) {
+  async updateTeamById(
+    id: ObjectId,
+    updateParams: TeamDto,
+  ): Promise<WithId<Team>> {
     const updatedTeamParams = {
       $set: updateParams,
     };
     const responseData = await this.db
-      .collection(Collections.TEAM)
+      .collection<Team>(Collections.TEAM)
       .findOneAndUpdate({ _id: id }, updatedTeamParams);
-    return responseData;
+    return responseData.value;
   }
 
   private async doesTeamExistsForUser(userId: ObjectId, teamName: string) {

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -17,6 +18,8 @@ import { BlacklistGuard } from "../../common/guards/blacklist.guard";
 import { PermissionService } from "../services/permission.service";
 import { AddWorkspaceUserDto } from "../payloads/workspaceUser.payload";
 import { FastifyReply } from "fastify";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 
 /**
  * Workspace Controller
@@ -38,8 +41,17 @@ export class WorkSpaceController {
     @Body() createWorkspaceDto: CreateOrUpdateWorkspaceDto,
     @Res() res: FastifyReply,
   ) {
-    const data = await this.workspaceService.create(createWorkspaceDto);
-    res.status(data.httpStatusCode).send(data);
+    try {
+      const data = await this.workspaceService.create(createWorkspaceDto);
+      const responseData = new ApiResponseService(
+        "Workspace Created",
+        HttpStatusCode.CREATED,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Get(":workspaceId")
@@ -49,8 +61,17 @@ export class WorkSpaceController {
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
   ) {
-    const data = await this.workspaceService.get(workspaceId);
-    res.status(data.httpStatusCode).send(data);
+    try {
+      const data = await this.workspaceService.get(workspaceId);
+      const responseData = new ApiResponseService(
+        "Success",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Put(":workspaceId")
@@ -61,11 +82,20 @@ export class WorkSpaceController {
     @Body() updateWorkspaceDto: CreateOrUpdateWorkspaceDto,
     @Res() res: FastifyReply,
   ) {
-    const data = await this.workspaceService.update(
-      workspaceId,
-      updateWorkspaceDto,
-    );
-    res.status(data.httpStatusCode).send(data);
+    try {
+      const data = await this.workspaceService.update(
+        workspaceId,
+        updateWorkspaceDto,
+      );
+      const responseData = new ApiResponseService(
+        "Workspace Updated",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Delete(":workspaceId")
@@ -75,8 +105,17 @@ export class WorkSpaceController {
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
   ) {
-    const data = await this.workspaceService.delete(workspaceId);
-    res.status(data.httpStatusCode).send(data);
+    try {
+      const data = await this.workspaceService.delete(workspaceId);
+      const responseData = new ApiResponseService(
+        "Workspace Deleted",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Post(":workspaceId/user/:userId")
@@ -93,8 +132,17 @@ export class WorkSpaceController {
       workspaceId: workspaceId,
       role: data.role,
     };
-    const response = await this.permissionService.create(params);
-    res.status(response.httpStatusCode).send(response);
+    try {
+      const response = await this.permissionService.create(params);
+      const responseData = new ApiResponseService(
+        "User Added",
+        HttpStatusCode.OK,
+        response,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Delete(":workspaceId/user/:userId")
@@ -109,9 +157,17 @@ export class WorkSpaceController {
       userId: userId,
       workspaceId: workspaceId,
     };
-    const data = await this.permissionService.removeSinglePermissionInWorkspace(
-      params,
-    );
-    res.status(data.httpStatusCode).send(data);
+    try {
+      const data =
+        await this.permissionService.removeSinglePermissionInWorkspace(params);
+      const responseData = new ApiResponseService(
+        "User Removed",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }

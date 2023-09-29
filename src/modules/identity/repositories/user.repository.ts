@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { Db, ObjectId } from "mongodb";
+import { Db, ObjectId, WithId } from "mongodb";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { RegisterPayload } from "../payloads/register.payload";
@@ -27,15 +27,16 @@ export class UserRepository {
    * @param {string} id
    * @returns {Promise<IUser>} queried user data
    */
-  async getUserById(id: string) {
+  async getUserById(id: string): Promise<WithId<User>> {
     const authUser = this.contextService.get("user");
     if (authUser._id.toString() === id) {
       return authUser;
     }
     const _id = new ObjectId(id);
-    return await this.db
-      .collection(Collections.USER)
+    const data = await this.db
+      .collection<User>(Collections.USER)
       .findOne({ _id }, { projection: { password: 0 } });
+    return data;
   }
 
   /**
@@ -122,20 +123,23 @@ export class UserRepository {
       });
   }
 
-  async findUserByUserId(id: ObjectId) {
+  async findUserByUserId(id: ObjectId): Promise<WithId<User>> {
     const userData = await this.db
-      .collection(Collections.USER)
+      .collection<User>(Collections.USER)
       .findOne({ _id: id });
     return userData;
   }
 
-  async updateUserById(id: ObjectId, updateParams: UserDto) {
+  async updateUserById(
+    id: ObjectId,
+    updateParams: UserDto,
+  ): Promise<WithId<User>> {
     const updatedUserParams = {
       $set: updateParams,
     };
     const responseData = await this.db
-      .collection(Collections.USER)
+      .collection<User>(Collections.USER)
       .findOneAndUpdate({ _id: id }, updatedUserParams);
-    return responseData;
+    return responseData.value;
   }
 }

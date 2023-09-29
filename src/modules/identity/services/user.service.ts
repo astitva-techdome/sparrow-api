@@ -7,8 +7,8 @@ import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
 import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
-import { ApiResponseService } from "@src/modules/common/services/api-response.service";
-import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
+import { User } from "@src/modules/common/models/user.model";
+import { WithId } from "mongodb";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -29,12 +29,13 @@ export class UserService {
    * @param {string} id
    * @returns {Promise<IUser>} queried user data
    */
-  async getUserById(id: string) {
-    const data = await this.userRepository.getUserById(id);
-    if (!data) {
-      throw new BadRequestException("User not found");
+  async getUserById(id: string): Promise<WithId<User>> {
+    try {
+      const data = await this.userRepository.getUserById(id);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
     }
-    return new ApiResponseService("Success", HttpStatusCode.OK, data);
   }
 
   /**
@@ -68,19 +69,21 @@ export class UserService {
         "The account with the provided email currently exists. Please choose another one.",
       );
     }
-    const createdUser = await this.userRepository.createUser(payload);
-    const data: any = await this.authService.createToken(
-      createdUser.insertedId,
-    );
-    const workspaceObj = {
-      name: this.configService.get("app.defaultWorkspaceName"),
-      type: WorkspaceType.PERSONAL,
-    };
-    await this.azureBusService.sendMessage(
-      TOPIC.USER_CREATED_TOPIC,
-      workspaceObj,
-    );
-    return new ApiResponseService("User Created", HttpStatusCode.CREATED, data);
+    try {
+      const createdUser = await this.userRepository.createUser(payload);
+      const data = await this.authService.createToken(createdUser.insertedId);
+      const workspaceObj = {
+        name: this.configService.get("app.defaultWorkspaceName"),
+        type: WorkspaceType.PERSONAL,
+      };
+      await this.azureBusService.sendMessage(
+        TOPIC.USER_CREATED_TOPIC,
+        workspaceObj,
+      );
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   /**
@@ -89,9 +92,16 @@ export class UserService {
    * @param {UpdateUserDto} payload
    * @returns {Promise<IUser>} mutated User data
    */
-  async updateUser(userId: string, payload: UpdateUserDto) {
-    const data = await this.userRepository.updateUser(userId, payload);
-    return new ApiResponseService("User Updated", HttpStatusCode.OK, data);
+  async updateUser(
+    userId: string,
+    payload: UpdateUserDto,
+  ): Promise<WithId<User>> {
+    try {
+      const data = await this.userRepository.updateUser(userId, payload);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   /**
@@ -100,7 +110,11 @@ export class UserService {
    * @returns {Promise<IGenericMessageBody>}
    */
   async deleteUser(userId: string) {
-    const data: any = await this.userRepository.deleteUser(userId);
-    return new ApiResponseService("User Deleted", HttpStatusCode.OK, data);
+    try {
+      const data: any = await this.userRepository.deleteUser(userId);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }

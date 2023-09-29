@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Role } from "@src/modules/common/enum/roles.enum";
 import { IsEnum, IsMongoId, IsNotEmpty, IsString } from "class-validator";
+import { ObjectId } from "mongodb";
 
 export class CreateOrUpdatePermissionDto {
   @ApiProperty()
@@ -20,7 +21,12 @@ export class CreateOrUpdatePermissionDto {
   workspaceId: string;
 }
 
-export interface PermissionDto {
-  role: string;
-  workspaceId: string;
+export class PermissionDto {
+  @IsEnum(Role)
+  @IsNotEmpty()
+  role: Role;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  id: ObjectId;
 }
