@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import {
@@ -13,7 +13,8 @@ import { TeamRepository } from "@src/modules/identity/repositories/team.reposito
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
 import { PermissionForUserDto } from "../payloads/permission.payload";
-
+// import { Logger } from "winston";
+// import {Logger} from '../'
 /**
  * Workspace Service
  */
@@ -24,11 +25,13 @@ export class WorkspaceService {
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
     private readonly permissionService: PermissionService,
+    private readonly logger: Logger,
   ) {}
 
   async get(id: string): Promise<WithId<Workspace>> {
     try {
       const data = await this.workspaceRepository.get(id);
+      this.logger.log("This is a log message 2.");
       return data;
     } catch (error) {
       throw new BadRequestException(error);
