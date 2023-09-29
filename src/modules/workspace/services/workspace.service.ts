@@ -1,16 +1,18 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import {
   OwnerInformationDto,
+  Workspace,
   WorkspaceType,
 } from "@src/modules/common/models/workspace.model";
 import { ContextService } from "@src/modules/common/services/context.service";
-import { ObjectId } from "mongodb";
+import { ObjectId, WithId } from "mongodb";
 import { Role } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
+import { PermissionForUserDto } from "../payloads/permission.payload";
 
 /**
  * Workspace Service
@@ -24,15 +26,16 @@ export class WorkspaceService {
     private readonly permissionService: PermissionService,
   ) {}
 
-  /**
-   * Fetches a workspace from database by UUID
-   * @param {string} id
-   */
-  async get(id: string) {
-    return await this.workspaceRepository.get(id);
+  async get(id: string): Promise<WithId<Workspace>> {
+    try {
+      const data = await this.workspaceRepository.get(id);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
-  async checkPermissions(teamData: Team) {
+  async checkPermissions(teamData: Team): Promise<Array<PermissionForUserDto>> {
     const teamOwners = teamData.owners;
     const teamUsers = teamData.users;
     const permissionArray = [];
@@ -63,56 +66,60 @@ export class WorkspaceService {
    * @returns {Promise<InsertOneWriteOpResult<Workspace>>} result of the insert operation
    */
   async create(workspaceData: CreateOrUpdateWorkspaceDto) {
-    const userId = this.contextService.get("user")._id;
-    const teamId = new ObjectId(workspaceData.id);
-    let teamData;
-    let permissionDataForTeam;
-    if (workspaceData.type === WorkspaceType.TEAM) {
-      teamData = await this.permissionService.isTeamOwner(teamId);
-      permissionDataForTeam = await this.checkPermissions(
-        teamData as unknown as Team,
-      );
-    }
-    const ownerInfo: OwnerInformationDto = {
-      id:
-        workspaceData.type === WorkspaceType.PERSONAL
-          ? userId
-          : workspaceData.id,
-      name:
-        workspaceData.type === WorkspaceType.PERSONAL
-          ? this.contextService.get("user").name
-          : teamData.name,
-      type: workspaceData.type as WorkspaceType,
-    };
-    const permissionForUser = [
-      {
-        role: Role.ADMIN,
-        id: userId,
-      },
-    ];
-    const params = {
-      name: workspaceData.name,
-      owner: ownerInfo,
-      permissions:
-        workspaceData.type === WorkspaceType.PERSONAL
-          ? permissionForUser
-          : permissionDataForTeam,
-      createdAt: new Date(),
-      createdBy: userId,
-    };
-    const response = await this.workspaceRepository.addWorkspace(params);
-    if (workspaceData.type === WorkspaceType.TEAM) {
-      const teamWorkspaces = [...teamData.workspaces];
-      teamWorkspaces.push({
-        id: response.insertedId,
-        name: workspaceData.name,
-      });
-      const updateTeamParams = {
-        workspaces: teamWorkspaces,
+    try {
+      const userId = this.contextService.get("user")._id;
+      const teamId = new ObjectId(workspaceData.id);
+      let teamData;
+      let permissionDataForTeam;
+      if (workspaceData.type === WorkspaceType.TEAM) {
+        teamData = await this.permissionService.isTeamOwner(teamId);
+        permissionDataForTeam = await this.checkPermissions(
+          teamData as unknown as Team,
+        );
+      }
+      const ownerInfo: OwnerInformationDto = {
+        id:
+          workspaceData.type === WorkspaceType.PERSONAL
+            ? userId
+            : workspaceData.id,
+        name:
+          workspaceData.type === WorkspaceType.PERSONAL
+            ? this.contextService.get("user").name
+            : teamData.name,
+        type: workspaceData.type as WorkspaceType,
       };
-      await this.teamRepository.updateTeamById(teamId, updateTeamParams);
+      const permissionForUser = [
+        {
+          role: Role.ADMIN,
+          id: userId,
+        },
+      ];
+      const params = {
+        name: workspaceData.name,
+        owner: ownerInfo,
+        permissions:
+          workspaceData.type === WorkspaceType.PERSONAL
+            ? permissionForUser
+            : permissionDataForTeam,
+        createdAt: new Date(),
+        createdBy: userId,
+      };
+      const response = await this.workspaceRepository.addWorkspace(params);
+      if (workspaceData.type === WorkspaceType.TEAM) {
+        const teamWorkspaces = [...teamData.workspaces];
+        teamWorkspaces.push({
+          id: response.insertedId,
+          name: workspaceData.name,
+        });
+        const updateTeamParams = {
+          workspaces: teamWorkspaces,
+        };
+        await this.teamRepository.updateTeamById(teamId, updateTeamParams);
+      }
+      return response;
+    } catch (error) {
+      throw new BadRequestException(error);
     }
-    return response;
   }
 
   /**
@@ -122,7 +129,12 @@ export class WorkspaceService {
    * @returns {Promise<UpdateWriteOpResult>} result of the update operation
    */
   async update(id: string, updates: CreateOrUpdateWorkspaceDto) {
-    return await this.workspaceRepository.update(id, updates);
+    try {
+      const data = await this.workspaceRepository.update(id, updates);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   /**
@@ -131,6 +143,11 @@ export class WorkspaceService {
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
   async delete(id: string) {
-    return await this.workspaceRepository.delete(id);
+    try {
+      const data = await this.workspaceRepository.delete(id);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }

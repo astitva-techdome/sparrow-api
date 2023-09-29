@@ -1,9 +1,20 @@
-import { Controller, Body, Post, UseGuards, Put, Param } from "@nestjs/common";
+import {
+  Controller,
+  Body,
+  Post,
+  UseGuards,
+  Put,
+  Param,
+  Res,
+  BadRequestException,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { PermissionService } from "../services/permission.service";
 import { CreateOrUpdatePermissionDto } from "../../identity/payloads/permission.payload";
 import { AuthGuard } from "@nestjs/passport";
-
+import { FastifyReply } from "fastify";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 /**
  * Permission Controller
  */
@@ -30,13 +41,22 @@ export class PermissionController {
     @Param("workspaceId") workspaceId: string,
     @Param("userId") userId: string,
     @Body() role: string,
+    @Res() res: FastifyReply,
   ) {
-    const updatedWorkspace =
-      await this.permissionService.updatePermissionInWorkspace({
+    try {
+      const data = await this.permissionService.updatePermissionInWorkspace({
         workspaceId,
         userId,
         role,
       });
-    return updatedWorkspace;
+      const responseData = new ApiResponseService(
+        "Permission Update",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }

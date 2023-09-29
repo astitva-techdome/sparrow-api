@@ -1,5 +1,5 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { Db, ObjectId } from "mongodb";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import { Db, DeleteResult, ObjectId, WithId } from "mongodb";
 import { Workspace } from "../../common/models/workspace.model";
 import { Collections } from "../../common/enum/database.collection.enum";
 import {
@@ -28,16 +28,15 @@ export class WorkspaceRepository {
     private contextService: ContextService,
   ) {}
 
-  /**
-   * Fetches a workspace from database by UUID
-   * @param {string} id
-   * @returns {Promise<Workspace>} queried workspace data
-   */
-  get(id: string) {
+  async get(id: string): Promise<WithId<Workspace>> {
     const _id = new ObjectId(id);
-    return this.db
+    const data = await this.db
       .collection<Workspace>(Collections.WORKSPACE)
       .findOne({ _id });
+    if (!data) {
+      throw new BadRequestException("Not Found");
+    }
+    return data;
   }
 
   async addWorkspace(params: Workspace) {
@@ -90,16 +89,11 @@ export class WorkspaceRepository {
       updatedBy: this.contextService.get("user")._id,
     };
     return this.db
-      .collection<Workspace>(Collections.WORKSPACE)
+      .collection(Collections.WORKSPACE)
       .updateOne({ _id }, { $set: { ...updates, ...defaultParams } });
   }
 
-  /**
-   * Deletes a workspace from the database by UUID
-   * @param {string} id
-   * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
-   */
-  delete(id: string) {
+  delete(id: string): Promise<DeleteResult> {
     const _id = new ObjectId(id);
     return this.db
       .collection<Workspace>(Collections.WORKSPACE)

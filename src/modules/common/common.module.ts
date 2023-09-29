@@ -6,6 +6,7 @@ import { ConfigService } from "@nestjs/config";
 import { RedisService } from "./services/redis.service";
 import { AzureBusService } from "./services/azureBus/azure-bus.service";
 import { WorkspaceModule } from "../workspace/workspace.module";
+import { ApiResponseService } from "./services/api-response.service";
 
 @Global()
 @Module({
@@ -37,6 +38,7 @@ import { WorkspaceModule } from "../workspace/workspace.module";
     AzureBusService,
     ContextService,
     RedisService,
+    ApiResponseService,
   ],
   exports: [
     "DATABASE_CONNECTION",
@@ -44,6 +46,7 @@ import { WorkspaceModule } from "../workspace/workspace.module";
     ContextService,
     RedisService,
     AzureBusService,
+    ApiResponseService,
   ],
 })
 export class CommonModule {}

@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Res,
   UseGuards,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
@@ -16,6 +17,9 @@ import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import { BlacklistGuard } from "../../common/guards/blacklist.guard";
 import { PermissionService } from "../services/permission.service";
 import { AddWorkspaceUserDto } from "../payloads/workspaceUser.payload";
+import { FastifyReply } from "fastify";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 
 /**
  * Workspace Controller
@@ -35,21 +39,39 @@ export class WorkSpaceController {
   @ApiResponse({ status: 400, description: "Create Workspace Failed" })
   async createWorkspace(
     @Body() createWorkspaceDto: CreateOrUpdateWorkspaceDto,
+    @Res() res: FastifyReply,
   ) {
-    return await this.workspaceService.create(createWorkspaceDto);
+    try {
+      const data = await this.workspaceService.create(createWorkspaceDto);
+      const responseData = new ApiResponseService(
+        "Workspace Created",
+        HttpStatusCode.CREATED,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Get(":workspaceId")
   @ApiResponse({ status: 200, description: "Fetch Workspace Request Received" })
   @ApiResponse({ status: 400, description: "Fetch Workspace Request Failed" })
-  async getWorkspace(@Param("workspaceId") workspaceId: string) {
-    const workspace = await this.workspaceService.get(workspaceId);
-    if (!workspace) {
-      throw new BadRequestException(
-        "The workspace with that id could not be found.",
+  async getWorkspace(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+  ) {
+    try {
+      const data = await this.workspaceService.get(workspaceId);
+      const responseData = new ApiResponseService(
+        "Success",
+        HttpStatusCode.OK,
+        data,
       );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
     }
-    return workspace;
   }
 
   @Put(":workspaceId")
@@ -58,30 +80,42 @@ export class WorkSpaceController {
   async updateWorkspace(
     @Param("workspaceId") workspaceId: string,
     @Body() updateWorkspaceDto: CreateOrUpdateWorkspaceDto,
+    @Res() res: FastifyReply,
   ) {
-    const updatedWorkspace = await this.workspaceService.update(
-      workspaceId,
-      updateWorkspaceDto,
-    );
-    if (!updatedWorkspace) {
-      throw new BadRequestException(
-        "The workspace with that id could not be found.",
+    try {
+      const data = await this.workspaceService.update(
+        workspaceId,
+        updateWorkspaceDto,
       );
+      const responseData = new ApiResponseService(
+        "Workspace Updated",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
     }
-    return updatedWorkspace;
   }
 
   @Delete(":workspaceId")
   @ApiResponse({ status: 200, description: "Workspace Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Workspace Failed" })
-  async deleteWorkspace(@Param("workspaceId") workspaceId: string) {
-    const deletedWorkspace = await this.workspaceService.delete(workspaceId);
-    if (!deletedWorkspace) {
-      throw new BadRequestException(
-        "The workspace with that id could not be found.",
+  async deleteWorkspace(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+  ) {
+    try {
+      const data = await this.workspaceService.delete(workspaceId);
+      const responseData = new ApiResponseService(
+        "Workspace Deleted",
+        HttpStatusCode.OK,
+        data,
       );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
     }
-    return { message: "Workspace deleted successfully" };
   }
 
   @Post(":workspaceId/user/:userId")
@@ -91,13 +125,24 @@ export class WorkSpaceController {
     @Param("workspaceId") workspaceId: string,
     @Param("userId") userId: string,
     @Body() data: AddWorkspaceUserDto,
+    @Res() res: FastifyReply,
   ) {
     const params = {
       userId: userId,
       workspaceId: workspaceId,
       role: data.role,
     };
-    return await this.permissionService.create(params);
+    try {
+      const response = await this.permissionService.create(params);
+      const responseData = new ApiResponseService(
+        "User Added",
+        HttpStatusCode.OK,
+        response,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Delete(":workspaceId/user/:userId")
@@ -106,13 +151,23 @@ export class WorkSpaceController {
   async removerUserWorkspace(
     @Param("workspaceId") workspaceId: string,
     @Param("userId") userId: string,
+    @Res() res: FastifyReply,
   ) {
     const params = {
       userId: userId,
       workspaceId: workspaceId,
     };
-    return await this.permissionService.removeSinglePermissionInWorkspace(
-      params,
-    );
+    try {
+      const data =
+        await this.permissionService.removeSinglePermissionInWorkspace(params);
+      const responseData = new ApiResponseService(
+        "User Removed",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }

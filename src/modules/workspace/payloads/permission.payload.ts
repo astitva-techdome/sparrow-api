@@ -29,3 +29,13 @@ export class PermissionDto {
   @IsNotEmpty()
   userId: string;
 }
+
+export class PermissionForUserDto {
+  @IsEnum(Role)
+  @IsNotEmpty()
+  role: Role;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+}

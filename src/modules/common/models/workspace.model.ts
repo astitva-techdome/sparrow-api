@@ -11,6 +11,7 @@ import {
 } from "class-validator";
 import { CollectionDto } from "./collection.model";
 import { ObjectId } from "mongodb";
+import { PermissionDto } from "./user.model";
 
 export enum WorkspaceType {
   PERSONAL = "PERSONAL",
@@ -45,6 +46,10 @@ export class Workspace {
   @ValidateNested({ each: true })
   @IsOptional()
   collection?: CollectionDto;
+
+  @IsArray()
+  @IsOptional()
+  permissions?: PermissionDto[];
 
   @IsDate()
   @IsOptional()
