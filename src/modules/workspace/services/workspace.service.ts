@@ -13,6 +13,7 @@ import { TeamRepository } from "@src/modules/identity/repositories/team.reposito
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
 import { PermissionForUserDto } from "../payloads/permission.payload";
+import path from "path";
 // import { Logger } from "winston";
 // import {Logger} from '../'
 /**
@@ -25,13 +26,15 @@ export class WorkspaceService {
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
     private readonly permissionService: PermissionService,
-    private readonly logger: Logger,
+    private readonly logger: Logger, // private readonly customLogger: CustomLogger,
   ) {}
 
   async get(id: string): Promise<WithId<Workspace>> {
     try {
       const data = await this.workspaceRepository.get(id);
-      this.logger.log("This is a log message 2.");
+      this.logger.error("This is a log message 2.");
+      // this.customLogger.log("In log");
+      this.logger.error(path.join(__dirname, "../../../logs/error.log"));
       return data;
     } catch (error) {
       throw new BadRequestException(error);

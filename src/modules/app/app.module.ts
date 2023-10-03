@@ -12,6 +12,7 @@ import configuration from "@common/config/configuration";
 import { WorkspaceModule } from "../workspace/workspace.module";
 import { CommonModule } from "../common/common.module";
 import { IdentityModule } from "../identity/identity.module";
+import path from "path";
 
 @Module({
   imports: [
@@ -20,9 +21,9 @@ import { IdentityModule } from "../identity/identity.module";
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return configService.get("env") === Env.DEV
+        return configService.get("env") !== Env.DEV
           ? {
-              level: "info",
+              level: "error",
               format: winston.format.json(),
               defaultMeta: { service: "user-service" },
               transports: [
@@ -32,12 +33,12 @@ import { IdentityModule } from "../identity/identity.module";
               ],
             }
           : {
-              level: "info",
+              level: "error",
               format: winston.format.json(),
               defaultMeta: { service: "user-service" },
               transports: [
                 new winston.transports.File({
-                  filename: "logs/error.log",
+                  filename: path.join(__dirname, "../../../logs/error.log"),
                   level: "error",
                 }),
                 new winston.transports.Console({
