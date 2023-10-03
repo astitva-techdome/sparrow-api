@@ -21,6 +21,7 @@ import pino from "pino";
           dest: "./logs/error.log",
           minLength: 4096,
           sync: true,
+          append: true,
         }),
       },
     }),
