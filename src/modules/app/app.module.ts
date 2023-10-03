@@ -11,11 +11,19 @@ import { WorkspaceModule } from "../workspace/workspace.module";
 import { CommonModule } from "../common/common.module";
 import { IdentityModule } from "../identity/identity.module";
 import { LoggerModule } from "nestjs-pino";
-
+import pino from "pino";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
-    LoggerModule.forRoot(),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        stream: pino.destination({
+          dest: "./logs/error.log",
+          minLength: 4096,
+          sync: true,
+        }),
+      },
+    }),
     AccessControlModule.forRoles(roles),
     ConfigModule,
     IdentityModule,
