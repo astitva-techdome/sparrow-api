@@ -1,4 +1,4 @@
-import { Logger, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { WorkspaceService } from "./services/workspace.service";
 import { WorkSpaceController } from "./controllers/workspace.controller";
 import { WorkspaceRepository } from "./repositories/workspace.repository";
@@ -21,7 +21,6 @@ import { RemovePermissionHandler } from "./handlers/removePermission.handler";
     PermissionHandler,
     OwnerPermissionHandler,
     RemovePermissionHandler,
-    Logger,
   ],
   exports: [],
   controllers: [WorkSpaceController, PermissionController],
