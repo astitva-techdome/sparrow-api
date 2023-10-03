@@ -30,7 +30,6 @@ export class WorkspaceService {
   async get(id: string): Promise<WithId<Workspace>> {
     try {
       const data = await this.workspaceRepository.get(id);
-      this.logger.log("==========================>This is a log message 2.");
       return data;
     } catch (error) {
       throw new BadRequestException(error);

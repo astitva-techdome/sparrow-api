@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "@app/app.controller";
 import { AppService } from "@app/app.service";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AccessControlModule } from "nest-access-control";
 import { roles } from "@app/app.roles";
-import { EnvironmentVariables } from "@common/config/env.validation";
+import { Env, EnvironmentVariables } from "@common/config/env.validation";
 import { transformAndValidateSync } from "class-transformer-validator";
 import configuration from "@common/config/configuration";
 import { WorkspaceModule } from "../workspace/workspace.module";
@@ -15,14 +15,32 @@ import pino from "pino";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        stream: pino.destination({
-          dest: "./logs/error.log",
-          minLength: 4096,
-          sync: true,
-          append: true,
-        }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          pinoHttp: {
+            level:
+              configService.get("app.env") === Env.DEV
+                ? pino.levels.labels["30"]
+                : pino.levels.labels["50"],
+            stream: pino.multistream([
+              { stream: process.stdout },
+              {
+                stream: pino.destination({
+                  dest:
+                    configService.get("app.env") === Env.DEV
+                      ? "./logs/info.log"
+                      : "./logs/error.log",
+                  sync: true,
+                  append: true,
+                  mkdir: true,
+                }),
+              },
+            ]),
+          },
+        };
       },
     }),
     AccessControlModule.forRoles(roles),
