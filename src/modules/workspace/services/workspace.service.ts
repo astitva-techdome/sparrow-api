@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import {
@@ -13,9 +13,7 @@ import { TeamRepository } from "@src/modules/identity/repositories/team.reposito
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
 import { PermissionForUserDto } from "../payloads/permission.payload";
-import path from "path";
-// import { Logger } from "winston";
-// import {Logger} from '../'
+import { Logger } from "nestjs-pino";
 /**
  * Workspace Service
  */
@@ -26,15 +24,13 @@ export class WorkspaceService {
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
     private readonly permissionService: PermissionService,
-    private readonly logger: Logger, // private readonly customLogger: CustomLogger,
+    private readonly logger: Logger,
   ) {}
 
   async get(id: string): Promise<WithId<Workspace>> {
     try {
       const data = await this.workspaceRepository.get(id);
-      this.logger.error("This is a log message 2.");
-      // this.customLogger.log("In log");
-      this.logger.error(path.join(__dirname, "../../../logs/error.log"));
+      this.logger.log("==========================>This is a log message 2.");
       return data;
     } catch (error) {
       throw new BadRequestException(error);

@@ -1,6 +1,5 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Logger } from "winston";
 
 /**
  * Application Service
@@ -12,10 +11,7 @@ export class AppService {
    * @param {ConfigService} config configuration service
    * @param {Logger} logger logger service
    */
-  constructor(
-    private config: ConfigService,
-    @Inject("winston") private readonly logger: Logger,
-  ) {}
+  constructor(private config: ConfigService) {}
 
   /**
    * Fetches and logs the APP_URL environment variable from the configuration file.
@@ -23,7 +19,6 @@ export class AppService {
    */
   root(): string {
     const appURL = this.config.get("APP_URL");
-    this.logger.info("Logging the APP_URL -> " + appURL);
     return appURL;
   }
 }
