@@ -7,6 +7,7 @@ import { ContextService } from "@src/modules/common/services/context.service";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { User } from "@src/modules/common/models/user.model";
+import { Logger } from "nestjs-pino";
 
 /**
  * Models a typical Login/Register route return body
@@ -48,6 +49,7 @@ export class AuthService {
     @Inject("DATABASE_CONNECTION")
     private db: Db,
     private contextService: ContextService,
+    private readonly logger: Logger,
   ) {
     this.expiration = this.configService.get("app.webtokenExpirationTime");
   }

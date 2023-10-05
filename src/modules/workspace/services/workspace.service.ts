@@ -19,6 +19,7 @@ import { Team } from "@src/modules/common/models/team.model";
 import { PermissionForUserDto } from "../payloads/permission.payload";
 import { CollectionDto } from "@src/modules/common/models/collection.model";
 
+import { Logger } from "nestjs-pino";
 /**
  * Workspace Service
  */
@@ -29,6 +30,7 @@ export class WorkspaceService {
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
     private readonly permissionService: PermissionService,
+    private readonly logger: Logger,
   ) {}
 
   async get(id: string): Promise<WithId<Workspace>> {
