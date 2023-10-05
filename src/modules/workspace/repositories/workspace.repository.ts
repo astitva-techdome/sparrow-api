@@ -7,6 +7,7 @@ import {
   WorkspaceDtoForIdDocument,
 } from "../payloads/workspace.payload";
 import { ContextService } from "../../common/services/context.service";
+import { CollectionDto } from "@src/modules/common/models/collection.model";
 /**
  * Models a typical response for a crud operation
  */
@@ -98,5 +99,41 @@ export class WorkspaceRepository {
     return this.db
       .collection<Workspace>(Collections.WORKSPACE)
       .deleteOne({ _id });
+  }
+  async addCollectionInWorkspace(
+    workspaceId: string,
+    collection: CollectionDto,
+  ) {
+    const _id = new ObjectId(workspaceId);
+    return this.db
+      .collection(Collections.WORKSPACE)
+      .updateOne(
+        { _id },
+        { $push: { collection: { id: collection.id, name: collection.name } } },
+      );
+  }
+
+  async updateCollectioninWorkspace(
+    id: string,
+    collectionId: string,
+    name: string,
+  ) {
+    const _id = new ObjectId(id);
+    const collection_id = new ObjectId(collectionId);
+    return this.db
+      .collection(Collections.WORKSPACE)
+      .updateOne(
+        { _id, "collection.id": collection_id },
+        { $set: { "collection.$.name": name } },
+      );
+  }
+  async deleteCollectioninWorkspace(
+    id: string,
+    collectionsArray: CollectionDto[],
+  ) {
+    const _id = new ObjectId(id);
+    return this.db
+      .collection(Collections.WORKSPACE)
+      .updateOne({ _id }, { $set: { collection: collectionsArray } });
   }
 }
