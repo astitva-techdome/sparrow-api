@@ -46,6 +46,7 @@ import { GoogleStrategy } from "./strategies/google.strategy";
     TeamService,
     TeamUserService,
     TeamRepository,
+    GoogleStrategy,
   ],
   exports: [
     PassportModule.register({ defaultStrategy: "jwt" }),
