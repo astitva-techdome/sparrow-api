@@ -4,20 +4,36 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 
-import { CreateCollectionDto } from "../payloads/collection.payload";
+import {
+  CreateCollectionDto,
+  UpdateCollectionDto,
+} from "../payloads/collection.payload";
 import { collectionRepository } from "../repositories/collection.repository";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
-import { ObjectId } from "mongodb";
+import {
+  DeleteResult,
+  InsertOneResult,
+  ObjectId,
+  UpdateResult,
+  WithId,
+} from "mongodb";
+import { Collection } from "@src/modules/common/models/collection.model";
+import { ContextService } from "@src/modules/common/services/context.service";
 
 @Injectable()
 export class CollectionService {
   constructor(
     private readonly collectionReposistory: collectionRepository,
     private readonly workspaceReposistory: WorkspaceRepository,
+    private readonly contextService: ContextService,
   ) {}
 
-  async createCollection(createCollectionDto: CreateCollectionDto) {
+  async createCollection(
+    createCollectionDto: CreateCollectionDto,
+  ): Promise<InsertOneResult> {
     try {
+      const user = await this.contextService.get("user");
+      await this.checkPermission(createCollectionDto.workspaceId, user._id);
       const collection = await this.collectionReposistory.addCollection(
         createCollectionDto,
       );
@@ -27,12 +43,15 @@ export class CollectionService {
     }
   }
 
-  async getCollection(id: string) {
+  async getCollection(id: string): Promise<WithId<Collection>> {
     return await this.collectionReposistory.get(id);
   }
 
-  async getAllCollections(id: string) {
+  async getAllCollections(id: string): Promise<WithId<Collection>[]> {
     try {
+      const user = await this.contextService.get("user");
+      await this.checkPermission(id, user._id);
+
       const workspace = await this.workspaceReposistory.get(id);
       const collections = [];
       for (let i = 0; i < workspace.collection?.length; i++) {
@@ -47,7 +66,7 @@ export class CollectionService {
     }
   }
 
-  async checkPermission(workspaceId: string, userid: ObjectId) {
+  async checkPermission(workspaceId: string, userid: ObjectId): Promise<void> {
     try {
       const workspace = await this.workspaceReposistory.get(workspaceId);
       const hasPermission = workspace.permissions.some((user) => {
@@ -62,9 +81,12 @@ export class CollectionService {
   }
   async updateCollection(
     collectionId: string,
-    updateCollectionDto: CreateCollectionDto,
-  ) {
+    updateCollectionDto: UpdateCollectionDto,
+    workspaceId: string,
+  ): Promise<UpdateResult> {
     try {
+      const user = await this.contextService.get("user");
+      await this.checkPermission(workspaceId, user._id);
       await this.collectionReposistory.get(collectionId);
       const data = await this.collectionReposistory.update(
         collectionId,
@@ -76,10 +98,22 @@ export class CollectionService {
     }
   }
 
-  async deleteCollection(id: string) {
+  async deleteCollection(
+    id: string,
+    workspaceId: ObjectId,
+  ): Promise<DeleteResult> {
     try {
-      await this.collectionReposistory.get(id);
+      const user = await this.contextService.get("user");
+      await this.checkPermission(workspaceId.toString(), user._id);
       const data = await this.collectionReposistory.delete(id);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  async getWorkSpaceIdfromCollection(id: string): Promise<ObjectId> {
+    try {
+      const data = await this.collectionReposistory.getWorkSpaceId(id);
       return data;
     } catch (error) {
       throw new BadRequestException(error);

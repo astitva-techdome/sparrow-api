@@ -11,13 +11,15 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { CreateCollectionDto } from "../payloads/collection.payload";
+import {
+  CreateCollectionDto,
+  UpdateCollectionDto,
+} from "../payloads/collection.payload";
 import { FastifyReply } from "fastify";
 import { CollectionService } from "../services/collection.service";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 import { WorkspaceService } from "../services/workspace.service";
-import { ContextService } from "@src/modules/common/services/context.service";
 import { AuthGuard } from "@nestjs/passport";
 import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 @ApiBearerAuth()
@@ -28,7 +30,6 @@ export class collectionController {
   constructor(
     private readonly collectionService: CollectionService,
     private readonly workSpaceService: WorkspaceService,
-    private readonly contextService: ContextService,
   ) {}
 
   @Post()
@@ -39,22 +40,15 @@ export class collectionController {
     @Res() res: FastifyReply,
   ) {
     try {
-      const user = await this.contextService.get("user");
-      await this.collectionService.checkPermission(
-        createCollectionDto.workspaceId,
-        user._id,
-      );
+      const workspaceId = createCollectionDto.workspaceId;
       const collection = await this.collectionService.createCollection(
         createCollectionDto,
       );
 
-      await this.workSpaceService.addCollectionInWorkSpace(
-        createCollectionDto.workspaceId,
-        {
-          id: collection.insertedId,
-          name: createCollectionDto.name,
-        },
-      );
+      await this.workSpaceService.addCollectionInWorkSpace(workspaceId, {
+        id: collection.insertedId,
+        name: createCollectionDto.name,
+      });
       const responseData = new ApiResponseService(
         "Collection Created",
         HttpStatusCode.CREATED,
@@ -77,8 +71,6 @@ export class collectionController {
     @Res() res: FastifyReply,
   ) {
     try {
-      const user = await this.contextService.get("user");
-      await this.collectionService.checkPermission(workspaceId, user._id);
       const collection = await this.collectionService.getAllCollections(
         workspaceId,
       );
@@ -98,20 +90,18 @@ export class collectionController {
   @ApiResponse({ status: 400, description: "Update Collection Failed" })
   async updateCollection(
     @Param("collectionId") collectionId: string,
-    @Body() updateCollectionDto: CreateCollectionDto,
+    @Body() updateCollectionDto: UpdateCollectionDto,
     @Res() res: FastifyReply,
   ) {
-    const user = await this.contextService.get("user");
-    await this.collectionService.checkPermission(
-      updateCollectionDto.workspaceId,
-      user._id,
-    );
+    const workspaceId =
+      await this.collectionService.getWorkSpaceIdfromCollection(collectionId);
     const collection = await this.collectionService.updateCollection(
       collectionId,
       updateCollectionDto,
+      workspaceId.toString(),
     );
     await this.workSpaceService.updateCollectionInWorkSpace(
-      updateCollectionDto.workspaceId,
+      workspaceId.toString(),
       collectionId,
       updateCollectionDto.name,
     );
@@ -130,20 +120,15 @@ export class collectionController {
     @Res() res: FastifyReply,
   ) {
     try {
-      const user = await this.contextService.get("user");
-      const existingCollection = await this.collectionService.getCollection(
-        collectionId,
-      );
-      await this.collectionService.checkPermission(
-        existingCollection.workspaceId,
-        user._id,
-      );
+      const workspaceId =
+        await this.collectionService.getWorkSpaceIdfromCollection(collectionId);
       const collection = await this.collectionService.deleteCollection(
         collectionId,
+        workspaceId,
       );
 
       await this.workSpaceService.deleteCollectionInWorkSpace(
-        existingCollection.workspaceId,
+        workspaceId.toString(),
         collectionId,
       );
       const responseData = new ApiResponseService(

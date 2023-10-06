@@ -1,56 +1,86 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 
-import { CreateCollectionDto } from "../payloads/collection.payload";
-import { Db, ObjectId } from "mongodb";
+import {
+  CreateCollectionDto,
+  UpdateCollectionDto,
+} from "../payloads/collection.payload";
+import {
+  Db,
+  DeleteResult,
+  InsertOneResult,
+  ObjectId,
+  UpdateResult,
+  WithId,
+} from "mongodb";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { ContextService } from "@src/modules/common/services/context.service";
-
+import { Collection } from "@src/modules/common/models/collection.model";
 @Injectable()
 export class collectionRepository {
   constructor(
     @Inject("DATABASE_CONNECTION") private db: Db,
     private readonly contextService: ContextService,
   ) {}
-  async addCollection(createCollectionDto: CreateCollectionDto) {
+  async addCollection(
+    collection: CreateCollectionDto,
+  ): Promise<InsertOneResult> {
+    const user = await this.contextService.get("user");
+    delete collection.workspaceId;
+
+    const new_collection: Collection = {
+      name: collection.name,
+      totalRequests: 0,
+      createdBy: user.name,
+      items: [],
+      updatedBy: user.name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     const response = await this.db
-      .collection(Collections.Collection)
-      .insertOne(createCollectionDto);
+      .collection<Collection>(Collections.COLLECTION)
+      .insertOne(new_collection);
     return response;
   }
 
-  async get(id: string) {
+  async get(id: string): Promise<WithId<Collection>> {
     const _id = new ObjectId(id);
     const data = await this.db
-      .collection(Collections.Collection)
+      .collection<Collection>(Collections.COLLECTION)
       .findOne({ _id });
     if (!data) {
       throw new BadRequestException("Collection Not Found");
     }
     return data;
   }
-  async getAllCollection(workspaceId: string) {
-    const _id = new ObjectId(workspaceId);
-    const data = await this.db.collection(Collections.WORKSPACE).find({ _id });
-    if (!data) {
-      throw new BadRequestException("Not Found");
-    }
-    return data;
-  }
-  async update(id: string, updateCollectionDto: CreateCollectionDto) {
+  async update(
+    id: string,
+    updateCollectionDto: UpdateCollectionDto,
+  ): Promise<UpdateResult> {
     const collectionId = new ObjectId(id);
     const defaultParams = {
       updatedAt: new Date(),
       updatedBy: this.contextService.get("user")._id,
     };
-    return this.db
-      .collection(Collections.Collection)
+    const data = await this.db
+      .collection(Collections.COLLECTION)
       .updateOne(
         { _id: collectionId },
         { $set: { ...updateCollectionDto, ...defaultParams } },
       );
+    return data;
   }
-  async delete(id: string) {
+  async delete(id: string): Promise<DeleteResult> {
     const _id = new ObjectId(id);
-    return this.db.collection(Collections.Collection).deleteOne({ _id });
+    const data = await this.db
+      .collection(Collections.COLLECTION)
+      .deleteOne({ _id });
+    return data;
+  }
+  async getWorkSpaceId(_id: string): Promise<ObjectId> {
+    const id = new ObjectId(_id);
+    const data = await this.db
+      .collection(Collections.WORKSPACE)
+      .findOne({ "collection.id": id });
+    return data._id;
   }
 }

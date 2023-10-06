@@ -13,25 +13,28 @@ import {
 import { HTTPMethods } from "fastify";
 import { ObjectId } from "mongodb";
 
-enum ItemTypeEnum {
+export enum ItemTypeEnum {
   FOLDER,
   REQUEST,
 }
 
-enum BodyModeEnum {
+export enum BodyModeEnum {
   RAW,
   URLENCODED,
   FORMDATA,
   FILE,
 }
 
-enum FormDataTypeEnum {
+export enum FormDataTypeEnum {
   TEXT,
   FILE,
 }
-
+export enum SourceTypeEnum {
+  SPEC,
+  USER,
+}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-class Collection {
+export class Collection {
   @IsString()
   @IsNotEmpty()
   name: string;

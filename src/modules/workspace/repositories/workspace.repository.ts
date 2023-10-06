@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { Db, DeleteResult, ObjectId, WithId } from "mongodb";
+import { Db, DeleteResult, ObjectId, UpdateResult, WithId } from "mongodb";
 import { Workspace } from "../../common/models/workspace.model";
 import { Collections } from "../../common/enum/database.collection.enum";
 import {
@@ -103,9 +103,9 @@ export class WorkspaceRepository {
   async addCollectionInWorkspace(
     workspaceId: string,
     collection: CollectionDto,
-  ) {
+  ): Promise<UpdateResult> {
     const _id = new ObjectId(workspaceId);
-    return this.db
+    return await this.db
       .collection(Collections.WORKSPACE)
       .updateOne(
         { _id },
@@ -117,7 +117,7 @@ export class WorkspaceRepository {
     id: string,
     collectionId: string,
     name: string,
-  ) {
+  ): Promise<UpdateResult> {
     const _id = new ObjectId(id);
     const collection_id = new ObjectId(collectionId);
     return this.db
@@ -130,7 +130,7 @@ export class WorkspaceRepository {
   async deleteCollectioninWorkspace(
     id: string,
     collectionsArray: CollectionDto[],
-  ) {
+  ): Promise<UpdateResult> {
     const _id = new ObjectId(id);
     return this.db
       .collection(Collections.WORKSPACE)
