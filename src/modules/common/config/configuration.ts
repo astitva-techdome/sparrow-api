@@ -22,4 +22,11 @@ export default () => ({
   azure: {
     connectionString: process.env.AZURE_CONNECTION_STRING,
   },
+  oauth: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      appUrl: process.env.GOOGLE_APP_URL,
+    },
+  },
 });

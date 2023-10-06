@@ -32,4 +32,16 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   DB_URL: number;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_CLIENT_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_CLIENT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_APP_URL: string;
 }
