@@ -12,6 +12,7 @@ import { TeamService } from "./services/team.service";
 import { TeamUserService } from "./services/team-user.service";
 import { TeamRepository } from "./repositories/team.repository";
 import { TeamController } from "./controllers/team.controller";
+import { GoogleStrategy } from "./strategies/google.strategy";
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { TeamController } from "./controllers/team.controller";
   ],
   exports: [
     PassportModule.register({ defaultStrategy: "jwt" }),
+    GoogleStrategy,
     AuthService,
     UserService,
     UserRepository,
