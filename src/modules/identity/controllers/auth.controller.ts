@@ -2,15 +2,15 @@ import {
   Controller,
   Body,
   Post,
-  // UseGuards,
-  // Get,
-  // Req,
-  // Res,
+  UseGuards,
+  Get,
+  Req,
+  Res,
 } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "../services/auth.service";
 import { LoginPayload } from "../payloads/login.payload";
-// import { AuthGuard } from "@nestjs/passport";
+import { AuthGuard } from "@nestjs/passport";
 import { ContextService } from "@src/modules/common/services/context.service";
 
 /**
@@ -41,17 +41,17 @@ export class AuthController {
     return await this.authService.createToken(user._id);
   }
 
-  // @Get("google")
-  // @UseGuards(AuthGuard("google"))
-  // async googlelogin() {}
+  @Get("google")
+  @UseGuards(AuthGuard("google"))
+  async googlelogin() {}
 
-  // @Get("google/callback")
-  // @UseGuards(AuthGuard("google"))
-  // async callback(@Req() req: any, @Res() res: any) {
-  //   const jwt = await this.authService.login(req.user);
-  //   res.header("authorization", jwt.access_token);
-  //   res.redirect(301, `${process.env.APP_URL}:3000/`);
-  //   this.contextService.set("user", req.user);
-  //   return res.send(jwt.access_token);
-  // }
+  @Get("google/callback")
+  @UseGuards(AuthGuard("google"))
+  async callback(@Req() req: any, @Res() res: any) {
+    const jwt = await this.authService.createToken(req.user);
+    res.header("authorization", jwt.token);
+    res.redirect(301, `${process.env.APP_URL}:3000/`);
+    this.contextService.set("user", req.user);
+    return res.send(jwt.token);
+  }
 }
