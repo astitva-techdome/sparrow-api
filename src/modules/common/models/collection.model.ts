@@ -1,6 +1,7 @@
 import { Type } from "class-transformer";
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsMongoId,
@@ -12,26 +13,30 @@ import {
 } from "class-validator";
 import { HTTPMethods } from "fastify";
 import { ObjectId } from "mongodb";
+import { SchemaObject } from "../services/openapi303";
 
-enum ItemTypeEnum {
+export enum ItemTypeEnum {
   FOLDER,
   REQUEST,
 }
 
-enum BodyModeEnum {
+export enum BodyModeEnum {
   RAW,
   URLENCODED,
   FORMDATA,
   FILE,
 }
 
-enum FormDataTypeEnum {
+export enum FormDataTypeEnum {
   TEXT,
   FILE,
 }
-
+export enum SourceTypeEnum {
+  SPEC,
+  USER,
+}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-class Collection {
+export class Collection {
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -70,7 +75,7 @@ export class CollectionDto {
   name: string;
 }
 
-class FormData {
+export class FormData {
   @IsString()
   @IsNotEmpty()
   key: string;
@@ -84,7 +89,7 @@ class FormData {
   type: FormDataTypeEnum;
 }
 
-class RequestBody {
+export class RequestBody {
   @IsEnum(BodyModeEnum)
   @IsNotEmpty()
   mode: BodyModeEnum;
@@ -100,17 +105,22 @@ class RequestBody {
   formData?: FormData[];
 }
 
-class QueryParams {
+export class Params {
   @IsString()
   @IsNotEmpty()
-  key: string;
+  name: string;
 
   @IsString()
+  description: string;
+
+  @IsBoolean()
+  required: boolean;
+
   @IsNotEmpty()
-  value: string;
+  schema: SchemaObject;
 }
 
-class RequestMetaData {
+export class RequestMetaData {
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -127,16 +137,31 @@ class RequestMetaData {
   body?: RequestBody;
 
   @IsArray()
-  @Type(() => QueryParams)
+  @Type(() => Params)
   @ValidateNested({ each: true })
   @IsOptional()
-  queryParams?: QueryParams[];
+  queryParams?: Params[];
+
+  @IsArray()
+  @Type(() => Params)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  pathParams?: Params[];
+
+  @IsArray()
+  @Type(() => Params)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  headers?: Params[];
 }
 
-class CollectionItem {
+export class CollectionItem {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  description: string;
 
   @IsEnum(ItemTypeEnum)
   @IsNotEmpty()

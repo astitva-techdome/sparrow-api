@@ -23,6 +23,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@apidevtools/swagger-parser": "^10.1.0",
     "@azure/service-bus": "^7.9.1",
     "@fastify/helmet": "^11.0.0",
     "@fastify/rate-limit": "^8.0.3",

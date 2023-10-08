@@ -2,6 +2,7 @@ import { Controller, Body, Post } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "../services/auth.service";
 import { LoginPayload } from "../payloads/login.payload";
+import { ParserService } from "@src/modules/common/services/parser.service";
 
 /**
  * Authentication Controller
@@ -13,7 +14,10 @@ export class AuthController {
    * Constructor
    * @param {AuthService} authService authentication service
    */
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly parserService: ParserService,
+  ) {}
 
   /**
    * Login route to validate and create tokens for users
@@ -26,5 +30,10 @@ export class AuthController {
   async login(@Body() payload: LoginPayload) {
     const user = await this.authService.validateUser(payload);
     return await this.authService.createToken(user._id);
+  }
+
+  @Post("parse")
+  async parse() {
+    await this.parserService.parse();
   }
 }
