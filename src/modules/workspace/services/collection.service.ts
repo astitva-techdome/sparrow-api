@@ -44,7 +44,11 @@ export class CollectionService {
   }
 
   async getCollection(id: string): Promise<WithId<Collection>> {
-    return await this.collectionReposistory.get(id);
+    try {
+      return await this.collectionReposistory.get(id);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async getAllCollections(id: string): Promise<WithId<Collection>[]> {
@@ -100,20 +104,12 @@ export class CollectionService {
 
   async deleteCollection(
     id: string,
-    workspaceId: ObjectId,
+    workspaceId: string,
   ): Promise<DeleteResult> {
     try {
       const user = await this.contextService.get("user");
-      await this.checkPermission(workspaceId.toString(), user._id);
+      await this.checkPermission(workspaceId, user._id);
       const data = await this.collectionReposistory.delete(id);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
-  }
-  async getWorkSpaceIdfromCollection(id: string): Promise<ObjectId> {
-    try {
-      const data = await this.collectionReposistory.getWorkSpaceId(id);
       return data;
     } catch (error) {
       throw new BadRequestException(error);

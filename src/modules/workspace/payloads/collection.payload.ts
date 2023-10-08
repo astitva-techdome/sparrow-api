@@ -9,57 +9,13 @@ import {
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import {
-  BodyModeEnum,
-  FormDataTypeEnum,
   ItemTypeEnum,
+  QueryParams,
+  RequestBody,
 } from "@src/modules/common/models/collection.model";
 import { HTTPMethods } from "fastify";
 import { Type } from "class-transformer";
-export class collectionItemQueryParamsDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  key: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  value: string;
-}
-
-class FormData {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  value: string;
-
-  @ApiProperty()
-  @IsEnum(FormDataTypeEnum)
-  @IsNotEmpty()
-  type: FormDataTypeEnum;
-}
-class RequestBody {
-  @ApiProperty()
-  @IsEnum(BodyModeEnum)
-  @IsNotEmpty()
-  mode: BodyModeEnum;
-
-  @IsOptional()
-  @IsString()
-  raw?: string;
-
-  @IsArray()
-  @Type(() => FormData)
-  @ValidateNested({ each: true })
-  @ApiProperty({ isArray: true, type: FormData })
-  @IsOptional()
-  formData?: FormData[];
-}
 export class collectionItemsRequestDto {
   @ApiProperty()
   @IsString()
@@ -84,10 +40,10 @@ export class collectionItemsRequestDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => collectionItemQueryParamsDto)
+  @Type(() => QueryParams)
   @IsOptional()
-  @ApiProperty({ isArray: true, type: collectionItemQueryParamsDto })
-  queryParams?: collectionItemQueryParamsDto[];
+  @ApiProperty({ isArray: true, type: QueryParams })
+  queryParams?: QueryParams[];
 }
 
 export class createCollectionItemsDto {

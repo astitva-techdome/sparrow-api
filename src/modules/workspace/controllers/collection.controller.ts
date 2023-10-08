@@ -85,23 +85,22 @@ export class collectionController {
     }
   }
 
-  @Put(":collectionId")
+  @Put(":collectionId/workspace/:workspaceId")
   @ApiResponse({ status: 200, description: "Collection Updated Successfully" })
   @ApiResponse({ status: 400, description: "Update Collection Failed" })
   async updateCollection(
     @Param("collectionId") collectionId: string,
+    @Param("workspaceId") workspaceId: string,
     @Body() updateCollectionDto: UpdateCollectionDto,
     @Res() res: FastifyReply,
   ) {
-    const workspaceId =
-      await this.collectionService.getWorkSpaceIdfromCollection(collectionId);
     const collection = await this.collectionService.updateCollection(
       collectionId,
       updateCollectionDto,
-      workspaceId.toString(),
+      workspaceId,
     );
     await this.workSpaceService.updateCollectionInWorkSpace(
-      workspaceId.toString(),
+      workspaceId,
       collectionId,
       updateCollectionDto.name,
     );
@@ -112,16 +111,15 @@ export class collectionController {
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
-  @Delete(":collectionId")
+  @Delete(":collectionId/workspace/:workspaceId")
   @ApiResponse({ status: 201, description: "Removed Collection Successfully" })
   @ApiResponse({ status: 400, description: "Failed to remove Collection" })
   async deleteCollection(
     @Param("collectionId") collectionId: string,
+    @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
   ) {
     try {
-      const workspaceId =
-        await this.collectionService.getWorkSpaceIdfromCollection(collectionId);
       const collection = await this.collectionService.deleteCollection(
         collectionId,
         workspaceId,

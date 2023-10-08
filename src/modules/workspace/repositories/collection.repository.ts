@@ -76,11 +76,4 @@ export class collectionRepository {
       .deleteOne({ _id });
     return data;
   }
-  async getWorkSpaceId(_id: string): Promise<ObjectId> {
-    const id = new ObjectId(_id);
-    const data = await this.db
-      .collection(Collections.WORKSPACE)
-      .findOne({ "collection.id": id });
-    return data._id;
-  }
 }

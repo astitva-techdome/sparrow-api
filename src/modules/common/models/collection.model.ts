@@ -73,7 +73,7 @@ export class CollectionDto {
   name: string;
 }
 
-class FormData {
+export class FormData {
   @IsString()
   @IsNotEmpty()
   key: string;
@@ -87,7 +87,7 @@ class FormData {
   type: FormDataTypeEnum;
 }
 
-class RequestBody {
+export class RequestBody {
   @IsEnum(BodyModeEnum)
   @IsNotEmpty()
   mode: BodyModeEnum;
@@ -103,7 +103,7 @@ class RequestBody {
   formData?: FormData[];
 }
 
-class QueryParams {
+export class QueryParams {
   @IsString()
   @IsNotEmpty()
   key: string;

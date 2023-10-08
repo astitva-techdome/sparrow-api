@@ -114,11 +114,11 @@ export class WorkspaceRepository {
   }
 
   async updateCollectioninWorkspace(
-    id: string,
+    workspaceId: string,
     collectionId: string,
     name: string,
   ): Promise<UpdateResult> {
-    const _id = new ObjectId(id);
+    const _id = new ObjectId(workspaceId);
     const collection_id = new ObjectId(collectionId);
     return this.db
       .collection(Collections.WORKSPACE)
@@ -128,10 +128,10 @@ export class WorkspaceRepository {
       );
   }
   async deleteCollectioninWorkspace(
-    id: string,
+    workspaceId: string,
     collectionsArray: CollectionDto[],
   ): Promise<UpdateResult> {
-    const _id = new ObjectId(id);
+    const _id = new ObjectId(workspaceId);
     return this.db
       .collection(Collections.WORKSPACE)
       .updateOne({ _id }, { $set: { collection: collectionsArray } });
