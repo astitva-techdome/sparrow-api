@@ -19,6 +19,7 @@ import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
+import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
 /**
  * User Controller
  */
@@ -93,6 +94,15 @@ export class UserController {
         data,
       );
       res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  @Post("reset-password")
+  @UseGuards(AuthGuard("jwt"))
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordPayload) {
+    try {
+      await this.userService.forgetPassword(resetPasswordDto);
     } catch (error) {
       throw new BadRequestException(error);
     }

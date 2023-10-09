@@ -9,6 +9,8 @@ import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import { User } from "@src/modules/common/models/user.model";
 import { WithId } from "mongodb";
+import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
+import * as nodemailer from "nodemailer";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -113,6 +115,32 @@ export class UserService {
     try {
       const data: any = await this.userRepository.deleteUser(userId);
       return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  async forgetPassword(resetPasswordDto: ResetPasswordPayload): Promise<void> {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.email,
+          pass: process.env.pass,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.email,
+        to: resetPasswordDto.email,
+        text: "Reset Password",
+        html: "<p>Reset Password</p>",
+        subject: `Reset Password`,
+      };
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        console.log(`Nodemailer error sending email to`, error);
+      }
     } catch (error) {
       throw new BadRequestException(error);
     }
