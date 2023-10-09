@@ -13,25 +13,28 @@ import {
 import { HTTPMethods } from "fastify";
 import { ObjectId } from "mongodb";
 
-enum ItemTypeEnum {
+export enum ItemTypeEnum {
   FOLDER,
   REQUEST,
 }
 
-enum BodyModeEnum {
+export enum BodyModeEnum {
   RAW,
   URLENCODED,
   FORMDATA,
   FILE,
 }
 
-enum FormDataTypeEnum {
+export enum FormDataTypeEnum {
   TEXT,
   FILE,
 }
-
+export enum SourceTypeEnum {
+  SPEC,
+  USER,
+}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-class Collection {
+export class Collection {
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -70,7 +73,7 @@ export class CollectionDto {
   name: string;
 }
 
-class FormData {
+export class FormData {
   @IsString()
   @IsNotEmpty()
   key: string;
@@ -84,7 +87,7 @@ class FormData {
   type: FormDataTypeEnum;
 }
 
-class RequestBody {
+export class RequestBody {
   @IsEnum(BodyModeEnum)
   @IsNotEmpty()
   mode: BodyModeEnum;
@@ -100,7 +103,7 @@ class RequestBody {
   formData?: FormData[];
 }
 
-class QueryParams {
+export class QueryParams {
   @IsString()
   @IsNotEmpty()
   key: string;
