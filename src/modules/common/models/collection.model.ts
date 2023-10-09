@@ -16,24 +16,20 @@ import { ObjectId } from "mongodb";
 import { SchemaObject } from "../services/openapi303";
 
 export enum ItemTypeEnum {
-  FOLDER,
-  REQUEST,
+  "FOLDER",
+  "REQUEST",
 }
 
 export enum BodyModeEnum {
-  RAW,
-  URLENCODED,
-  FORMDATA,
-  FILE,
+  "application/json",
+  "application/xml",
+  "application/x-www-form-urlencoded",
+  "multipart/form-data",
 }
 
-export enum FormDataTypeEnum {
-  TEXT,
-  FILE,
-}
 export enum SourceTypeEnum {
-  SPEC,
-  USER,
+  "SPEC",
+  "USER",
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class Collection {
@@ -75,34 +71,13 @@ export class CollectionDto {
   name: string;
 }
 
-export class FormData {
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @IsString()
-  @IsNotEmpty()
-  value: string;
-
-  @IsEnum(FormDataTypeEnum)
-  @IsNotEmpty()
-  type: FormDataTypeEnum;
-}
-
 export class RequestBody {
   @IsEnum(BodyModeEnum)
   @IsNotEmpty()
-  mode: BodyModeEnum;
+  type: BodyModeEnum;
 
-  @IsOptional()
-  @IsString()
-  raw?: string;
-
-  @IsArray()
-  @Type(() => FormData)
-  @ValidateNested({ each: true })
-  @IsOptional()
-  formData?: FormData[];
+  @IsNotEmpty()
+  schema?: SchemaObject;
 }
 
 export class Params {
@@ -130,11 +105,16 @@ export class RequestMetaData {
 
   @IsString()
   @IsNotEmpty()
+  operationId: string;
+
+  @IsString()
+  @IsNotEmpty()
   url: string;
 
   @Type(() => RequestBody)
+  @ValidateNested({ each: true })
   @IsOptional()
-  body?: RequestBody;
+  body?: RequestBody[];
 
   @IsArray()
   @Type(() => Params)

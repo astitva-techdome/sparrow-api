@@ -1,0 +1,831 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+      "/": {
+          "get": {
+              "operationId": "AppController_getString",
+              "parameters": [],
+              "responses": {
+                  "200": {
+                      "description": "Request Received"
+                  },
+                  "400": {
+                      "description": "Request Failed"
+                  }
+              },
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/auth/login": {
+          "post": {
+              "operationId": "AuthController_login",
+              "parameters": [],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/LoginPayload"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "Login Completed"
+                  },
+                  "400": {
+                      "description": "Bad Request"
+                  },
+                  "401": {
+                      "description": "Unauthorized"
+                  }
+              },
+              "tags": [
+                  "authentication"
+              ]
+          }
+      },
+      "/api/auth/parse": {
+          "post": {
+              "operationId": "AuthController_parse",
+              "parameters": [],
+              "responses": {
+                  "201": {
+                      "description": ""
+                  }
+              },
+              "tags": [
+                  "authentication"
+              ]
+          }
+      },
+      "/api/user": {
+          "post": {
+              "operationId": "UserController_register",
+              "parameters": [],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/RegisterPayload"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "Registration Completed"
+                  },
+                  "400": {
+                      "description": "Bad Request"
+                  },
+                  "401": {
+                      "description": "Unauthorized"
+                  }
+              },
+              "tags": [
+                  "user"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/user/{userId}": {
+          "get": {
+              "operationId": "UserController_getUser",
+              "parameters": [
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": ""
+                  }
+              },
+              "tags": [
+                  "user"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          },
+          "put": {
+              "operationId": "UserController_updateUser",
+              "parameters": [
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/UpdateUserDto"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "200": {
+                      "description": ""
+                  }
+              },
+              "tags": [
+                  "user"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          },
+          "delete": {
+              "operationId": "UserController_deleteUser",
+              "parameters": [
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": ""
+                  }
+              },
+              "tags": [
+                  "user"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/team": {
+          "post": {
+              "operationId": "TeamController_createTeam",
+              "parameters": [],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/CreateOrUpdateTeamDto"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "Team Created Successfully"
+                  },
+                  "400": {
+                      "description": "Create Team Failed"
+                  }
+              },
+              "tags": [
+                  "team"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/team/{teamId}": {
+          "get": {
+              "operationId": "TeamController_getTeam",
+              "parameters": [
+                  {
+                      "name": "teamId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Fetch Team Request Received"
+                  },
+                  "400": {
+                      "description": "Fetch Team Request Failed"
+                  }
+              },
+              "tags": [
+                  "team"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          },
+          "delete": {
+              "operationId": "TeamController_deleteTeam",
+              "parameters": [
+                  {
+                      "name": "teamId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Team Deleted Successfully"
+                  },
+                  "400": {
+                      "description": "Delete Team Failed"
+                  }
+              },
+              "tags": [
+                  "team"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/team/{teamId}/user/{userId}": {
+          "post": {
+              "operationId": "TeamController_addUserInTeam",
+              "parameters": [
+                  {
+                      "name": "teamId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  },
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "201": {
+                      "description": "User Added Successfully"
+                  },
+                  "400": {
+                      "description": "Failed to add user"
+                  }
+              },
+              "tags": [
+                  "team"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          },
+          "delete": {
+              "operationId": "TeamController_removeUserInTeam",
+              "parameters": [
+                  {
+                      "name": "teamId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  },
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "201": {
+                      "description": "User Deleted Successfully"
+                  },
+                  "400": {
+                      "description": "Failed to delete user"
+                  }
+              },
+              "tags": [
+                  "team"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/team/{teamId}/owner/{userId}": {
+          "post": {
+              "operationId": "TeamController_addTeamOwner",
+              "parameters": [
+                  {
+                      "name": "teamId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  },
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "201": {
+                      "description": "Team Owner Added Successfully"
+                  },
+                  "400": {
+                      "description": "Failed to add team owner"
+                  }
+              },
+              "tags": [
+                  "team"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/workspace": {
+          "post": {
+              "operationId": "WorkSpaceController_createWorkspace",
+              "parameters": [],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/CreateOrUpdateWorkspaceDto"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "Workspace Created Successfully"
+                  },
+                  "400": {
+                      "description": "Create Workspace Failed"
+                  }
+              },
+              "tags": [
+                  "workspace"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/workspace/{workspaceId}": {
+          "get": {
+              "operationId": "WorkSpaceController_getWorkspace",
+              "parameters": [
+                  {
+                      "name": "workspaceId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Fetch Workspace Request Received"
+                  },
+                  "400": {
+                      "description": "Fetch Workspace Request Failed"
+                  }
+              },
+              "tags": [
+                  "workspace"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          },
+          "put": {
+              "operationId": "WorkSpaceController_updateWorkspace",
+              "parameters": [
+                  {
+                      "name": "workspaceId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/CreateOrUpdateWorkspaceDto"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "200": {
+                      "description": "Workspace Updated Successfully"
+                  },
+                  "400": {
+                      "description": "Update Workspace Failed"
+                  }
+              },
+              "tags": [
+                  "workspace"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          },
+          "delete": {
+              "operationId": "WorkSpaceController_deleteWorkspace",
+              "parameters": [
+                  {
+                      "name": "workspaceId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Workspace Deleted Successfully"
+                  },
+                  "400": {
+                      "description": "Delete Workspace Failed"
+                  }
+              },
+              "tags": [
+                  "workspace"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/workspace/{workspaceId}/user/{userId}": {
+          "post": {
+              "operationId": "WorkSpaceController_addUserWorkspace",
+              "parameters": [
+                  {
+                      "name": "workspaceId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  },
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/AddWorkspaceUserDto"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "User Added Successfully"
+                  },
+                  "400": {
+                      "description": "Failed to Add User"
+                  }
+              },
+              "tags": [
+                  "workspace"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          },
+          "delete": {
+              "operationId": "WorkSpaceController_removerUserWorkspace",
+              "parameters": [
+                  {
+                      "name": "workspaceId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  },
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "responses": {
+                  "201": {
+                      "description": "Removed User Successfully"
+                  },
+                  "400": {
+                      "description": "Failed to remove user"
+                  }
+              },
+              "tags": [
+                  "workspace"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/permission": {
+          "post": {
+              "operationId": "PermissionController_createPermission",
+              "parameters": [],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/CreateOrUpdatePermissionDto"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "Permission Added Successfully"
+                  },
+                  "400": {
+                      "description": "Create Permission Failed"
+                  }
+              },
+              "tags": [
+                  "permission"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      },
+      "/api/permission/{workspaceId}/user/{userId}": {
+          "put": {
+              "operationId": "PermissionController_updateWorkspace",
+              "parameters": [
+                  {
+                      "name": "workspaceId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  },
+                  {
+                      "name": "userId",
+                      "required": true,
+                      "in": "path",
+                      "schema": {
+                          "type": "string"
+                      }
+                  }
+              ],
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "type": "string"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "200": {
+                      "description": "Workspace Updated Successfully"
+                  },
+                  "400": {
+                      "description": "Update Workspace Failed"
+                  }
+              },
+              "tags": [
+                  "permission"
+              ],
+              "security": [
+                  {
+                      "bearer": []
+                  }
+              ]
+          }
+      }
+  },
+  "info": {
+      "title": "API",
+      "description": "API Description",
+      "version": "1.0",
+      "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+      "securitySchemes": {
+          "bearer": {
+              "scheme": "bearer",
+              "bearerFormat": "JWT",
+              "type": "http"
+          }
+      },
+      "schemas": {
+          "LoginPayload": {
+              "type": "object",
+              "properties": {
+                  "email": {
+                      "type": "string"
+                  },
+                  "password": {
+                      "type": "string"
+                  }
+              },
+              "required": [
+                  "email",
+                  "password"
+              ]
+          },
+          "RegisterPayload": {
+              "type": "object",
+              "properties": {
+                  "email": {
+                      "type": "string"
+                  },
+                  "name": {
+                      "type": "string"
+                  },
+                  "password": {
+                      "type": "string"
+                  }
+              },
+              "required": [
+                  "email",
+                  "name",
+                  "password"
+              ]
+          },
+          "UpdateUserDto": {
+              "type": "object",
+              "properties": {
+                  "name": {
+                      "type": "string"
+                  },
+                  "password": {
+                      "type": "string"
+                  }
+              },
+              "required": [
+                  "name",
+                  "password"
+              ]
+          },
+          "CreateOrUpdateTeamDto": {
+              "type": "object",
+              "properties": {
+                  "name": {
+                      "type": "string",
+                      "example": "team1"
+                  }
+              },
+              "required": [
+                  "name"
+              ]
+          },
+          "CreateOrUpdateWorkspaceDto": {
+              "type": "object",
+              "properties": {
+                  "id": {
+                      "type": "string",
+                      "example": "64f878a0293b1e4415866493"
+                  },
+                  "name": {
+                      "type": "string",
+                      "example": "workspace 1"
+                  },
+                  "type": {
+                      "type": "string",
+                      "example": "TEAM"
+                  }
+              },
+              "required": [
+                  "id",
+                  "name",
+                  "type"
+              ]
+          },
+          "AddWorkspaceUserDto": {
+              "type": "object",
+              "properties": {
+                  "role": {
+                      "type": "string",
+                      "example": "admin"
+                  }
+              },
+              "required": [
+                  "role"
+              ]
+          },
+          "CreateOrUpdatePermissionDto": {
+              "type": "object",
+              "properties": {
+                  "userId": {
+                      "type": "string"
+                  },
+                  "role": {
+                      "type": "string"
+                  },
+                  "workspaceId": {
+                      "type": "string"
+                  }
+              },
+              "required": [
+                  "userId",
+                  "role",
+                  "workspaceId"
+              ]
+          }
+      }
+  }
+}
