@@ -31,9 +31,4 @@ export class AuthController {
     const user = await this.authService.validateUser(payload);
     return await this.authService.createToken(user._id);
   }
-
-  @Post("parse")
-  async parse() {
-    await this.parserService.parse();
-  }
 }

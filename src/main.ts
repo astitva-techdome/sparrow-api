@@ -8,7 +8,7 @@ import fastifyRateLimiter from "@fastify/rate-limit";
 import { AppModule } from "@app/app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
-
+import fastyfyMultipart from "@fastify/multipart";
 /**
  * The url endpoint for open api ui
  * @type {string}
@@ -56,5 +56,6 @@ const { PORT } = process.env;
     timeWindow: 60000,
   });
   app.useGlobalPipes(new ValidationPipe());
+  app.register(fastyfyMultipart);
   await app.listen(PORT, "0.0.0.0");
 })();

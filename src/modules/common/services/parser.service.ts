@@ -2,6 +2,7 @@ import SwaggerParser from "@apidevtools/swagger-parser";
 // import * as util from "util";
 import {
   BodyModeEnum,
+  Collection,
   CollectionItem,
   ItemTypeEnum,
   RequestBody,
@@ -9,28 +10,21 @@ import {
 } from "../models/collection.model";
 import { OpenAPI303, ParameterObject } from "./openapi303";
 import { HTTPMethods } from "fastify";
-// import { paths, components } from "./example";
+import { Injectable } from "@nestjs/common";
+import { ContextService } from "./context.service";
+
+@Injectable()
 export class ParserService {
-  constructor() {}
-  async parse() {
-    // const openApiDocument = (await SwaggerParser.validate(
-    //   __dirname + "/example.yaml",
-    // )) as OpenAPI303;
-
-    const openApiDocument = (await SwaggerParser.validate(
-      __dirname + "/test.json",
-    )) as OpenAPI303;
-
-    // const collObj: Collection = {
-    //   name: "test",
-    //   totalRequests: 1,
-    //   items: [],
-    // };
+  constructor(private readonly contextService: ContextService) {}
+  async parse(file: string): Promise<Collection> {
+    const openApiDocument = (await SwaggerParser.validate(file)) as OpenAPI303;
 
     const folderObjMap = new Map();
 
     for (const [key, value] of Object.entries(openApiDocument.paths)) {
+      //key will be endpoints /put and values will its apis post ,put etc
       for (const [innerKey, innerValue] of Object.entries(value)) {
+        //key will be api methods and values will it's desc
         const requestObj: CollectionItem = {} as CollectionItem;
         requestObj.name = key;
         requestObj.description = innerValue.description;
@@ -60,18 +54,23 @@ export class ParserService {
             body.type = Object.values(BodyModeEnum).find(
               (enumMember) => enumMember === type,
             ) as BodyModeEnum;
-            body.schema = schema;
+            body.schema = (schema as any).schema;
             requestObj.request.body.push(body);
           }
         }
-
         //Add to a folder
         const tag = innerValue.tags ? innerValue.tags[0] : "default";
+        const tagArr =
+          openApiDocument?.tags.length > 0 &&
+          openApiDocument.tags.filter((tagObj) => {
+            return tagObj.name === tag;
+          });
+
         let folderObj: CollectionItem = folderObjMap.get(tag);
         if (!folderObj) {
           folderObj = {} as CollectionItem;
           folderObj.name = tag;
-          folderObj.description = "";
+          folderObj.description = tagArr ? tagArr[0].description : "";
           folderObj.type = ItemTypeEnum.FOLDER;
           folderObj.items = [];
         }
@@ -79,8 +78,28 @@ export class ParserService {
         folderObjMap.set(folderObj.name, folderObj);
       }
     }
-
-    console.log(folderObjMap);
-    return;
+    const itemObject = Object.fromEntries(folderObjMap);
+    const items: CollectionItem[] = [];
+    let totalRequests = 0;
+    for (const key in itemObject) {
+      if (itemObject.hasOwnProperty(key)) {
+        items.push(itemObject[key]);
+        delete itemObject[key];
+      }
+    }
+    items.map((itemObj) => {
+      totalRequests = totalRequests + itemObj.items.length;
+    });
+    const user = await this.contextService.get("user");
+    const collection: Collection = {
+      name: openApiDocument.info.title,
+      totalRequests,
+      items: items,
+      createdBy: user.name,
+      updatedBy: user.name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    return collection;
   }
 }

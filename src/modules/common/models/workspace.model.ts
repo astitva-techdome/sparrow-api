@@ -45,7 +45,7 @@ export class Workspace {
   @Type(() => CollectionDto)
   @ValidateNested({ each: true })
   @IsOptional()
-  collection?: CollectionDto;
+  collection?: CollectionDto[];
 
   @IsArray()
   @IsOptional()

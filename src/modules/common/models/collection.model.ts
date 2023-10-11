@@ -16,11 +16,20 @@ import { ObjectId } from "mongodb";
 import { SchemaObject } from "../services/openapi303";
 
 export enum ItemTypeEnum {
-  "FOLDER",
-  "REQUEST",
+  FOLDER = "FOLDER",
+  REQUEST = "REQUEST",
 }
-
 export enum BodyModeEnum {
+  RAW,
+  URLENCODED,
+  FORMDATA,
+  FILE,
+}
+export enum FormDataTypeEnum {
+  TEXT,
+  FILE,
+}
+export enum BodyModesEnum {
   "application/json",
   "application/xml",
   "application/x-www-form-urlencoded",
@@ -30,6 +39,15 @@ export enum BodyModeEnum {
 export enum SourceTypeEnum {
   "SPEC",
   "USER",
+}
+export class QueryParams {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class Collection {
@@ -69,6 +87,19 @@ export class CollectionDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+}
+export class FormData {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+
+  @IsEnum(FormDataTypeEnum)
+  @IsNotEmpty()
+  type: FormDataTypeEnum;
 }
 
 export class RequestBody {
