@@ -2,7 +2,6 @@ import { Controller, Body, Post } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "../services/auth.service";
 import { LoginPayload } from "../payloads/login.payload";
-import { ParserService } from "@src/modules/common/services/parser.service";
 
 /**
  * Authentication Controller
@@ -14,10 +13,7 @@ export class AuthController {
    * Constructor
    * @param {AuthService} authService authentication service
    */
-  constructor(
-    private readonly authService: AuthService,
-    private readonly parserService: ParserService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   /**
    * Login route to validate and create tokens for users

@@ -35,7 +35,7 @@ export class CollectionService {
       const user = await this.contextService.get("user");
       await this.checkPermission(createCollectionDto.workspaceId, user._id);
 
-      const new_collection: Collection = {
+      const newCollection: Collection = {
         name: createCollectionDto.name,
         totalRequests: 0,
         createdBy: user.name,
@@ -45,7 +45,7 @@ export class CollectionService {
         updatedAt: new Date(),
       };
       const collection = await this.collectionReposistory.addCollection(
-        new_collection,
+        newCollection,
       );
       return collection;
     } catch (error) {
