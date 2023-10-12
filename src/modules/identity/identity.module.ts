@@ -12,6 +12,7 @@ import { TeamService } from "./services/team.service";
 import { TeamUserService } from "./services/team-user.service";
 import { TeamRepository } from "./repositories/team.repository";
 import { TeamController } from "./controllers/team.controller";
+import { RefreshTokenStrategy } from "./strategies/refresh-token.strategy";
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { TeamController } from "./controllers/team.controller";
   providers: [
     AuthService,
     JwtStrategy,
+    RefreshTokenStrategy,
     UserService,
     JwtService,
     UserRepository,

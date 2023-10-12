@@ -142,4 +142,41 @@ export class UserRepository {
       .findOneAndUpdate({ _id: id }, updatedUserParams);
     return responseData.value;
   }
+  async addRefreshTokenInUser(
+    _id: ObjectId,
+    refreshToken: string,
+  ): Promise<void> {
+    await this.db.collection<User>(Collections.USER).findOneAndUpdate(
+      { _id },
+      {
+        $push: {
+          refresh_tokens: refreshToken,
+        },
+      },
+    );
+  }
+
+  async deleteRefreshTokenFromUser(_id: ObjectId): Promise<void> {
+    await this.db.collection<User>(Collections.USER).findOneAndUpdate(
+      { _id },
+      {
+        $pop: {
+          refresh_tokens: 1,
+        },
+      },
+    );
+    return;
+  }
+  async deleteRefreshToken(id: string, refreshToken: string): Promise<void> {
+    const _id = new ObjectId(id);
+    await this.db.collection<User>(Collections.USER).findOneAndUpdate(
+      { _id },
+      {
+        $pull: {
+          refresh_tokens: refreshToken,
+        },
+      },
+    );
+    return;
+  }
 }

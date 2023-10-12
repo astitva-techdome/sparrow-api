@@ -1,4 +1,9 @@
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { LoginPayload } from "../payloads/login.payload";
 import { ConfigService } from "@nestjs/config";
@@ -8,7 +13,8 @@ import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { User } from "@src/modules/common/models/user.model";
 import { Logger } from "nestjs-pino";
-
+import * as argon2 from "argon2";
+import { UserRepository } from "../repositories/user.repository";
 /**
  * Models a typical Login/Register route return body
  */
@@ -37,6 +43,7 @@ export class AuthService {
    * @type {string}
    */
   private readonly expiration: number;
+  private readonly refreshTokenExpirationTime: number;
 
   /**
    * Constructor
@@ -46,12 +53,16 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly userReposistory: UserRepository,
     @Inject("DATABASE_CONNECTION")
     private db: Db,
     private contextService: ContextService,
     private readonly logger: Logger,
   ) {
     this.expiration = this.configService.get("app.webtokenExpirationTime");
+    this.refreshTokenExpirationTime = this.configService.get(
+      "app.refreshTokenExpirationTime",
+    );
   }
 
   /**
@@ -85,6 +96,24 @@ export class AuthService {
     };
   }
 
+  async createRefreshToken(insertedId: ObjectId): Promise<ITokenReturnBody> {
+    const user = this.contextService.get("user");
+    return {
+      expires: this.refreshTokenExpirationTime.toString(),
+      expiresPrettyPrint: AuthService.prettyPrintSeconds(
+        this.refreshTokenExpirationTime.toString(),
+      ),
+      token: this.jwtService.sign(
+        {
+          _id: insertedId,
+          email: user.email,
+          permissions: user.permissions,
+          exp: Date.now() / 1000 + this.refreshTokenExpirationTime,
+        },
+        { secret: this.configService.get("app.refreshTokenSecretKey") },
+      ),
+    };
+  }
   /**
    * Formats the time in seconds into human-readable format
    * @param {string} time
@@ -123,5 +152,43 @@ export class AuthService {
       email,
       password: createHmac("sha256", password).digest("hex"),
     });
+  }
+
+  async validateRefreshToken(userId: string, refreshToken: string) {
+    try {
+      const _id = new ObjectId(userId);
+      const user = await this.db
+        .collection<User>(Collections.USER)
+        .findOne({ _id });
+
+      if (!user) {
+        throw new UnauthorizedException("UnAuthorized");
+      }
+      const hasRefreshTokenMatch = await argon2.verify(
+        user.refresh_tokens[user.refresh_tokens.length - 1],
+        refreshToken,
+      );
+      if (!hasRefreshTokenMatch) {
+        throw new ForbiddenException("Access Denied");
+      }
+      const newAccessToken = await this.createToken(user._id);
+      const newRefreshToken = await this.createRefreshToken(user._id);
+
+      await this.userReposistory.deleteRefreshTokenFromUser(user._id);
+      await this.userReposistory.addRefreshTokenInUser(
+        user._id,
+        await this.hashData(newRefreshToken.token),
+      );
+      return {
+        newAccessToken,
+        newRefreshToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException("Invalid Token");
+    }
+  }
+
+  async hashData(data: string) {
+    return argon2.hash(data);
   }
 }
