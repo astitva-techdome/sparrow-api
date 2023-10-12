@@ -22,10 +22,7 @@ import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 import { WorkspaceService } from "../services/workspace.service";
 import { AuthGuard } from "@nestjs/passport";
 import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
-import {
-  CollectionRequestItem,
-  FolderPayload,
-} from "../payloads/collectionRequest.payload";
+import { FolderPayload } from "../payloads/collectionRequest.payload";
 import { CollectionRequestService } from "../services/collection-request.service";
 
 @ApiBearerAuth()
@@ -145,28 +142,6 @@ export class collectionController {
     } catch (error) {
       throw new BadRequestException(error);
     }
-  }
-
-  @Post(":collectionId/workspace/:workspaceId/request")
-  @ApiResponse({ status: 200, description: "Request saved Successfully" })
-  @ApiResponse({ status: 400, description: "Failed to save request" })
-  async addRequest(
-    @Param("collectionId") collectionId: string,
-    @Param("workspaceId") workspaceId: string,
-    @Body() collectionDto: CollectionRequestItem[],
-    @Res() res: FastifyReply,
-  ) {
-    const collection = await this.collectionRequestService.addRequest({
-      collectionId,
-      workspaceId,
-      collectionDto,
-    });
-    const responseData = new ApiResponseService(
-      "Success",
-      HttpStatusCode.OK,
-      collection,
-    );
-    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":collectionId/workspace/:workspaceId/folder")

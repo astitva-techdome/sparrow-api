@@ -5,12 +5,10 @@ import {
 } from "@nestjs/common";
 import { collectionRepository } from "../repositories/collection.repository";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
-import { ObjectId, UpdateResult, WithId } from "mongodb";
-import { Collection } from "@src/modules/common/models/collection.model";
+import { ObjectId, UpdateResult } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import {
   CollectionRequest,
-  CollectionRequestDto,
   CollectionRequestItem,
   DeleteFolderDto,
   FolderDto,
@@ -23,36 +21,6 @@ export class CollectionRequestService {
     private readonly workspaceReposistory: WorkspaceRepository,
     private readonly contextService: ContextService,
   ) {}
-
-  async addRequest(addRequestDto: CollectionRequestDto) {
-    const uuid = uuidv4();
-    try {
-      const user = await this.contextService.get("user");
-      await this.checkPermission(addRequestDto.workspaceId, user._id);
-      const collectionRequests =
-        await this.collectionReposistory.getCollectionRequest(
-          addRequestDto.collectionId,
-        );
-      addRequestDto.collectionDto[0].id = uuid;
-      collectionRequests.items.push(addRequestDto.collectionDto[0]);
-      collectionRequests.totalRequests = collectionRequests.totalRequests + 1;
-      const data = await this.collectionReposistory.updateCollectionRequest(
-        addRequestDto.collectionId,
-        collectionRequests,
-      );
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
-  }
-
-  async getCollection(id: string): Promise<WithId<Collection>> {
-    try {
-      return await this.collectionReposistory.get(id);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
-  }
 
   async addFolder(
     payload: FolderDto,
