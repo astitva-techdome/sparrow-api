@@ -15,6 +15,7 @@ import {
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { Collection } from "@src/modules/common/models/collection.model";
+import { CollectionRequestItem } from "../payloads/collectionRequest.payload";
 @Injectable()
 export class collectionRepository {
   constructor(
@@ -74,6 +75,28 @@ export class collectionRepository {
     const data = await this.db
       .collection(Collections.COLLECTION)
       .deleteOne({ _id });
+    return data;
+  }
+
+  async getCollectionRequest(id: string): Promise<CollectionRequestItem> {
+    const _id = new ObjectId(id);
+    const data = await this.db
+      .collection<CollectionRequestItem>(Collections.COLLECTION)
+      .findOne({ _id }, { projection: { items: 1 } });
+    return data;
+  }
+
+  async updateCollectionRequest(id: string, payload: any) {
+    const _id = new ObjectId(id);
+    const data = await this.db.collection(Collections.COLLECTION).updateOne(
+      { _id: _id },
+      {
+        $set: {
+          items: payload,
+        },
+      },
+    );
+
     return data;
   }
 }

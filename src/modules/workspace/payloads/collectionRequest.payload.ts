@@ -4,7 +4,6 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
-  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -12,33 +11,32 @@ import {
   ValidateNested,
 } from "class-validator";
 import { HTTPMethods } from "fastify";
-import { ObjectId } from "mongodb";
-import { SchemaObject } from "../services/openapi303";
+import { SchemaObject } from "@src/modules/common/services/openapi303";
 import { ApiProperty } from "@nestjs/swagger";
 
-export enum ItemTypeEnum {
+export enum RequestItemTypeEnum {
   "FOLDER",
   "REQUEST",
 }
 
-export enum BodyModeEnum {
+export enum RequestBodyModeEnum {
   "application/json",
   "application/xml",
   "application/x-www-form-urlencoded",
   "multipart/form-data",
 }
 
-export enum SourceTypeEnum {
+export enum RequestSourceTypeEnum {
   "SPEC",
   "USER",
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
-export class RequestBody {
+export class CollectionRequestBody {
   @ApiProperty()
-  @IsEnum(BodyModeEnum)
+  @IsEnum(RequestBodyModeEnum)
   @IsNotEmpty()
-  type: BodyModeEnum;
+  type: RequestBodyModeEnum;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -64,7 +62,7 @@ export class Params {
   schema: SchemaObject;
 }
 
-export class RequestMetaData {
+export class CollectionRequestMetaData {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -84,11 +82,11 @@ export class RequestMetaData {
   @IsNotEmpty()
   url: string;
 
-  @ApiProperty({ type: [RequestBody] })
-  @Type(() => RequestBody)
+  @ApiProperty({ type: [CollectionRequestBody] })
+  @Type(() => CollectionRequestBody)
   @ValidateNested({ each: true })
   @IsOptional()
-  body?: RequestBody[];
+  body?: CollectionRequestBody[];
 
   @ApiProperty({ type: [Params] })
   @IsArray()
@@ -112,7 +110,11 @@ export class RequestMetaData {
   headers?: Params[];
 }
 
-export class CollectionItem {
+export class CollectionRequestItem {
+  @IsOptional()
+  @IsString()
+  id?: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -123,24 +125,24 @@ export class CollectionItem {
   description: string;
 
   @ApiProperty()
-  @IsEnum(ItemTypeEnum)
+  @IsEnum(RequestItemTypeEnum)
   @IsNotEmpty()
-  type: ItemTypeEnum;
+  type: RequestItemTypeEnum;
 
-  @ApiProperty({ type: [CollectionItem] })
+  @ApiProperty({ type: [CollectionRequestItem] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CollectionItem)
+  @Type(() => CollectionRequestItem)
   @IsOptional()
-  items?: CollectionItem[];
+  items?: CollectionRequestItem[];
 
-  @ApiProperty({ type: RequestMetaData })
+  @ApiProperty({ type: CollectionRequestMetaData })
   @IsOptional()
-  @Type(() => RequestMetaData)
-  request?: RequestMetaData;
+  @Type(() => CollectionRequestMetaData)
+  request?: CollectionRequestMetaData;
 }
 
-export class Collection {
+export class CollectionRequest {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -151,11 +153,11 @@ export class Collection {
   @IsNotEmpty()
   totalRequests: number;
 
-  @ApiProperty({ type: [CollectionItem] })
+  @ApiProperty({ type: [CollectionRequestItem] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CollectionItem)
-  items: CollectionItem[];
+  @Type(() => CollectionRequestItem)
+  items: CollectionRequestItem[];
 
   @IsOptional()
   @IsDateString()
@@ -186,12 +188,16 @@ export class QueryParams {
   value: string;
 }
 
-export class CollectionDto {
-  @IsMongoId()
+export class CollectionRequestDto {
+  @IsString()
   @IsNotEmpty()
-  id: ObjectId;
+  collectionId: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  workspaceId: string;
+
+  @Type(() => CollectionRequestItem)
+  @ValidateNested({ each: true })
+  collectionDto?: CollectionRequestItem[];
 }
