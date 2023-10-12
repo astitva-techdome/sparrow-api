@@ -201,3 +201,51 @@ export class CollectionRequestDto {
   @ValidateNested({ each: true })
   collectionDto?: CollectionRequestItem[];
 }
+
+export class FolderPayload {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  description: string;
+}
+
+export class FolderDto {
+  @IsString()
+  @IsOptional()
+  folderId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  collectionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  workspaceId: string;
+}
+
+export class DeleteFolderDto {
+  @IsString()
+  @IsNotEmpty()
+  collectionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  workspaceId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  folderId: string;
+}

@@ -22,7 +22,10 @@ import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 import { WorkspaceService } from "../services/workspace.service";
 import { AuthGuard } from "@nestjs/passport";
 import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
-import { CollectionRequestItem } from "../payloads/collectionRequest.payload";
+import {
+  CollectionRequestItem,
+  FolderPayload,
+} from "../payloads/collectionRequest.payload";
 import { CollectionRequestService } from "../services/collection-request.service";
 
 @ApiBearerAuth()
@@ -162,6 +165,74 @@ export class collectionController {
       "Success",
       HttpStatusCode.OK,
       collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Post(":collectionId/workspace/:workspaceId/folder")
+  @ApiResponse({ status: 200, description: "Request saved Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to save request" })
+  async addFolder(
+    @Param("collectionId") collectionId: string,
+    @Param("workspaceId") workspaceId: string,
+    @Body() body: FolderPayload,
+    @Res() res: FastifyReply,
+  ) {
+    const response = await this.collectionRequestService.addFolder({
+      collectionId,
+      workspaceId,
+      ...body,
+    });
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.CREATED,
+      response,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Put(":collectionId/workspace/:workspaceId/folder/:folderId")
+  @ApiResponse({ status: 200, description: "Request saved Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to save request" })
+  async updateFolder(
+    @Param("collectionId") collectionId: string,
+    @Param("workspaceId") workspaceId: string,
+    @Param("folderId") folderId: string,
+    @Body() body: FolderPayload,
+    @Res() res: FastifyReply,
+  ) {
+    const response = await this.collectionRequestService.updateFolder({
+      collectionId,
+      workspaceId,
+      folderId,
+      ...body,
+    });
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      response,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Delete(":collectionId/workspace/:workspaceId/folder/:folderId")
+  @ApiResponse({ status: 200, description: "Request saved Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to save request" })
+  async deleteFolder(
+    @Param("collectionId") collectionId: string,
+    @Param("workspaceId") workspaceId: string,
+    @Param("folderId") folderId: string,
+    @Res() res: FastifyReply,
+  ) {
+    const response = await this.collectionRequestService.deleteFolder({
+      collectionId,
+      workspaceId,
+      folderId,
+    });
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      response,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
