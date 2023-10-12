@@ -28,11 +28,12 @@ export class CollectionRequestService {
           addRequestDto.collectionId,
         );
       addRequestDto.collectionDto[0].id = uuid;
-      const updatedCollectionRequests = [collectionRequests];
-      updatedCollectionRequests.push(addRequestDto.collectionDto[0]);
+      // const updatedCollectionRequests = [collectionRequests];
+      collectionRequests.items.push(addRequestDto.collectionDto[0]);
+      collectionRequests.totalRequests = collectionRequests.totalRequests + 1;
       const data = await this.collectionReposistory.updateCollectionRequest(
         addRequestDto.collectionId,
-        updatedCollectionRequests,
+        collectionRequests,
       );
       return data;
     } catch (error) {
