@@ -8,7 +8,7 @@ import {
   RequestBody,
   RequestMetaData,
 } from "../models/collection.model";
-import { OpenAPI303, ParameterObject } from "./openapi303";
+import { OpenAPI303, ParameterObject } from "../models/openapi303.model";
 import { HTTPMethods } from "fastify";
 import { Injectable } from "@nestjs/common";
 import { ContextService } from "./context.service";

@@ -13,7 +13,7 @@ import {
 } from "class-validator";
 import { HTTPMethods } from "fastify";
 import { ObjectId } from "mongodb";
-import { SchemaObject } from "../services/openapi303";
+import { SchemaObject } from "./openapi303.model";
 
 export enum ItemTypeEnum {
   FOLDER = "FOLDER",
