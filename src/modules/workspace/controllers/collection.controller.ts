@@ -153,17 +153,21 @@ export class collectionController {
     @Body() body: FolderPayload,
     @Res() res: FastifyReply,
   ) {
-    const response = await this.collectionRequestService.addFolder({
-      collectionId,
-      workspaceId,
-      ...body,
-    });
-    const responseData = new ApiResponseService(
-      "Success",
-      HttpStatusCode.CREATED,
-      response,
-    );
-    res.status(responseData.httpStatusCode).send(responseData);
+    try {
+      const response = await this.collectionRequestService.addFolder({
+        collectionId,
+        workspaceId,
+        ...body,
+      });
+      const responseData = new ApiResponseService(
+        "Success",
+        HttpStatusCode.CREATED,
+        response,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Put(":collectionId/workspace/:workspaceId/folder/:folderId")
@@ -176,18 +180,22 @@ export class collectionController {
     @Body() body: FolderPayload,
     @Res() res: FastifyReply,
   ) {
-    const response = await this.collectionRequestService.updateFolder({
-      collectionId,
-      workspaceId,
-      folderId,
-      ...body,
-    });
-    const responseData = new ApiResponseService(
-      "Success",
-      HttpStatusCode.OK,
-      response,
-    );
-    res.status(responseData.httpStatusCode).send(responseData);
+    try {
+      const response = await this.collectionRequestService.updateFolder({
+        collectionId,
+        workspaceId,
+        folderId,
+        ...body,
+      });
+      const responseData = new ApiResponseService(
+        "Success",
+        HttpStatusCode.OK,
+        response,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Delete(":collectionId/workspace/:workspaceId/folder/:folderId")
@@ -199,16 +207,20 @@ export class collectionController {
     @Param("folderId") folderId: string,
     @Res() res: FastifyReply,
   ) {
-    const response = await this.collectionRequestService.deleteFolder({
-      collectionId,
-      workspaceId,
-      folderId,
-    });
-    const responseData = new ApiResponseService(
-      "Success",
-      HttpStatusCode.OK,
-      response,
-    );
-    res.status(responseData.httpStatusCode).send(responseData);
+    try {
+      const response = await this.collectionRequestService.deleteFolder({
+        collectionId,
+        workspaceId,
+        folderId,
+      });
+      const responseData = new ApiResponseService(
+        "Success",
+        HttpStatusCode.OK,
+        response,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }
