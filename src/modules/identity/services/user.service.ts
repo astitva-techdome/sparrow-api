@@ -7,7 +7,10 @@ import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
 import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
-import { User } from "@src/modules/common/models/user.model";
+import {
+  EmailServiceProvider,
+  User,
+} from "@src/modules/common/models/user.model";
 import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
 import * as nodemailer from "nodemailer";
 import { ObjectId, WithId } from "mongodb";
@@ -132,7 +135,7 @@ export class UserService {
   async forgetPassword(resetPasswordDto: ResetPasswordPayload): Promise<void> {
     try {
       const transporter = nodemailer.createTransport({
-        service: "gmail",
+        service: EmailServiceProvider.GMAIL,
         auth: {
           user: this.configService.get("app.email"),
           pass: this.configService.get("app.password"),

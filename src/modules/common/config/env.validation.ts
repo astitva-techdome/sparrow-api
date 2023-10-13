@@ -46,8 +46,8 @@ export class EnvironmentVariables {
   REFRESHTOKEN_MAX_SIZE: number;
 
   @IsString()
-  EMAIL: string;
+  SENDEREMAIL: string;
 
   @IsString()
-  PASSWORD: string;
+  SENDERPASSWORD: string;
 }

@@ -103,9 +103,17 @@ export class UserController {
   }
   @Post("reset-password")
   @UseGuards(AuthGuard("jwt"))
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordPayload) {
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordPayload,
+    @Res() res: FastifyReply,
+  ) {
     try {
       await this.userService.forgetPassword(resetPasswordDto);
+      const responseData = new ApiResponseService(
+        "Email Sent Successfully",
+        HttpStatusCode.OK,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
     } catch (error) {
       throw new BadRequestException(error);
     }

@@ -15,6 +15,10 @@ import { Role } from "../enum/roles.enum";
 import { TeamDto } from "./team.model";
 import { ObjectId } from "mongodb";
 
+export enum EmailServiceProvider {
+  GMAIL = "GMAIL",
+  OUTLOOK = "OUTLOOK",
+}
 export class User {
   @IsString()
   @IsNotEmpty()
