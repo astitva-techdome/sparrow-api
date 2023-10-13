@@ -1,6 +1,7 @@
 import { Type } from "class-transformer";
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsMongoId,
@@ -12,26 +13,41 @@ import {
 } from "class-validator";
 import { HTTPMethods } from "fastify";
 import { ObjectId } from "mongodb";
+import { SchemaObject } from "./openapi303.model";
 
 export enum ItemTypeEnum {
-  FOLDER,
-  REQUEST,
+  FOLDER = "FOLDER",
+  REQUEST = "REQUEST",
 }
-
 export enum BodyModeEnum {
   RAW,
   URLENCODED,
   FORMDATA,
   FILE,
 }
-
 export enum FormDataTypeEnum {
   TEXT,
   FILE,
 }
+export enum BodyModesEnum {
+  "application/json",
+  "application/xml",
+  "application/x-www-form-urlencoded",
+  "multipart/form-data",
+}
+
 export enum SourceTypeEnum {
-  SPEC,
-  USER,
+  "SPEC",
+  "USER",
+}
+export class QueryParams {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class Collection {
@@ -72,7 +88,6 @@ export class CollectionDto {
   @IsNotEmpty()
   name: string;
 }
-
 export class FormData {
   @IsString()
   @IsNotEmpty()
@@ -90,30 +105,28 @@ export class FormData {
 export class RequestBody {
   @IsEnum(BodyModeEnum)
   @IsNotEmpty()
-  mode: BodyModeEnum;
+  type: BodyModeEnum;
 
-  @IsOptional()
-  @IsString()
-  raw?: string;
-
-  @IsArray()
-  @Type(() => FormData)
-  @ValidateNested({ each: true })
-  @IsOptional()
-  formData?: FormData[];
+  @IsNotEmpty()
+  schema?: SchemaObject;
 }
 
-export class QueryParams {
+export class Params {
   @IsString()
   @IsNotEmpty()
-  key: string;
+  name: string;
 
   @IsString()
+  description: string;
+
+  @IsBoolean()
+  required: boolean;
+
   @IsNotEmpty()
-  value: string;
+  schema: SchemaObject;
 }
 
-class RequestMetaData {
+export class RequestMetaData {
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -123,23 +136,43 @@ class RequestMetaData {
 
   @IsString()
   @IsNotEmpty()
+  operationId: string;
+
+  @IsString()
+  @IsNotEmpty()
   url: string;
 
   @Type(() => RequestBody)
-  @IsOptional()
-  body?: RequestBody;
-
-  @IsArray()
-  @Type(() => QueryParams)
   @ValidateNested({ each: true })
   @IsOptional()
-  queryParams?: QueryParams[];
+  body?: RequestBody[];
+
+  @IsArray()
+  @Type(() => Params)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  queryParams?: Params[];
+
+  @IsArray()
+  @Type(() => Params)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  pathParams?: Params[];
+
+  @IsArray()
+  @Type(() => Params)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  headers?: Params[];
 }
 
-class CollectionItem {
+export class CollectionItem {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  description: string;
 
   @IsEnum(ItemTypeEnum)
   @IsNotEmpty()

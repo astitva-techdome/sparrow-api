@@ -9,6 +9,7 @@ import {
   Put,
   Res,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
@@ -20,6 +21,16 @@ import { AddWorkspaceUserDto } from "../payloads/workspaceUser.payload";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
+import {
+  FileInterceptor,
+  UploadedFile,
+  MemoryStorageFile,
+} from "@blazity/nest-file-fastify";
+import * as yml from "js-yaml";
+import { ParserService } from "@src/modules/common/services/parser.service";
+import { CollectionService } from "../services/collection.service";
+import axios from "axios";
+import { ImportCollectionDto } from "../payloads/collection.payload";
 
 /**
  * Workspace Controller
@@ -32,6 +43,8 @@ export class WorkSpaceController {
   constructor(
     private readonly workspaceService: WorkspaceService,
     private readonly permissionService: PermissionService,
+    private readonly parserService: ParserService,
+    private readonly collectionService: CollectionService,
   ) {}
 
   @Post()
@@ -164,6 +177,77 @@ export class WorkSpaceController {
         "User Removed",
         HttpStatusCode.OK,
         data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  @Post(":workspaceId/importFile/collection")
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiResponse({ status: 201, description: "Collection Import Successfull" })
+  @ApiResponse({ status: 400, description: "Failed to Import  Collection" })
+  async importCollection(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+    @UploadedFile()
+    file: MemoryStorageFile,
+  ) {
+    try {
+      const dataBuffer = file.buffer;
+      const dataString = dataBuffer.toString("utf8");
+      const dataObj =
+        file.mimetype === "application/json"
+          ? JSON.parse(dataString)
+          : yml.load(dataString);
+
+      const collectionObj = await this.parserService.parse(dataObj);
+      const collection = await this.collectionService.importCollection(
+        collectionObj,
+      );
+      await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
+        id: collection.insertedId,
+        name: collectionObj.name,
+      });
+      const responseData = new ApiResponseService(
+        "Collection Imported",
+        HttpStatusCode.OK,
+        collection,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  @Post(":workspaceId/importUrl/collection")
+  @ApiResponse({ status: 201, description: "Collection Import Successfull" })
+  @ApiResponse({ status: 400, description: "Failed to Import  Collection" })
+  async importCollections(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+    @Body() importCollectionDto: ImportCollectionDto,
+  ) {
+    try {
+      const response = await axios.get(importCollectionDto.url);
+      const data = response.data;
+      const responseType = response.headers["content-type"];
+      const dataObj =
+        responseType === "application/json" ? data : yml.load(data);
+
+      const collectionObj = await this.parserService.parse(dataObj);
+      const collection = await this.collectionService.importCollection(
+        collectionObj,
+      );
+      await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
+        id: collection.insertedId,
+        name: collectionObj.name,
+      });
+      const responseData = new ApiResponseService(
+        "Collection Imported",
+        HttpStatusCode.OK,
+        collection,
       );
       res.status(responseData.httpStatusCode).send(responseData);
     } catch (error) {
