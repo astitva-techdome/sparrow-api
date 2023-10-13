@@ -11,7 +11,7 @@ import {
   ValidateNested,
 } from "class-validator";
 import { HTTPMethods } from "fastify";
-import { SchemaObject } from "@src/modules/common/services/openapi303";
+import { SchemaObject } from "@src/modules/common/models/openapi303.model";
 import { ApiProperty } from "@nestjs/swagger";
 
 export enum RequestItemTypeEnum {
