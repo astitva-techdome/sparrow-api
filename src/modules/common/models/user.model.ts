@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
 import {
+  ArrayMaxSize,
   IsArray,
   IsDate,
   IsEmail,
@@ -45,6 +46,12 @@ export class User {
   @IsDate()
   @IsOptional()
   updatedAt?: Date;
+
+  @IsArray()
+  @IsString()
+  @ArrayMaxSize(5)
+  @IsOptional()
+  refresh_tokens?: string[];
 }
 
 export class UserDto {

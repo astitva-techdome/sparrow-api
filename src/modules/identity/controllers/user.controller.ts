@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   Res,
   UseGuards,
 } from "@nestjs/common";
@@ -19,6 +20,8 @@ import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
+import { RefreshTokenGuard } from "@src/modules/common/guards/refresh-token.guard";
+import { RefreshTokenRequest } from "./auth.controller";
 /**
  * User Controller
  */
@@ -91,6 +94,27 @@ export class UserController {
         "User Deleted",
         HttpStatusCode.OK,
         data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  @Get("logout")
+  @UseGuards(RefreshTokenGuard)
+  @ApiResponse({ status: 200, description: "Logout Successfull" })
+  @ApiResponse({ status: 400, description: "Bad Request" })
+  async logoutUser(
+    @Req() request: RefreshTokenRequest,
+    @Res() res: FastifyReply,
+  ) {
+    try {
+      const userId = request.user._id;
+      const refreshToken = request.user.refreshToken;
+      await this.userService.logoutUser(userId, refreshToken);
+      const responseData = new ApiResponseService(
+        "User Logout",
+        HttpStatusCode.OK,
       );
       res.status(responseData.httpStatusCode).send(responseData);
     } catch (error) {
