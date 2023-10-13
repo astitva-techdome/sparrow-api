@@ -12,6 +12,8 @@ import { TeamService } from "./services/team.service";
 import { TeamUserService } from "./services/team-user.service";
 import { TeamRepository } from "./repositories/team.repository";
 import { TeamController } from "./controllers/team.controller";
+import { RefreshTokenStrategy } from "./strategies/refresh-token.strategy";
+import { ParserService } from "../common/services/parser.service";
 
 @Module({
   imports: [
@@ -39,12 +41,14 @@ import { TeamController } from "./controllers/team.controller";
   providers: [
     AuthService,
     JwtStrategy,
+    RefreshTokenStrategy,
     UserService,
     JwtService,
     UserRepository,
     TeamService,
     TeamUserService,
     TeamRepository,
+    ParserService,
   ],
   exports: [
     PassportModule.register({ defaultStrategy: "jwt" }),
@@ -54,6 +58,7 @@ import { TeamController } from "./controllers/team.controller";
     TeamService,
     TeamUserService,
     TeamRepository,
+    ParserService,
   ],
   controllers: [AuthController, UserController, TeamController],
 })

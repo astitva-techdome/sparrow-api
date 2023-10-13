@@ -34,8 +34,18 @@ export class CollectionService {
     try {
       const user = await this.contextService.get("user");
       await this.checkPermission(createCollectionDto.workspaceId, user._id);
+
+      const newCollection: Collection = {
+        name: createCollectionDto.name,
+        totalRequests: 0,
+        createdBy: user.name,
+        items: [],
+        updatedBy: user.name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
       const collection = await this.collectionReposistory.addCollection(
-        createCollectionDto,
+        newCollection,
       );
       return collection;
     } catch (error) {
@@ -111,6 +121,13 @@ export class CollectionService {
       await this.checkPermission(workspaceId, user._id);
       const data = await this.collectionReposistory.delete(id);
       return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  async importCollection(collection: Collection): Promise<InsertOneResult> {
+    try {
+      return await this.collectionReposistory.addCollection(collection);
     } catch (error) {
       throw new BadRequestException(error);
     }

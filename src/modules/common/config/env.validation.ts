@@ -31,5 +31,23 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  DB_URL: number;
+  DB_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  REFRESHTOKEN_SECRET_KEY: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  REFRESHTOKEN_EXPIRATION_TIME: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  REFRESHTOKEN_MAX_SIZE: number;
+
+  @IsString()
+  EMAIL: string;
+
+  @IsString()
+  PASSWORD: string;
 }

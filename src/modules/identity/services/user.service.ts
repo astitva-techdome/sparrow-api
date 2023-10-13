@@ -8,9 +8,10 @@ import { AuthService } from "./auth.service";
 import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import { User } from "@src/modules/common/models/user.model";
-import { WithId } from "mongodb";
 import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
 import * as nodemailer from "nodemailer";
+import { ObjectId, WithId } from "mongodb";
+import { createHmac } from "crypto";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -73,7 +74,16 @@ export class UserService {
     }
     try {
       const createdUser = await this.userRepository.createUser(payload);
-      const data = await this.authService.createToken(createdUser.insertedId);
+      const accessToken = await this.authService.createToken(
+        createdUser.insertedId,
+      );
+      const refreshToken = await this.authService.createRefreshToken(
+        createdUser.insertedId,
+      );
+      const data = {
+        accessToken,
+        refreshToken,
+      };
       const workspaceObj = {
         name: this.configService.get("app.defaultWorkspaceName"),
         type: WorkspaceType.PERSONAL,
@@ -124,8 +134,8 @@ export class UserService {
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: process.env.email,
-          pass: process.env.pass,
+          user: this.configService.get("app.email"),
+          pass: this.configService.get("app.password"),
         },
       });
 
@@ -136,11 +146,27 @@ export class UserService {
         html: "<p>Reset Password</p>",
         subject: `Reset Password`,
       };
-      try {
-        await transporter.sendMail(mailOptions);
-      } catch (error) {
-        console.log(`Nodemailer error sending email to`, error);
+
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.log(`Nodemailer error sending email to`, error);
+    }
+  }
+
+  async logoutUser(userId: string, refreshToken: string) {
+    try {
+      const user = await this.userRepository.findUserByUserId(
+        new ObjectId(userId),
+      );
+      const hashrefreshToken = user.refresh_tokens.filter((token) => {
+        if (createHmac("sha256", refreshToken).digest("hex") === token) {
+          return token;
+        }
+      });
+      if (!hashrefreshToken) {
+        throw new BadRequestException();
       }
+      await this.userRepository.deleteRefreshToken(userId, hashrefreshToken[0]);
     } catch (error) {
       throw new BadRequestException(error);
     }

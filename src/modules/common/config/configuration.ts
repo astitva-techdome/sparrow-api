@@ -10,6 +10,13 @@ export default () => ({
       parseInt(process.env.WEBTOKEN_EXPIRATION_TIME) || 1800,
     defaultWorkspaceName: "My Workspace",
     userBlacklistPrefix: "BL_",
+    refreshTokenSecretKey: process.env.REFRESHTOKEN_SECRET_KEY,
+    refreshTokenExpirationTime: parseInt(
+      process.env.REFRESHTOKEN_EXPIRATION_TIME,
+    ),
+    refreshTokenMaxSize: parseInt(process.env.REFRESHTOKEN_MAX_SIZE),
+    email: process.env.EMAIL,
+    password: process.env.PASSWORD,
   },
   db: {
     url: process.env.DB_URL,

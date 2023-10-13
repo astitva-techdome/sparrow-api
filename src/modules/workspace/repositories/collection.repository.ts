@@ -1,9 +1,6 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 
-import {
-  CreateCollectionDto,
-  UpdateCollectionDto,
-} from "../payloads/collection.payload";
+import { UpdateCollectionDto } from "../payloads/collection.payload";
 import {
   Db,
   DeleteResult,
@@ -15,30 +12,17 @@ import {
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { Collection } from "@src/modules/common/models/collection.model";
+import { CollectionRequest } from "../payloads/collectionRequest.payload";
 @Injectable()
 export class collectionRepository {
   constructor(
     @Inject("DATABASE_CONNECTION") private db: Db,
     private readonly contextService: ContextService,
   ) {}
-  async addCollection(
-    collection: CreateCollectionDto,
-  ): Promise<InsertOneResult> {
-    const user = await this.contextService.get("user");
-    delete collection.workspaceId;
-
-    const new_collection: Collection = {
-      name: collection.name,
-      totalRequests: 0,
-      createdBy: user.name,
-      items: [],
-      updatedBy: user.name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+  async addCollection(collection: Collection): Promise<InsertOneResult> {
     const response = await this.db
       .collection<Collection>(Collections.COLLECTION)
-      .insertOne(new_collection);
+      .insertOne(collection);
     return response;
   }
 
@@ -74,6 +58,32 @@ export class collectionRepository {
     const data = await this.db
       .collection(Collections.COLLECTION)
       .deleteOne({ _id });
+    return data;
+  }
+
+  async getCollection(id: string): Promise<CollectionRequest> {
+    const _id = new ObjectId(id);
+    const data = await this.db
+      .collection<CollectionRequest>(Collections.COLLECTION)
+      .findOne({ _id });
+    return data;
+  }
+
+  async updateCollection(
+    id: string,
+    payload: CollectionRequest,
+  ): Promise<UpdateResult<CollectionRequest>> {
+    const _id = new ObjectId(id);
+    const data = await this.db
+      .collection<CollectionRequest>(Collections.COLLECTION)
+      .updateOne(
+        { _id: _id },
+        {
+          $set: {
+            ...payload,
+          },
+        },
+      );
     return data;
   }
 }
