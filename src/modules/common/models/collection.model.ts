@@ -25,10 +25,6 @@ export enum BodyModeEnum {
   "application/x-www-form-urlencoded",
   "multipart/form-data",
 }
-export enum FormDataTypeEnum {
-  TEXT,
-  FILE,
-}
 
 export enum SourceTypeEnum {
   "SPEC",
@@ -193,18 +189,4 @@ export class CollectionDto {
   @IsString()
   @IsNotEmpty()
   name: string;
-}
-
-export class FormData {
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @IsString()
-  @IsNotEmpty()
-  value: string;
-
-  @IsEnum(FormDataTypeEnum)
-  @IsNotEmpty()
-  type: FormDataTypeEnum;
 }

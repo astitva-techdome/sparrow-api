@@ -17,18 +17,6 @@ import {
   BodyModeEnum,
   ItemTypeEnum,
 } from "@src/modules/common/models/collection.model";
-// import
-// export enum RequestItemTypeEnum {
-//   "FOLDER",
-//   "REQUEST",
-// }
-
-// export enum RequestBodyModeEnum {
-//   "application/json",
-//   "application/xml",
-//   "application/x-www-form-urlencoded",
-//   "multipart/form-data",
-// }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
