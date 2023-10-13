@@ -29,12 +29,6 @@ export enum FormDataTypeEnum {
   TEXT,
   FILE,
 }
-// export enum BodyModesEnum {
-//   "application/json",
-//   "application/xml",
-//   "application/x-www-form-urlencoded",
-//   "multipart/form-data",
-// }
 
 export enum SourceTypeEnum {
   "SPEC",
