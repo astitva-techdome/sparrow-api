@@ -156,17 +156,6 @@ export class UserRepository {
     );
   }
 
-  async deleteRefreshTokenFromUser(_id: ObjectId): Promise<void> {
-    await this.db.collection<User>(Collections.USER).findOneAndUpdate(
-      { _id },
-      {
-        $pop: {
-          refresh_tokens: 1,
-        },
-      },
-    );
-    return;
-  }
   async deleteRefreshToken(id: string, refreshToken: string): Promise<void> {
     const _id = new ObjectId(id);
     await this.db.collection<User>(Collections.USER).findOneAndUpdate(

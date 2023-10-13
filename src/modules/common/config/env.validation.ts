@@ -40,4 +40,8 @@ export class EnvironmentVariables {
   @Type(() => Number)
   @IsNumber()
   REFRESHTOKEN_EXPIRATION_TIME: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  REFRESHTOKEN_MAX_SIZE: number;
 }

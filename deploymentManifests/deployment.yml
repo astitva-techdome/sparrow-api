@@ -63,7 +63,13 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key: REFRESHTOKEN_EXPIRATION_TIME                                                                   
+                key: REFRESHTOKEN_EXPIRATION_TIME
+          - name:  REFRESHTOKEN_MAX_SIZE
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key:  REFRESHTOKEN_MAX_SIZE
+                                                                             
 ---
 
 apiVersion: v1

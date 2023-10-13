@@ -13,7 +13,6 @@ import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { User } from "@src/modules/common/models/user.model";
 import { Logger } from "nestjs-pino";
-import * as argon2 from "argon2";
 import { UserRepository } from "../repositories/user.repository";
 /**
  * Models a typical Login/Register route return body
@@ -44,6 +43,7 @@ export class AuthService {
    */
   private readonly expiration: number;
   private readonly refreshTokenExpirationTime: number;
+  private readonly refreshTokenMaxSize: number;
 
   /**
    * Constructor
@@ -62,6 +62,9 @@ export class AuthService {
     this.expiration = this.configService.get("app.webtokenExpirationTime");
     this.refreshTokenExpirationTime = this.configService.get(
       "app.refreshTokenExpirationTime",
+    );
+    this.refreshTokenMaxSize = this.configService.get(
+      "app.refreshTokenMaxSize",
     );
   }
 
@@ -98,7 +101,7 @@ export class AuthService {
 
   async createRefreshToken(insertedId: ObjectId): Promise<ITokenReturnBody> {
     const user = this.contextService.get("user");
-    return {
+    const data = {
       expires: this.refreshTokenExpirationTime.toString(),
       expiresPrettyPrint: AuthService.prettyPrintSeconds(
         this.refreshTokenExpirationTime.toString(),
@@ -113,6 +116,11 @@ export class AuthService {
         { secret: this.configService.get("app.refreshTokenSecretKey") },
       ),
     };
+    await this.userReposistory.addRefreshTokenInUser(
+      user._id,
+      createHmac("sha256", data.token).digest("hex"),
+    );
+    return data;
   }
   /**
    * Formats the time in seconds into human-readable format
@@ -164,20 +172,25 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException("UnAuthorized");
       }
-      const hasRefreshTokenMatch = await argon2.verify(
-        user.refresh_tokens[user.refresh_tokens.length - 1],
-        refreshToken,
-      );
-      if (!hasRefreshTokenMatch) {
+      const oldRefreshToken = user.refresh_tokens.filter((token) => {
+        if (createHmac("sha256", refreshToken).digest("hex") === token) {
+          return token;
+        }
+      });
+      if (!oldRefreshToken) {
         throw new ForbiddenException("Access Denied");
       }
-      const newAccessToken = await this.createToken(user._id);
-      const newRefreshToken = await this.createRefreshToken(user._id);
+      const tokenPromises = [
+        this.createToken(user._id),
+        this.createRefreshToken(user._id),
+      ];
+      const [newAccessToken, newRefreshToken] = await Promise.all(
+        tokenPromises,
+      );
 
-      await this.userReposistory.deleteRefreshTokenFromUser(user._id);
-      await this.userReposistory.addRefreshTokenInUser(
-        user._id,
-        await this.hashData(newRefreshToken.token),
+      await this.userReposistory.deleteRefreshToken(
+        user._id.toString(),
+        oldRefreshToken[0],
       );
       return {
         newAccessToken,
@@ -188,7 +201,9 @@ export class AuthService {
     }
   }
 
-  async hashData(data: string) {
-    return argon2.hash(data);
+  async checkRefreshTokenSize(user: User) {
+    if (user.refresh_tokens.length === this.refreshTokenMaxSize) {
+      throw new Error("Maximum request limit reached");
+    }
   }
 }

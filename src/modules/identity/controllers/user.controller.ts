@@ -113,7 +113,7 @@ export class UserController {
       const refreshToken = request.user.refreshToken;
       await this.userService.logoutUser(userId, refreshToken);
       const responseData = new ApiResponseService(
-        "User Logout ",
+        "User Logout",
         HttpStatusCode.OK,
       );
       res.status(responseData.httpStatusCode).send(responseData);

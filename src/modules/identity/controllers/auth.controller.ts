@@ -5,13 +5,16 @@ import {
   Req,
   UseGuards,
   BadRequestException,
+  Res,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "../services/auth.service";
 import { LoginPayload } from "../payloads/login.payload";
 import { UserRepository } from "../repositories/user.repository";
-import { FastifyRequest } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 import { RefreshTokenGuard } from "@src/modules/common/guards/refresh-token.guard";
+import { ApiResponseService } from "@src/modules/common/services/api-response.service";
+import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 /**
  * Authentication Controller
  */
@@ -41,23 +44,31 @@ export class AuthController {
   @ApiResponse({ status: 201, description: "Login Completed" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  async login(@Body() payload: LoginPayload) {
-    const user = await this.authService.validateUser(payload);
+  async login(@Body() payload: LoginPayload, @Res() res: FastifyReply) {
+    try {
+      const user = await this.authService.validateUser(payload);
 
-    if (user.refresh_tokens.length === 5) {
-      throw new Error("Maximum request limit reached");
+      await this.authService.checkRefreshTokenSize(user);
+      const tokenPromises = [
+        this.authService.createToken(user._id),
+        this.authService.createRefreshToken(user._id),
+      ];
+      const [accessToken, refreshToken] = await Promise.all(tokenPromises);
+
+      const data = {
+        accessToken,
+        refreshToken,
+      };
+      const responseData = new ApiResponseService(
+        "Login Successfull",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error);
     }
-    const accessToken = await this.authService.createToken(user._id);
-    const refreshToken = await this.authService.createRefreshToken(user._id);
-    await this.userReposistory.addRefreshTokenInUser(
-      user._id,
-      await this.authService.hashData(refreshToken.token),
-    );
-    const data = {
-      accessToken,
-      refreshToken,
-    };
-    return data;
   }
 
   @Post("/refresh-token")
@@ -66,11 +77,23 @@ export class AuthController {
   @ApiResponse({ status: 201, description: "Access Token Generated" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  async refreshToken(@Req() request: RefreshTokenRequest) {
+  async refreshToken(
+    @Req() request: RefreshTokenRequest,
+    @Res() res: FastifyReply,
+  ) {
     try {
       const userId = request.user._id;
       const refreshToken = request.user.refreshToken;
-      return await this.authService.validateRefreshToken(userId, refreshToken);
+      const data = await this.authService.validateRefreshToken(
+        userId,
+        refreshToken,
+      );
+      const responseData = new ApiResponseService(
+        "Token Generated",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
     } catch (error) {
       throw new BadRequestException(error);
     }

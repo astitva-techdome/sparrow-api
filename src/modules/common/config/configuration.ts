@@ -14,6 +14,7 @@ export default () => ({
     refreshTokenExpirationTime: parseInt(
       process.env.REFRESHTOKEN_EXPIRATION_TIME,
     ),
+    refreshTokenMaxSize: parseInt(process.env.REFRESHTOKEN_MAX_SIZE),
   },
   db: {
     url: process.env.DB_URL,

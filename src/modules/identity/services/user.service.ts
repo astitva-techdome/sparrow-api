@@ -9,7 +9,7 @@ import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import { User } from "@src/modules/common/models/user.model";
 import { ObjectId, WithId } from "mongodb";
-import * as argon2 from "argon2";
+import { createHmac } from "crypto";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -90,13 +90,6 @@ export class UserService {
         TOPIC.USER_CREATED_TOPIC,
         workspaceObj,
       );
-      const hashedRefreshToken = await this.authService.hashData(
-        refreshToken.token,
-      );
-      await this.userRepository.addRefreshTokenInUser(
-        createdUser.insertedId,
-        hashedRefreshToken,
-      );
       return data;
     } catch (error) {
       throw new BadRequestException(error);
@@ -140,8 +133,8 @@ export class UserService {
       const user = await this.userRepository.findUserByUserId(
         new ObjectId(userId),
       );
-      const hashrefreshToken = user.refresh_tokens.filter(async (token) => {
-        if (await argon2.verify(token, refreshToken)) {
+      const hashrefreshToken = user.refresh_tokens.filter((token) => {
+        if (createHmac("sha256", refreshToken).digest("hex") === token) {
           return token;
         }
       });
