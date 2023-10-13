@@ -4,7 +4,6 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
-  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -12,36 +11,16 @@ import {
   ValidateNested,
 } from "class-validator";
 import { HTTPMethods } from "fastify";
-import { ObjectId } from "mongodb";
-import { SchemaObject } from "./openapi303.model";
+import { SchemaObject } from "@src/modules/common/models/openapi303.model";
 import { ApiProperty } from "@nestjs/swagger";
-export enum ItemTypeEnum {
-  FOLDER = "FOLDER",
-  REQUEST = "REQUEST",
-}
-export enum BodyModeEnum {
-  "application/json",
-  "application/xml",
-  "application/x-www-form-urlencoded",
-  "multipart/form-data",
-}
+import {
+  BodyModeEnum,
+  ItemTypeEnum,
+} from "@src/modules/common/models/collection.model";
 
-export enum SourceTypeEnum {
-  "SPEC",
-  "USER",
-}
-export class QueryParams {
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @IsString()
-  @IsNotEmpty()
-  value: string;
-}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
-export class RequestBody {
+export class CollectionRequestBody {
   @ApiProperty()
   @IsEnum(BodyModeEnum)
   @IsNotEmpty()
@@ -71,7 +50,7 @@ export class Params {
   schema: SchemaObject;
 }
 
-export class RequestMetaData {
+export class CollectionRequestMetaData {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -91,11 +70,11 @@ export class RequestMetaData {
   @IsNotEmpty()
   url: string;
 
-  @ApiProperty({ type: [RequestBody] })
-  @Type(() => RequestBody)
+  @ApiProperty({ type: [CollectionRequestBody] })
+  @Type(() => CollectionRequestBody)
   @ValidateNested({ each: true })
   @IsOptional()
-  body?: RequestBody[];
+  body?: CollectionRequestBody[];
 
   @ApiProperty({ type: [Params] })
   @IsArray()
@@ -119,7 +98,11 @@ export class RequestMetaData {
   headers?: Params[];
 }
 
-export class CollectionItem {
+export class CollectionRequestItem {
+  @IsOptional()
+  @IsString()
+  id?: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -134,20 +117,20 @@ export class CollectionItem {
   @IsNotEmpty()
   type: ItemTypeEnum;
 
-  @ApiProperty({ type: [CollectionItem] })
+  @ApiProperty({ type: [CollectionRequestItem] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CollectionItem)
+  @Type(() => CollectionRequestItem)
   @IsOptional()
-  items?: CollectionItem[];
+  items?: CollectionRequestItem[];
 
-  @ApiProperty({ type: RequestMetaData })
+  @ApiProperty({ type: CollectionRequestMetaData })
   @IsOptional()
-  @Type(() => RequestMetaData)
-  request?: RequestMetaData;
+  @Type(() => CollectionRequestMetaData)
+  request?: CollectionRequestMetaData;
 }
 
-export class Collection {
+export class CollectionRequest {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -158,11 +141,11 @@ export class Collection {
   @IsNotEmpty()
   totalRequests: number;
 
-  @ApiProperty({ type: [CollectionItem] })
+  @ApiProperty({ type: [CollectionRequestItem] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CollectionItem)
-  items: CollectionItem[];
+  @Type(() => CollectionRequestItem)
+  items: CollectionRequestItem[];
 
   @IsOptional()
   @IsDateString()
@@ -172,21 +155,85 @@ export class Collection {
   @IsDateString()
   updatedAt?: Date;
 
-  @IsString()
   @IsOptional()
+  @IsString()
+  @IsNotEmpty()
   createdBy?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
+  @IsNotEmpty()
   updatedBy?: string;
 }
 
-export class CollectionDto {
-  @IsMongoId()
+export class QueryParams {
+  @IsString()
   @IsNotEmpty()
-  id: ObjectId;
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+}
+
+export class CollectionRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  collectionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  workspaceId: string;
+
+  @Type(() => CollectionRequestItem)
+  @ValidateNested({ each: true })
+  collectionDto?: CollectionRequestItem[];
+}
+
+export class FolderPayload {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  description: string;
+}
+
+export class FolderDto {
+  @IsString()
+  @IsOptional()
+  folderId?: string;
 
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  collectionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  workspaceId: string;
+}
+
+export class DeleteFolderDto {
+  @IsString()
+  @IsNotEmpty()
+  collectionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  workspaceId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  folderId: string;
 }
