@@ -15,6 +15,8 @@ export default () => ({
       process.env.REFRESHTOKEN_EXPIRATION_TIME,
     ),
     refreshTokenMaxSize: parseInt(process.env.REFRESHTOKEN_MAX_SIZE),
+    email: process.env.SENDEREMAIL,
+    password: process.env.SENDERPASSWORD,
   },
   db: {
     url: process.env.DB_URL,

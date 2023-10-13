@@ -69,6 +69,16 @@ spec:
               secretKeyRef:
                 name: sparrow-api-secret
                 key:  REFRESHTOKEN_MAX_SIZE
+          - name:  SENDEREMAIL
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key:  SENDEREMAIL
+           - name:  SENDERPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key:  SENDERPASSWORD
                                                                              
 ---
 

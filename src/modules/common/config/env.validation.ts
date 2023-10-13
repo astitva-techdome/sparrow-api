@@ -44,4 +44,10 @@ export class EnvironmentVariables {
   @Type(() => Number)
   @IsNumber()
   REFRESHTOKEN_MAX_SIZE: number;
+
+  @IsString()
+  SENDEREMAIL: string;
+
+  @IsString()
+  SENDERPASSWORD: string;
 }

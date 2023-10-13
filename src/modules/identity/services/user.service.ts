@@ -7,7 +7,12 @@ import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
 import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
-import { User } from "@src/modules/common/models/user.model";
+import {
+  EmailServiceProvider,
+  User,
+} from "@src/modules/common/models/user.model";
+import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
+import * as nodemailer from "nodemailer";
 import { ObjectId, WithId } from "mongodb";
 import { createHmac } from "crypto";
 export interface IGenericMessageBody {
@@ -125,6 +130,29 @@ export class UserService {
       return data;
     } catch (error) {
       throw new BadRequestException(error);
+    }
+  }
+  async forgetPassword(resetPasswordDto: ResetPasswordPayload): Promise<void> {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: EmailServiceProvider.GMAIL,
+        auth: {
+          user: this.configService.get("app.email"),
+          pass: this.configService.get("app.password"),
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.email,
+        to: resetPasswordDto.email,
+        text: "Reset Password",
+        html: "<p>Reset Password</p>",
+        subject: `Reset Password`,
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.log(`Nodemailer error sending email to`, error);
     }
   }
 
