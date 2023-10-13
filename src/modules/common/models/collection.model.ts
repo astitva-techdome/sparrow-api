@@ -13,24 +13,41 @@ import {
 } from "class-validator";
 import { HTTPMethods } from "fastify";
 import { ObjectId } from "mongodb";
-import { SchemaObject } from "../services/openapi303";
+import { SchemaObject } from "./openapi303.model";
 import { ApiProperty } from "@nestjs/swagger";
-
 export enum ItemTypeEnum {
-  "FOLDER",
-  "REQUEST",
+  FOLDER = "FOLDER",
+  REQUEST = "REQUEST",
 }
-
 export enum BodyModeEnum {
   "application/json",
   "application/xml",
   "application/x-www-form-urlencoded",
   "multipart/form-data",
 }
+export enum FormDataTypeEnum {
+  TEXT,
+  FILE,
+}
+// export enum BodyModesEnum {
+//   "application/json",
+//   "application/xml",
+//   "application/x-www-form-urlencoded",
+//   "multipart/form-data",
+// }
 
 export enum SourceTypeEnum {
   "SPEC",
   "USER",
+}
+export class QueryParams {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
@@ -165,25 +182,13 @@ export class Collection {
   @IsDateString()
   updatedAt?: Date;
 
-  @IsOptional()
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   createdBy?: string;
 
+  @IsString()
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
   updatedBy?: string;
-}
-
-export class QueryParams {
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @IsString()
-  @IsNotEmpty()
-  value: string;
 }
 
 export class CollectionDto {
@@ -194,4 +199,18 @@ export class CollectionDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+}
+
+export class FormData {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+
+  @IsEnum(FormDataTypeEnum)
+  @IsNotEmpty()
+  type: FormDataTypeEnum;
 }

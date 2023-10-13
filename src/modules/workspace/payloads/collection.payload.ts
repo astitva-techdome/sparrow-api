@@ -88,3 +88,10 @@ export class UpdateCollectionDto {
   @IsNotEmpty()
   name: string;
 }
+
+export class ImportCollectionDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  url: string;
+}

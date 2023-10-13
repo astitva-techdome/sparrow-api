@@ -1,9 +1,6 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 
-import {
-  CreateCollectionDto,
-  UpdateCollectionDto,
-} from "../payloads/collection.payload";
+import { UpdateCollectionDto } from "../payloads/collection.payload";
 import {
   Db,
   DeleteResult,
@@ -25,24 +22,10 @@ export class collectionRepository {
     @Inject("DATABASE_CONNECTION") private db: Db,
     private readonly contextService: ContextService,
   ) {}
-  async addCollection(
-    collection: CreateCollectionDto,
-  ): Promise<InsertOneResult> {
-    const user = await this.contextService.get("user");
-    delete collection.workspaceId;
-
-    const new_collection: Collection = {
-      name: collection.name,
-      totalRequests: 0,
-      createdBy: user.name,
-      items: [],
-      updatedBy: user.name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+  async addCollection(collection: Collection): Promise<InsertOneResult> {
     const response = await this.db
       .collection<Collection>(Collections.COLLECTION)
-      .insertOne(new_collection);
+      .insertOne(collection);
     return response;
   }
 
