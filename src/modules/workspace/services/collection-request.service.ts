@@ -14,6 +14,7 @@ import {
   FolderDto,
 } from "../payloads/collectionRequest.payload";
 import { v4 as uuidv4 } from "uuid";
+import { ItemTypeEnum } from "@src/modules/common/models/collection.model";
 @Injectable()
 export class CollectionRequestService {
   constructor(
@@ -29,7 +30,7 @@ export class CollectionRequestService {
       const user = await this.contextService.get("user");
       const uuid = uuidv4();
       await this.checkPermission(payload.workspaceId, user._id);
-      const collection = await this.collectionReposistory.getCollectionRequest(
+      const collection = await this.collectionReposistory.getCollection(
         payload.collectionId,
       );
       if (!collection) {
@@ -39,11 +40,11 @@ export class CollectionRequestService {
         id: uuid,
         name: payload.name,
         description: payload.description ?? "",
-        type: 0,
+        type: ItemTypeEnum.FOLDER,
         items: [],
       };
       collection.items.push(updatedFolder);
-      const data = await this.collectionReposistory.updateCollectionRequest(
+      const data = await this.collectionReposistory.updateCollection(
         payload.collectionId,
         collection,
       );
@@ -59,7 +60,7 @@ export class CollectionRequestService {
     try {
       const user = await this.contextService.get("user");
       await this.checkPermission(payload.workspaceId, user._id);
-      const collection = await this.collectionReposistory.getCollectionRequest(
+      const collection = await this.collectionReposistory.getCollection(
         payload.collectionId,
       );
       if (!collection) {
@@ -69,7 +70,7 @@ export class CollectionRequestService {
       collection.items[index].name = payload.name;
       collection.items[index].description =
         payload.description ?? collection.items[index].description;
-      const data = await this.collectionReposistory.updateCollectionRequest(
+      const data = await this.collectionReposistory.updateCollection(
         payload.collectionId,
         collection,
       );
@@ -81,11 +82,11 @@ export class CollectionRequestService {
 
   async deleteFolder(
     payload: DeleteFolderDto,
-  ): Promise<UpdateResult<CollectionRequestItem>> {
+  ): Promise<UpdateResult<CollectionRequest>> {
     try {
       const user = await this.contextService.get("user");
       await this.checkPermission(payload.workspaceId, user._id);
-      const collection = await this.collectionReposistory.getCollectionRequest(
+      const collection = await this.collectionReposistory.getCollection(
         payload.collectionId,
       );
       if (!collection) {
@@ -94,9 +95,10 @@ export class CollectionRequestService {
       const updatedCollectionItems = collection.items.filter(
         (item) => item.id !== payload.folderId,
       );
-      const data = await this.collectionReposistory.updateCollectionItems(
+      collection.items = updatedCollectionItems;
+      const data = await this.collectionReposistory.updateCollection(
         payload.collectionId,
-        updatedCollectionItems,
+        collection,
       );
       return data;
     } catch (error) {

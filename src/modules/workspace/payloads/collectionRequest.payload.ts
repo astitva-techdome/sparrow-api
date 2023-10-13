@@ -13,30 +13,30 @@ import {
 import { HTTPMethods } from "fastify";
 import { SchemaObject } from "@src/modules/common/models/openapi303.model";
 import { ApiProperty } from "@nestjs/swagger";
+import {
+  BodyModeEnum,
+  ItemTypeEnum,
+} from "@src/modules/common/models/collection.model";
+// import
+// export enum RequestItemTypeEnum {
+//   "FOLDER",
+//   "REQUEST",
+// }
 
-export enum RequestItemTypeEnum {
-  "FOLDER",
-  "REQUEST",
-}
+// export enum RequestBodyModeEnum {
+//   "application/json",
+//   "application/xml",
+//   "application/x-www-form-urlencoded",
+//   "multipart/form-data",
+// }
 
-export enum RequestBodyModeEnum {
-  "application/json",
-  "application/xml",
-  "application/x-www-form-urlencoded",
-  "multipart/form-data",
-}
-
-export enum RequestSourceTypeEnum {
-  "SPEC",
-  "USER",
-}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 export class CollectionRequestBody {
   @ApiProperty()
-  @IsEnum(RequestBodyModeEnum)
+  @IsEnum(BodyModeEnum)
   @IsNotEmpty()
-  type: RequestBodyModeEnum;
+  type: BodyModeEnum;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -125,9 +125,9 @@ export class CollectionRequestItem {
   description: string;
 
   @ApiProperty()
-  @IsEnum(RequestItemTypeEnum)
+  @IsEnum(ItemTypeEnum)
   @IsNotEmpty()
-  type: RequestItemTypeEnum;
+  type: ItemTypeEnum;
 
   @ApiProperty({ type: [CollectionRequestItem] })
   @IsArray()
