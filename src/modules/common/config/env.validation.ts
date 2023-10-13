@@ -31,7 +31,7 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  DB_URL: number;
+  DB_URL: string;
 
   @IsString()
   @IsNotEmpty()

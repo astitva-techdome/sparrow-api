@@ -13,6 +13,7 @@ import { RemovePermissionHandler } from "./handlers/removePermission.handler";
 import { CollectionService } from "./services/collection.service";
 import { collectionRepository } from "./repositories/collection.repository";
 import { collectionController } from "./controllers/collection.controller";
+import { CollectionRequestService } from "./services/collection-request.service";
 @Module({
   imports: [IdentityModule],
   providers: [
@@ -26,6 +27,7 @@ import { collectionController } from "./controllers/collection.controller";
     RemovePermissionHandler,
     collectionRepository,
     CollectionService,
+    CollectionRequestService,
   ],
   exports: [],
   controllers: [
