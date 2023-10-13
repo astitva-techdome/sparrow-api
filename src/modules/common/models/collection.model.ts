@@ -20,15 +20,15 @@ export enum ItemTypeEnum {
   REQUEST = "REQUEST",
 }
 export enum BodyModeEnum {
-  "application/json",
-  "application/xml",
-  "application/x-www-form-urlencoded",
-  "multipart/form-data",
+  "application/json" = "application/json",
+  "application/xml" = "application/xml",
+  "application/x-www-form-urlencoded" = "application/x-www-form-urlencoded",
+  "multipart/form-data" = "multipart/form-data",
 }
 
 export enum SourceTypeEnum {
-  "SPEC",
-  "USER",
+  "SPEC" = "SPEC",
+  "USER" = "USER",
 }
 export class QueryParams {
   @IsString()
