@@ -52,6 +52,11 @@ export class Params {
 
 export class CollectionRequestMetaData {
   @ApiProperty()
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -99,6 +104,7 @@ export class CollectionRequestMetaData {
 }
 
 export class CollectionRequestItem {
+  @ApiProperty()
   @IsOptional()
   @IsString()
   id?: string;
@@ -185,9 +191,13 @@ export class CollectionRequestDto {
   @IsNotEmpty()
   workspaceId: string;
 
+  @IsString()
+  @IsOptional()
+  folderId: string;
+
   @Type(() => CollectionRequestItem)
   @ValidateNested({ each: true })
-  collectionDto?: CollectionRequestItem[];
+  collectionDto?: CollectionRequestItem;
 }
 
 export class FolderPayload {

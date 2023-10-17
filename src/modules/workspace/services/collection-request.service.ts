@@ -9,18 +9,25 @@ import { ObjectId, UpdateResult } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import {
   CollectionRequest,
+  CollectionRequestDto,
   CollectionRequestItem,
   DeleteFolderDto,
   FolderDto,
 } from "../payloads/collectionRequest.payload";
 import { v4 as uuidv4 } from "uuid";
-import { ItemTypeEnum } from "@src/modules/common/models/collection.model";
+import {
+  Collection,
+  CollectionItem,
+  ItemTypeEnum,
+} from "@src/modules/common/models/collection.model";
+import { CollectionService } from "./collection.service";
 @Injectable()
 export class CollectionRequestService {
   constructor(
     private readonly collectionReposistory: collectionRepository,
     private readonly workspaceReposistory: WorkspaceRepository,
     private readonly contextService: ContextService,
+    private readonly collectionService: CollectionService,
   ) {}
 
   async addFolder(
@@ -132,5 +139,101 @@ export class CollectionRequestService {
       }
     }
     throw new BadRequestException("Folder Doesn't Exist");
+  }
+  async addRequest(
+    collectionId: string,
+    request: CollectionRequestDto,
+    noOfRequests: number,
+  ): Promise<UpdateResult<Collection>> {
+    try {
+      const uuid = uuidv4();
+      const requestObj: CollectionItem = {
+        id: uuid,
+        name: request.collectionDto.name,
+        type: request.collectionDto.type,
+        description: request.collectionDto.description,
+      };
+
+      if (request.collectionDto.type === ItemTypeEnum.REQUEST) {
+        requestObj.request = request.collectionDto.request;
+        return await this.collectionReposistory.addRequest(
+          collectionId,
+          requestObj,
+          noOfRequests,
+        );
+      } else {
+        requestObj.items = [
+          {
+            id: uuidv4(),
+            name: request.collectionDto.items[0].name,
+            type: request.collectionDto.items[0].type,
+            description: request.collectionDto.items[0].description,
+            request: request.collectionDto.items[0].request,
+          },
+        ];
+
+        const collection = await this.collectionReposistory.addRequestInFolder(
+          collectionId,
+          requestObj,
+          noOfRequests,
+        );
+        return collection;
+      }
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async updateRequest(
+    collectionId: string,
+    requestId: string,
+    request: CollectionRequestDto,
+  ): Promise<UpdateResult<Collection>> {
+    try {
+      return await this.collectionReposistory.updateRequest(
+        collectionId,
+        requestId,
+        request,
+      );
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async deleteRequest(
+    collectionId: string,
+    requestId: string,
+    noOfRequests: number,
+    folderId?: string,
+  ): Promise<UpdateResult<Collection>> {
+    try {
+      return await this.collectionReposistory.deleteRequest(
+        collectionId,
+        requestId,
+        noOfRequests,
+        folderId,
+      );
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async getNoOfRequest(collectionId: string): Promise<number> {
+    try {
+      const data = await this.collectionReposistory.get(collectionId);
+      let noOfRequests = 0;
+      if (data.items.length > 0) {
+        data.items.map((item) => {
+          if (item.type === ItemTypeEnum.REQUEST) {
+            noOfRequests = noOfRequests + 1;
+          } else if (item.type === ItemTypeEnum.FOLDER) {
+            noOfRequests = noOfRequests + item.items.length;
+          }
+        });
+      }
+      return noOfRequests;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }
