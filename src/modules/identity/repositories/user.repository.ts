@@ -75,6 +75,7 @@ export class UserRepository {
         ...payload,
         password: createHmac("sha256", payload.password).digest("hex"),
         teams: [],
+        personalWorkspaces: [],
       });
 
     return createdUser;

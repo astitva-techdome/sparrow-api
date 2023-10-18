@@ -7,7 +7,7 @@ export default () => ({
     url: process.env.APP_URL,
     webtokenSecretKey: process.env.WEBTOKEN_SECRET_KEY,
     webtokenExpirationTime:
-      parseInt(process.env.WEBTOKEN_EXPIRATION_TIME) || 1800,
+      parseInt(process.env.WEBTOKEN_EXPIRATION_TIME) || 900,
     defaultWorkspaceName: "My Workspace",
     userBlacklistPrefix: "BL_",
     refreshTokenSecretKey: process.env.REFRESHTOKEN_SECRET_KEY,
