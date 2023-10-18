@@ -121,6 +121,11 @@ export class RequestMetaData {
 
 export class CollectionItem {
   @ApiProperty()
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   name: string;
