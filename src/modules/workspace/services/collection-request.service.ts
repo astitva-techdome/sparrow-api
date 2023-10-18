@@ -8,9 +8,7 @@ import { WorkspaceRepository } from "../repositories/workspace.repository";
 import { ObjectId, UpdateResult } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import {
-  CollectionRequest,
   CollectionRequestDto,
-  CollectionRequestItem,
   DeleteFolderDto,
   FolderDto,
 } from "../payloads/collectionRequest.payload";
@@ -30,9 +28,7 @@ export class CollectionRequestService {
     private readonly collectionService: CollectionService,
   ) {}
 
-  async addFolder(
-    payload: FolderDto,
-  ): Promise<UpdateResult<CollectionRequest>> {
+  async addFolder(payload: FolderDto): Promise<UpdateResult<Collection>> {
     try {
       const user = await this.contextService.get("user");
       const uuid = uuidv4();
@@ -43,7 +39,7 @@ export class CollectionRequestService {
       if (!collection) {
         throw new BadRequestException("Collection Not Found");
       }
-      const updatedFolder: CollectionRequestItem = {
+      const updatedFolder: CollectionItem = {
         id: uuid,
         name: payload.name,
         description: payload.description ?? "",
@@ -61,9 +57,7 @@ export class CollectionRequestService {
     }
   }
 
-  async updateFolder(
-    payload: FolderDto,
-  ): Promise<UpdateResult<CollectionRequest>> {
+  async updateFolder(payload: FolderDto): Promise<UpdateResult<Collection>> {
     try {
       const user = await this.contextService.get("user");
       await this.checkPermission(payload.workspaceId, user._id);
@@ -89,7 +83,7 @@ export class CollectionRequestService {
 
   async deleteFolder(
     payload: DeleteFolderDto,
-  ): Promise<UpdateResult<CollectionRequest>> {
+  ): Promise<UpdateResult<Collection>> {
     try {
       const user = await this.contextService.get("user");
       await this.checkPermission(payload.workspaceId, user._id);
@@ -129,10 +123,7 @@ export class CollectionRequestService {
     }
   }
 
-  async checkFolderExist(
-    collection: CollectionRequest,
-    id: string,
-  ): Promise<number> {
+  async checkFolderExist(collection: Collection, id: string): Promise<number> {
     for (let i = 0; i < collection.items.length; i++) {
       if (collection.items[i].id === id) {
         return i;
@@ -165,10 +156,10 @@ export class CollectionRequestService {
         requestObj.items = [
           {
             id: uuidv4(),
-            name: request.collectionDto.items[0].name,
-            type: request.collectionDto.items[0].type,
-            description: request.collectionDto.items[0].description,
-            request: request.collectionDto.items[0].request,
+            name: request.collectionDto.items.name,
+            type: request.collectionDto.items.type,
+            description: request.collectionDto.items.description,
+            request: request.collectionDto.items.request,
           },
         ];
 

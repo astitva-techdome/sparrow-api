@@ -16,10 +16,7 @@ import {
   CollectionItem,
   ItemTypeEnum,
 } from "@src/modules/common/models/collection.model";
-import {
-  CollectionRequest,
-  CollectionRequestDto,
-} from "../payloads/collectionRequest.payload";
+import { CollectionRequestDto } from "../payloads/collectionRequest.payload";
 @Injectable()
 export class collectionRepository {
   constructor(
@@ -68,21 +65,21 @@ export class collectionRepository {
     return data;
   }
 
-  async getCollection(id: string): Promise<CollectionRequest> {
+  async getCollection(id: string): Promise<Collection> {
     const _id = new ObjectId(id);
     const data = await this.db
-      .collection<CollectionRequest>(Collections.COLLECTION)
+      .collection<Collection>(Collections.COLLECTION)
       .findOne({ _id });
     return data;
   }
 
   async updateCollection(
     id: string,
-    payload: CollectionRequest,
-  ): Promise<UpdateResult<CollectionRequest>> {
+    payload: Collection,
+  ): Promise<UpdateResult<Collection>> {
     const _id = new ObjectId(id);
     const data = await this.db
-      .collection<CollectionRequest>(Collections.COLLECTION)
+      .collection<Collection>(Collections.COLLECTION)
       .updateOne(
         { _id: _id },
         {
@@ -181,7 +178,7 @@ export class collectionRepository {
           },
           {
             $set: {
-              "items.$[i].items.$[j]": request.collectionDto.items[0],
+              "items.$[i].items.$[j]": request.collectionDto.items,
             },
           },
           {

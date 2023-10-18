@@ -124,11 +124,10 @@ export class CollectionRequestItem {
   type: ItemTypeEnum;
 
   @ApiProperty({ type: [CollectionRequestItem] })
-  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CollectionRequestItem)
   @IsOptional()
-  items?: CollectionRequestItem[];
+  items?: CollectionRequestItem;
 
   @ApiProperty({ type: CollectionRequestMetaData })
   @IsOptional()
