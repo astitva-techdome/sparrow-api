@@ -10,6 +10,10 @@ import { WorkspaceHandler } from "./handlers/workspace.handler";
 import { PermissionHandler } from "./handlers/permission.handler";
 import { OwnerPermissionHandler } from "./handlers/ownerPermisson.handler";
 import { RemovePermissionHandler } from "./handlers/removePermission.handler";
+import { CollectionService } from "./services/collection.service";
+import { collectionRepository } from "./repositories/collection.repository";
+import { collectionController } from "./controllers/collection.controller";
+import { CollectionRequestService } from "./services/collection-request.service";
 @Module({
   imports: [IdentityModule],
   providers: [
@@ -21,8 +25,15 @@ import { RemovePermissionHandler } from "./handlers/removePermission.handler";
     PermissionHandler,
     OwnerPermissionHandler,
     RemovePermissionHandler,
+    collectionRepository,
+    CollectionService,
+    CollectionRequestService,
   ],
   exports: [],
-  controllers: [WorkSpaceController, PermissionController],
+  controllers: [
+    WorkSpaceController,
+    PermissionController,
+    collectionController,
+  ],
 })
 export class WorkspaceModule {}

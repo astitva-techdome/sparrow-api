@@ -13,6 +13,8 @@ import { TeamUserService } from "./services/team-user.service";
 import { TeamRepository } from "./repositories/team.repository";
 import { TeamController } from "./controllers/team.controller";
 import { GoogleStrategy } from "./strategies/google.strategy";
+import { RefreshTokenStrategy } from "./strategies/refresh-token.strategy";
+import { ParserService } from "../common/services/parser.service";
 
 @Module({
   imports: [
@@ -40,6 +42,7 @@ import { GoogleStrategy } from "./strategies/google.strategy";
   providers: [
     AuthService,
     JwtStrategy,
+    RefreshTokenStrategy,
     UserService,
     JwtService,
     UserRepository,
@@ -47,6 +50,7 @@ import { GoogleStrategy } from "./strategies/google.strategy";
     TeamUserService,
     TeamRepository,
     GoogleStrategy,
+    ParserService,
   ],
   exports: [
     PassportModule.register({ defaultStrategy: "jwt" }),
@@ -57,6 +61,7 @@ import { GoogleStrategy } from "./strategies/google.strategy";
     TeamService,
     TeamUserService,
     TeamRepository,
+    ParserService,
   ],
   controllers: [AuthController, UserController, TeamController],
 })

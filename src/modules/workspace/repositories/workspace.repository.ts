@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { Db, DeleteResult, ObjectId, WithId } from "mongodb";
+import { Db, DeleteResult, ObjectId, UpdateResult, WithId } from "mongodb";
 import { Workspace } from "../../common/models/workspace.model";
 import { Collections } from "../../common/enum/database.collection.enum";
 import {
@@ -7,6 +7,7 @@ import {
   WorkspaceDtoForIdDocument,
 } from "../payloads/workspace.payload";
 import { ContextService } from "../../common/services/context.service";
+import { CollectionDto } from "@src/modules/common/models/collection.model";
 /**
  * Models a typical response for a crud operation
  */
@@ -98,5 +99,41 @@ export class WorkspaceRepository {
     return this.db
       .collection<Workspace>(Collections.WORKSPACE)
       .deleteOne({ _id });
+  }
+  async addCollectionInWorkspace(
+    workspaceId: string,
+    collection: CollectionDto,
+  ): Promise<UpdateResult> {
+    const _id = new ObjectId(workspaceId);
+    return await this.db
+      .collection(Collections.WORKSPACE)
+      .updateOne(
+        { _id },
+        { $push: { collection: { id: collection.id, name: collection.name } } },
+      );
+  }
+
+  async updateCollectioninWorkspace(
+    workspaceId: string,
+    collectionId: string,
+    name: string,
+  ): Promise<UpdateResult> {
+    const _id = new ObjectId(workspaceId);
+    const collection_id = new ObjectId(collectionId);
+    return this.db
+      .collection(Collections.WORKSPACE)
+      .updateOne(
+        { _id, "collection.id": collection_id },
+        { $set: { "collection.$.name": name } },
+      );
+  }
+  async deleteCollectioninWorkspace(
+    workspaceId: string,
+    collectionsArray: CollectionDto[],
+  ): Promise<UpdateResult> {
+    const _id = new ObjectId(workspaceId);
+    return this.db
+      .collection(Collections.WORKSPACE)
+      .updateOne({ _id }, { $set: { collection: collectionsArray } });
   }
 }

@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
 import {
+  ArrayMaxSize,
   IsArray,
   IsDate,
   IsEmail,
@@ -14,6 +15,10 @@ import { Role } from "../enum/roles.enum";
 import { TeamDto } from "./team.model";
 import { ObjectId } from "mongodb";
 
+export enum EmailServiceProvider {
+  GMAIL = "GMAIL",
+  OUTLOOK = "OUTLOOK",
+}
 export class User {
   @IsString()
   @IsNotEmpty()
@@ -45,6 +50,12 @@ export class User {
   @IsDate()
   @IsOptional()
   updatedAt?: Date;
+
+  @IsArray()
+  @IsString()
+  @ArrayMaxSize(5)
+  @IsOptional()
+  refresh_tokens?: string[];
 }
 
 export class UserDto {

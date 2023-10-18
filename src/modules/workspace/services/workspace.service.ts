@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import {
@@ -13,7 +17,9 @@ import { TeamRepository } from "@src/modules/identity/repositories/team.reposito
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
 import { PermissionForUserDto } from "../payloads/permission.payload";
+import { CollectionDto } from "@src/modules/common/models/collection.model";
 
+import { Logger } from "nestjs-pino";
 /**
  * Workspace Service
  */
@@ -24,6 +30,7 @@ export class WorkspaceService {
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
     private readonly permissionService: PermissionService,
+    private readonly logger: Logger,
   ) {}
 
   async get(id: string): Promise<WithId<Workspace>> {
@@ -146,6 +153,62 @@ export class WorkspaceService {
     try {
       const data = await this.workspaceRepository.delete(id);
       return data;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async addCollectionInWorkSpace(
+    workspaceId: string,
+    collection: CollectionDto,
+  ) {
+    try {
+      const data = await this.get(workspaceId);
+      if (!data) {
+        throw new NotFoundException("Workspace with this id does't exist");
+      }
+      await this.workspaceRepository.addCollectionInWorkspace(
+        workspaceId,
+        collection,
+      );
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  async updateCollectionInWorkSpace(
+    workspaceId: string,
+    collectionId: string,
+    name: string,
+  ) {
+    try {
+      const data = await this.get(workspaceId);
+      if (!data) {
+        throw new NotFoundException("Workspace with this id does't exist");
+      }
+      await this.workspaceRepository.updateCollectioninWorkspace(
+        workspaceId,
+        collectionId,
+        name,
+      );
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async deleteCollectionInWorkSpace(workspaceId: string, collectionId: string) {
+    try {
+      const data = await this.get(workspaceId);
+      if (!data) {
+        throw new NotFoundException("Workspace with this id does't exist");
+      }
+
+      const filteredCollections = data.collection.filter((collection) => {
+        return collection.id.toString() !== collectionId;
+      });
+      await this.workspaceRepository.deleteCollectioninWorkspace(
+        workspaceId,
+        filteredCollections,
+      );
     } catch (error) {
       throw new BadRequestException(error);
     }

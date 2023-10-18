@@ -1,9 +1,7 @@
-import * as winston from "winston";
 import { Module } from "@nestjs/common";
 import { AppController } from "@app/app.controller";
 import { AppService } from "@app/app.service";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { WinstonModule } from "@winston/winston.module";
 import { AccessControlModule } from "nest-access-control";
 import { roles } from "@app/app.roles";
 import { Env, EnvironmentVariables } from "@common/config/env.validation";
@@ -12,39 +10,37 @@ import configuration from "@common/config/configuration";
 import { WorkspaceModule } from "../workspace/workspace.module";
 import { CommonModule } from "../common/common.module";
 import { IdentityModule } from "../identity/identity.module";
-
+import { LoggerModule } from "nestjs-pino";
+import pino from "pino";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
-    WinstonModule.forRootAsync({
+    LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        return configService.get("env") === Env.DEV
-          ? {
-              level: "info",
-              format: winston.format.json(),
-              defaultMeta: { service: "user-service" },
-              transports: [
-                new winston.transports.Console({
-                  format: winston.format.simple(),
+      useFactory: async (configService: ConfigService) => {
+        return {
+          pinoHttp: {
+            level:
+              configService.get("app.env") === Env.DEV
+                ? pino.levels.labels["30"]
+                : pino.levels.labels["50"],
+            stream: pino.multistream([
+              { stream: process.stdout },
+              {
+                stream: pino.destination({
+                  dest:
+                    configService.get("app.env") === Env.DEV
+                      ? "./logs/info.log"
+                      : "./logs/error.log",
+                  sync: true,
+                  append: true,
+                  mkdir: true,
                 }),
-              ],
-            }
-          : {
-              level: "info",
-              format: winston.format.json(),
-              defaultMeta: { service: "user-service" },
-              transports: [
-                new winston.transports.File({
-                  filename: "logs/error.log",
-                  level: "error",
-                }),
-                new winston.transports.Console({
-                  format: winston.format.simple(),
-                }),
-              ],
-            };
+              },
+            ]),
+          },
+        };
       },
     }),
     AccessControlModule.forRoles(roles),
