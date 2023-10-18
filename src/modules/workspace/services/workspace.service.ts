@@ -20,6 +20,7 @@ import { PermissionForUserDto } from "../payloads/permission.payload";
 import { CollectionDto } from "@src/modules/common/models/collection.model";
 
 import { Logger } from "nestjs-pino";
+import { UserRepository } from "@src/modules/identity/repositories/user.repository";
 /**
  * Workspace Service
  */
@@ -30,6 +31,7 @@ export class WorkspaceService {
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
     private readonly permissionService: PermissionService,
+    private readonly userRepository: UserRepository,
     private readonly logger: Logger,
   ) {}
 
@@ -122,6 +124,18 @@ export class WorkspaceService {
           workspaces: teamWorkspaces,
         };
         await this.teamRepository.updateTeamById(teamId, updateTeamParams);
+      } else {
+        const userData = await this.userRepository.findUserByUserId(
+          new ObjectId(userId),
+        );
+        userData.personalWorkspaces.push({
+          workspaceId: response.insertedId.toString(),
+          name: ownerInfo.name,
+        });
+        await this.userRepository.updateUserById(
+          new ObjectId(userId),
+          userData,
+        );
       }
       return response;
     } catch (error) {

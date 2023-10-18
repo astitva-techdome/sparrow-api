@@ -50,4 +50,8 @@ export class EnvironmentVariables {
 
   @IsString()
   SENDERPASSWORD: string;
+
+  @IsString()
+  @IsNotEmpty()
+  AZURE_CONNECTION_STRING: string;
 }

@@ -43,6 +43,11 @@ export class User {
   @ValidateNested({ each: true })
   teams: TeamDto[];
 
+  @IsArray()
+  @Type(() => UserWorkspaceDto)
+  @ValidateNested({ each: true })
+  personalWorkspaces: UserWorkspaceDto[];
+
   @IsDate()
   @IsOptional()
   createdAt?: Date;
@@ -90,4 +95,14 @@ export class PermissionDto {
   @IsMongoId()
   @IsNotEmpty()
   id: ObjectId;
+}
+
+export class UserWorkspaceDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  workspaceId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 }
