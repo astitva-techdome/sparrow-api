@@ -54,6 +54,11 @@ spec:
               secretKeyRef:
                 name: sparrow-api-secret
                 key: DB_URL
+          - name: AZURE_CONNECTION_STRING
+            valueFrom: 
+              secretKeyRef:
+                name: sparrow-api-secret
+                key: AZURE_CONNECTION_STRING    
           - name: REFRESHTOKEN_SECRET_KEY
             valueFrom:
               secretKeyRef:

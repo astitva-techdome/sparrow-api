@@ -86,7 +86,7 @@ export class AuthService {
         {
           _id: insertedId,
           email: user.email,
-          permissions: user.permissions,
+          personalWorkspaces: user.personalWorkspaces,
           exp: Date.now() / 1000 + this.expiration,
         },
         { secret: this.configService.get("app.webtokenSecretKey") },

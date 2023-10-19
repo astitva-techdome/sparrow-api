@@ -65,4 +65,6 @@ export class EnvironmentVariables {
 
   @IsString()
   LOGIN_REDIRECT_URL: string;
+  @IsNotEmpty()
+  AZURE_CONNECTION_STRING: string;
 }
