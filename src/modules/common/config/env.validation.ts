@@ -67,4 +67,7 @@ export class EnvironmentVariables {
   LOGIN_REDIRECT_URL: string;
   @IsNotEmpty()
   AZURE_CONNECTION_STRING: string;
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_ACCESS_TYPE: string;
 }
