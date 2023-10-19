@@ -29,8 +29,8 @@ export class User {
   email: string;
 
   @IsString()
-  @IsNotEmpty()
-  password: string;
+  @IsOptional()
+  password?: string;
 
   @IsArray()
   @IsOptional()
@@ -47,7 +47,6 @@ export class User {
   @Type(() => UserWorkspaceDto)
   @ValidateNested({ each: true })
   personalWorkspaces: UserWorkspaceDto[];
-
   @IsDate()
   @IsOptional()
   createdAt?: Date;
@@ -96,7 +95,6 @@ export class PermissionDto {
   @IsNotEmpty()
   id: ObjectId;
 }
-
 export class UserWorkspaceDto {
   @IsMongoId()
   @IsNotEmpty()

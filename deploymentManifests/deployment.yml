@@ -84,6 +84,16 @@ spec:
               secretKeyRef:
                 name: sparrow-api-secret
                 key:  SENDERPASSWORD
+          - name:  LOGIN_REDIRECT_URL
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key:  LOGIN_REDIRECT_URL
+          - name:  GOOGLE_ACCESS_TYPE
+            valueFrom:
+              secretKeyRef:
+                name: sparrow-api-secret
+                key:  GOOGLE_ACCESS_TYPE
                                                                              
 ---
 

@@ -35,6 +35,18 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
+  GOOGLE_CLIENT_ID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_CLIENT_SECRET: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_APP_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
   REFRESHTOKEN_SECRET_KEY: string;
 
   @Type(() => Number)
@@ -52,6 +64,10 @@ export class EnvironmentVariables {
   SENDERPASSWORD: string;
 
   @IsString()
+  LOGIN_REDIRECT_URL: string;
   @IsNotEmpty()
   AZURE_CONNECTION_STRING: string;
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_ACCESS_TYPE: string;
 }

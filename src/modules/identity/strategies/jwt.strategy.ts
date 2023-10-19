@@ -6,6 +6,7 @@ import { Db, ObjectId } from "mongodb";
 import { JwtPayload } from "../payloads/jwt.payload";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { ContextService } from "@src/modules/common/services/context.service";
+import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 
 /**
  * Jwt Strategy Class
@@ -39,7 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate({ iat, exp, _id }: JwtPayload) {
     const timeDiff = exp - iat;
     if (timeDiff <= 0) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(ErrorMessages.ExpiredToken);
     }
     const user = await this.db.collection(Collections.USER).findOne(
       {
@@ -49,7 +50,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     );
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
     this.contextService.set("user", user);
 

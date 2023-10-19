@@ -4,7 +4,10 @@ import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { RegisterPayload } from "../payloads/register.payload";
 import { UpdateUserDto, UserDto } from "../payloads/user.payload";
-import { User } from "@src/modules/common/models/user.model";
+import {
+  EmailServiceProvider,
+  User,
+} from "@src/modules/common/models/user.model";
 import { ContextService } from "@src/modules/common/services/context.service";
 
 export interface IGenericMessageBody {
@@ -44,9 +47,9 @@ export class UserRepository {
    * @param {string} email
    * @returns {Promise<IUser>} queried user data
    */
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<WithId<User>> {
     return await this.db
-      .collection(Collections.USER)
+      .collection<User>(Collections.USER)
       .findOne({ email }, { projection: { password: 0 } });
   }
 
@@ -77,6 +80,12 @@ export class UserRepository {
         teams: [],
         personalWorkspaces: [],
       });
+    const user = {
+      _id: createdUser.insertedId,
+      name: payload.name,
+      email: payload.email,
+    };
+    this.contextService.set("user", user);
 
     return createdUser;
   }
@@ -168,5 +177,23 @@ export class UserRepository {
       },
     );
     return;
+  }
+  async createGoogleAuthUser(oAuthId: string, name: string, email: string) {
+    const user: User = {
+      name,
+      email,
+      teams: [],
+      authProviders: [
+        {
+          name: EmailServiceProvider.GMAIL,
+          oAuthId,
+        },
+      ],
+      refresh_tokens: [],
+      personalWorkspaces: [],
+      createdAt: new Date(Date.now()),
+      updatedAt: new Date(Date.now()),
+    };
+    return await this.db.collection<User>(Collections.USER).insertOne(user);
   }
 }

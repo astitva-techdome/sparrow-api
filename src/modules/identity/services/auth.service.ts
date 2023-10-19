@@ -14,6 +14,7 @@ import { createHmac } from "crypto";
 import { User } from "@src/modules/common/models/user.model";
 import { Logger } from "nestjs-pino";
 import { UserRepository } from "../repositories/user.repository";
+import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 /**
  * Models a typical Login/Register route return body
  */
@@ -75,13 +76,7 @@ export class AuthService {
    * @returns {Promise<ITokenReturnBody>} token body
    */
   async createToken(insertedId: ObjectId): Promise<ITokenReturnBody> {
-    const user = await this.db.collection(Collections.USER).findOne(
-      {
-        _id: insertedId,
-      },
-      { projection: { password: 0 } },
-    );
-    this.contextService.set("user", user);
+    const user = this.contextService.get("user");
     return {
       expires: this.expiration.toString(),
       expiresPrettyPrint: AuthService.prettyPrintSeconds(
@@ -153,6 +148,7 @@ export class AuthService {
         "Could not authenticate. Please try again.",
       );
     }
+    this.contextService.set("user", user);
     return user;
   }
   async getUserByEmailAndPass(email: string, password: string) {
@@ -170,7 +166,7 @@ export class AuthService {
         .findOne({ _id });
 
       if (!user) {
-        throw new UnauthorizedException("UnAuthorized");
+        throw new UnauthorizedException(ErrorMessages.Unauthorized);
       }
       const oldRefreshToken = user.refresh_tokens.filter((token) => {
         if (createHmac("sha256", refreshToken).digest("hex") === token) {
@@ -197,11 +193,11 @@ export class AuthService {
         newRefreshToken,
       };
     } catch (error) {
-      throw new UnauthorizedException("Invalid Token");
+      throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
   }
 
-  async checkRefreshTokenSize(user: User) {
+  async checkRefreshTokenSize(user: User): Promise<void> {
     if (user.refresh_tokens.length === this.refreshTokenMaxSize) {
       throw new Error("Maximum request limit reached");
     }
