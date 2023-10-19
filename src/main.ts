@@ -9,6 +9,7 @@ import { AppModule } from "@app/app.module";
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import fastyfyMultipart from "@fastify/multipart";
+import { FastifyInstance } from "fastify";
 /**
  * The url endpoint for open api ui
  * @type {string}
@@ -55,6 +56,14 @@ const { PORT } = process.env;
     max: 100,
     timeWindow: 60000,
   });
+  const fastifyInstance: FastifyInstance = app.getHttpAdapter().getInstance();
+  fastifyInstance
+    .decorateReply("setHeader", function (name: string, value: unknown) {
+      this.header(name, value);
+    })
+    .decorateReply("end", function () {
+      this.send("");
+    });
   app.useGlobalPipes(new ValidationPipe());
   app.register(fastyfyMultipart);
   await app.listen(PORT, "0.0.0.0");

@@ -62,4 +62,7 @@ export class EnvironmentVariables {
 
   @IsString()
   SENDERPASSWORD: string;
+
+  @IsString()
+  LOGIN_REDIRECT_URL: string;
 }

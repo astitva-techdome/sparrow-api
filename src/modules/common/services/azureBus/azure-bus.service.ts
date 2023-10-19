@@ -6,6 +6,7 @@ import {
   ServiceBusReceiver,
   ServiceBusSender,
 } from "@azure/service-bus";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AzureBusService {
@@ -13,8 +14,8 @@ export class AzureBusService {
   private sender: ServiceBusSender;
   private receiver: ServiceBusReceiver;
   private readonly connectionString: string;
-  constructor() {
-    this.connectionString = process.env.AZURE_CONNECTION_STRING;
+  constructor(private readonly configService: ConfigService) {
+    this.connectionString = this.configService.get("azure.connectionString");
     this.sbClient = new ServiceBusClient(this.connectionString);
   }
 

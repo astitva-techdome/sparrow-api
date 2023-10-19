@@ -33,7 +33,8 @@ export default () => ({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      appUrl: process.env.GOOGLE_APP_URL,
+      appUrl: process.env.APP_URL,
+      redirectUrl: process.env.LOGIN_REDIRECT_URL,
     },
   },
 });

@@ -49,7 +49,7 @@ export class UserService {
    * @param {string} email
    * @returns {Promise<IUser>} queried user data
    */
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<WithId<User>> {
     return await this.userRepository.getUserByEmail(email);
   }
 
@@ -77,12 +77,12 @@ export class UserService {
     }
     try {
       const createdUser = await this.userRepository.createUser(payload);
-      const accessToken = await this.authService.createToken(
-        createdUser.insertedId,
-      );
-      const refreshToken = await this.authService.createRefreshToken(
-        createdUser.insertedId,
-      );
+
+      const tokenPromises = [
+        this.authService.createToken(createdUser.insertedId),
+        this.authService.createRefreshToken(createdUser.insertedId),
+      ];
+      const [accessToken, refreshToken] = await Promise.all(tokenPromises);
       const data = {
         accessToken,
         refreshToken,
@@ -170,6 +170,17 @@ export class UserService {
         throw new BadRequestException();
       }
       await this.userRepository.deleteRefreshToken(userId, hashrefreshToken[0]);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  async createGoogleAuthUser(oauthId: string, name: string, email: string) {
+    try {
+      return await this.userRepository.createGoogleAuthUser(
+        oauthId,
+        name,
+        email,
+      );
     } catch (error) {
       throw new BadRequestException(error);
     }

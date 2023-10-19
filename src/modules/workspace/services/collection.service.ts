@@ -19,6 +19,7 @@ import {
 } from "mongodb";
 import { Collection } from "@src/modules/common/models/collection.model";
 import { ContextService } from "@src/modules/common/services/context.service";
+import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 
 @Injectable()
 export class CollectionService {
@@ -87,7 +88,7 @@ export class CollectionService {
         return user.id.toString() === userid.toString();
       });
       if (!hasPermission) {
-        throw new UnauthorizedException("UNAUTHORIZED");
+        throw new UnauthorizedException(ErrorMessages.Unauthorized);
       }
     } catch (error) {
       throw new BadRequestException(error);
