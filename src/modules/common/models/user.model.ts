@@ -9,6 +9,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   ValidateNested,
 } from "class-validator";
 import { Role } from "../enum/roles.enum";
@@ -60,6 +61,11 @@ export class User {
   @ArrayMaxSize(5)
   @IsOptional()
   refresh_tokens?: string[];
+
+  @IsString()
+  @MaxLength(6)
+  @IsOptional()
+  verificationCode?: string;
 }
 
 export class UserDto {

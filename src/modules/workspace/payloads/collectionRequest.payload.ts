@@ -182,18 +182,21 @@ export class QueryParams {
 }
 
 export class CollectionRequestDto {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   collectionId: string;
 
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   workspaceId: string;
 
+  @ApiProperty()
   @IsString()
   @IsOptional()
   folderId: string;
-
+  @ApiProperty()
   @Type(() => CollectionRequestItem)
   @ValidateNested({ each: true })
   collectionDto?: CollectionRequestItem;

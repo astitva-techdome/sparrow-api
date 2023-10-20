@@ -20,7 +20,11 @@ import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
-import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
+import {
+  ResetPasswordPayload,
+  UpdatePasswordPayload,
+  VerifyEmailPayload,
+} from "../payloads/resetPassword.payload";
 import { RefreshTokenGuard } from "@src/modules/common/guards/refresh-token.guard";
 import { RefreshTokenRequest } from "./auth.controller";
 /**
@@ -101,14 +105,14 @@ export class UserController {
       throw new BadRequestException(error);
     }
   }
-  @Post("reset-password")
+  @Post("send-verification-email")
   @UseGuards(AuthGuard("jwt"))
-  async resetPassword(
+  async sendVerificationEmail(
     @Body() resetPasswordDto: ResetPasswordPayload,
     @Res() res: FastifyReply,
   ) {
     try {
-      await this.userService.forgetPassword(resetPasswordDto);
+      await this.userService.sendVerificationEmail(resetPasswordDto);
       const responseData = new ApiResponseService(
         "Email Sent Successfully",
         HttpStatusCode.OK,
@@ -132,6 +136,49 @@ export class UserController {
       await this.userService.logoutUser(userId, refreshToken);
       const responseData = new ApiResponseService(
         "User Logout",
+        HttpStatusCode.OK,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  @Post("verify-email")
+  @ApiResponse({ status: 200, description: "Email Verified" })
+  @ApiResponse({ status: 400, description: "Bad Request" })
+  async verifyEmail(
+    @Res() res: FastifyReply,
+    @Body() verifyEmailPayload: VerifyEmailPayload,
+  ) {
+    try {
+      await this.userService.verifyVerificationCode(
+        verifyEmailPayload.email,
+        verifyEmailPayload.verificationCode,
+      );
+      const responseData = new ApiResponseService(
+        "Email Verified Successfully",
+        HttpStatusCode.OK,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  @Post("change-password")
+  @ApiResponse({ status: 200, description: "Email Verified" })
+  @ApiResponse({ status: 400, description: "Bad Request" })
+  async updatePassword(
+    @Res() res: FastifyReply,
+    @Body() updatePasswordPayload: UpdatePasswordPayload,
+  ) {
+    try {
+      await this.userService.updatePassword(
+        updatePasswordPayload.email,
+        updatePasswordPayload.newPassword,
+      );
+      const responseData = new ApiResponseService(
+        "Password Updated",
         HttpStatusCode.OK,
       );
       res.status(responseData.httpStatusCode).send(responseData);
