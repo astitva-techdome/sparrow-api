@@ -140,13 +140,13 @@ export class CollectionRequestService {
       const uuid = uuidv4();
       const requestObj: CollectionItem = {
         id: uuid,
-        name: request.collectionDto.name,
-        type: request.collectionDto.type,
-        description: request.collectionDto.description,
+        name: request.items.name,
+        type: request.items.type,
+        description: request.items.description,
       };
 
-      if (request.collectionDto.type === ItemTypeEnum.REQUEST) {
-        requestObj.request = request.collectionDto.request;
+      if (request.items.type === ItemTypeEnum.REQUEST) {
+        requestObj.request = request.items.request;
         return await this.collectionReposistory.addRequest(
           collectionId,
           requestObj,
@@ -156,10 +156,10 @@ export class CollectionRequestService {
         requestObj.items = [
           {
             id: uuidv4(),
-            name: request.collectionDto.items.name,
-            type: request.collectionDto.items.type,
-            description: request.collectionDto.items.description,
-            request: request.collectionDto.items.request,
+            name: request.items.items.name,
+            type: request.items.items.type,
+            description: request.items.items.description,
+            request: request.items.items.request,
           },
         ];
 

@@ -20,7 +20,6 @@ import { CollectionService } from "../services/collection.service";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 import { WorkspaceService } from "../services/workspace.service";
-import { AuthGuard } from "@nestjs/passport";
 import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 import {
   CollectionRequestDto,
@@ -28,11 +27,12 @@ import {
 } from "../payloads/collectionRequest.payload";
 import { CollectionRequestService } from "../services/collection-request.service";
 import { ContextService } from "@src/modules/common/services/context.service";
+import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 
 @ApiBearerAuth()
 @ApiTags("collection")
 @Controller("api/collection")
-@UseGuards(AuthGuard("jwt"), BlacklistGuard)
+@UseGuards(JwtAuthGuard, BlacklistGuard)
 export class collectionController {
   constructor(
     private readonly collectionService: CollectionService,

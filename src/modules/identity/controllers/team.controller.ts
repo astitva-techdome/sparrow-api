@@ -9,7 +9,6 @@ import {
   Res,
   BadRequestException,
 } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { TeamService } from "../services/team.service";
 import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
@@ -18,13 +17,14 @@ import { TeamUserService } from "../services/team-user.service";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
+import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 /**
  * Team Controller
  */
 @ApiBearerAuth()
 @ApiTags("team")
 @Controller("api/team")
-@UseGuards(AuthGuard("jwt"), BlacklistGuard)
+@UseGuards(JwtAuthGuard, BlacklistGuard)
 export class TeamController {
   constructor(
     private readonly teamService: TeamService,
