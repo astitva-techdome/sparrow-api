@@ -30,7 +30,6 @@ export class ParserService {
         requestObj.description = innerValue.description;
         requestObj.type = ItemTypeEnum.REQUEST;
         requestObj.request = {} as RequestMetaData;
-        requestObj.request.name = key;
         requestObj.request.method = innerKey as HTTPMethods;
         requestObj.request.operationId = innerValue.operationId;
         requestObj.request.url = key;

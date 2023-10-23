@@ -57,11 +57,6 @@ export class CollectionRequestMetaData {
   id?: string;
 
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty()
   @IsNotEmpty()
   method: HTTPMethods;
 
@@ -116,7 +111,8 @@ export class CollectionRequestItem {
 
   @ApiProperty()
   @IsString()
-  description: string;
+  @IsOptional()
+  description?: string;
 
   @ApiProperty()
   @IsEnum(ItemTypeEnum)
@@ -199,7 +195,7 @@ export class CollectionRequestDto {
   @ApiProperty()
   @Type(() => CollectionRequestItem)
   @ValidateNested({ each: true })
-  collectionDto?: CollectionRequestItem;
+  items?: CollectionRequestItem;
 }
 
 export class FolderPayload {

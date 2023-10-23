@@ -11,17 +11,17 @@ import {
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { PermissionService } from "../services/permission.service";
 import { CreateOrUpdatePermissionDto } from "../../identity/payloads/permission.payload";
-import { AuthGuard } from "@nestjs/passport";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
+import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 /**
  * Permission Controller
  */
 @ApiBearerAuth()
 @ApiTags("permission")
 @Controller("api/permission")
-@UseGuards(AuthGuard("jwt"))
+@UseGuards(JwtAuthGuard)
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 

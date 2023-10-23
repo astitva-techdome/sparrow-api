@@ -11,7 +11,6 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UserService } from "../services/user.service";
 import { RegisterPayload } from "../payloads/register.payload";
@@ -27,6 +26,7 @@ import {
 } from "../payloads/resetPassword.payload";
 import { RefreshTokenGuard } from "@src/modules/common/guards/refresh-token.guard";
 import { RefreshTokenRequest } from "./auth.controller";
+import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 /**
  * User Controller
  */
@@ -55,7 +55,7 @@ export class UserController {
   }
 
   @Get(":userId")
-  @UseGuards(AuthGuard("jwt"), BlacklistGuard)
+  @UseGuards(JwtAuthGuard, BlacklistGuard)
   async getUser(@Param("userId") id: string, @Res() res: FastifyReply) {
     try {
       const data = await this.userService.getUserById(id);
@@ -71,7 +71,7 @@ export class UserController {
   }
 
   @Put(":userId")
-  @UseGuards(AuthGuard("jwt"))
+  @UseGuards(JwtAuthGuard)
   async updateUser(
     @Param("userId") id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -91,7 +91,7 @@ export class UserController {
   }
 
   @Delete(":userId")
-  @UseGuards(AuthGuard("jwt"))
+  @UseGuards(JwtAuthGuard)
   async deleteUser(@Param("userId") id: string, @Res() res: FastifyReply) {
     try {
       const data = await this.userService.deleteUser(id);
@@ -106,7 +106,7 @@ export class UserController {
     }
   }
   @Post("send-verification-email")
-  @UseGuards(AuthGuard("jwt"))
+  @UseGuards(JwtAuthGuard)
   async sendVerificationEmail(
     @Body() resetPasswordDto: ResetPasswordPayload,
     @Res() res: FastifyReply,

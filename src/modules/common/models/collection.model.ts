@@ -73,11 +73,6 @@ export class Params {
 
 export class RequestMetaData {
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty()
   @IsNotEmpty()
   method: HTTPMethods;
 
@@ -132,7 +127,8 @@ export class CollectionItem {
 
   @ApiProperty()
   @IsString()
-  description: string;
+  @IsOptional()
+  description?: string;
 
   @ApiProperty()
   @IsEnum(ItemTypeEnum)

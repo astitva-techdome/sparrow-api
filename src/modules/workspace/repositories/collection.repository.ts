@@ -156,14 +156,14 @@ export class collectionRepository {
     request: CollectionRequestDto,
   ): Promise<UpdateResult<Collection>> {
     const _id = new ObjectId(collectionId);
-    if (request.collectionDto.type === ItemTypeEnum.REQUEST) {
+    if (request.items.type === ItemTypeEnum.REQUEST) {
       return await this.db
         .collection<Collection>(Collections.COLLECTION)
         .updateOne(
           { _id, "items.id": requestId },
           {
             $set: {
-              "items.$": request.collectionDto,
+              "items.$": request.items,
             },
           },
         );
@@ -178,7 +178,7 @@ export class collectionRepository {
           },
           {
             $set: {
-              "items.$[i].items.$[j]": request.collectionDto.items,
+              "items.$[i].items.$[j]": request.items.items,
             },
           },
           {
