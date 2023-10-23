@@ -111,6 +111,31 @@ export class WorkSpaceController {
       throw new BadRequestException(error);
     }
   }
+  @Get("team/:teamId")
+  @ApiResponse({
+    status: 200,
+    description: "All Workspace Of Team Received Successfully",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Fetching All Team Workspaces Request Failed",
+  })
+  async getTeamWorkspaces(
+    @Param("teamId") teamId: string,
+    @Res() res: FastifyReply,
+  ) {
+    try {
+      const data = await this.workspaceService.getAllTeamWorkSpaces(teamId);
+      const responseData = new ApiResponseService(
+        "Success",
+        HttpStatusCode.OK,
+        data,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
   @Put(":workspaceId")
   @ApiResponse({ status: 200, description: "Workspace Updated Successfully" })
   @ApiResponse({ status: 400, description: "Update Workspace Failed" })
