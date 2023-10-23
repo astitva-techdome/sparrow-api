@@ -196,4 +196,30 @@ export class UserRepository {
     };
     return await this.db.collection<User>(Collections.USER).insertOne(user);
   }
+
+  async updateVerificationCode(
+    email: string,
+    verificationCode: string,
+  ): Promise<void> {
+    await this.db.collection<User>(Collections.USER).findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          verificationCode,
+        },
+      },
+    );
+  }
+
+  async updatePassword(email: string, password: string) {
+    await this.db.collection<User>(Collections.USER).findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          password: createHmac("sha256", password).digest("hex"),
+        },
+      },
+    );
+    return;
+  }
 }

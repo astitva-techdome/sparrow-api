@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { UpdateUserDto } from "../payloads/user.payload";
 import { UserRepository } from "../repositories/user.repository";
 import { RegisterPayload } from "../payloads/register.payload";
@@ -15,6 +19,9 @@ import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
 import * as nodemailer from "nodemailer";
 import { ObjectId, WithId } from "mongodb";
 import { createHmac } from "crypto";
+import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
+import hbs = require("nodemailer-express-handlebars");
+import path from "path";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -132,7 +139,9 @@ export class UserService {
       throw new BadRequestException(error);
     }
   }
-  async forgetPassword(resetPasswordDto: ResetPasswordPayload): Promise<void> {
+  async sendVerificationEmail(
+    resetPasswordDto: ResetPasswordPayload,
+  ): Promise<void> {
     try {
       const transporter = nodemailer.createTransport({
         service: EmailServiceProvider.GMAIL,
@@ -141,16 +150,34 @@ export class UserService {
           pass: this.configService.get("app.password"),
         },
       });
-
-      const mailOptions = {
-        from: process.env.email,
-        to: resetPasswordDto.email,
-        text: "Reset Password",
-        html: "<p>Reset Password</p>",
-        subject: `Reset Password`,
+      const verificationCode = this.generateEmailVerificationCode();
+      const handlebarOptions = {
+        //view engine contains default and partial templates
+        viewEngine: {
+          defaultLayout: "",
+        },
+        viewPath: path.resolve(__dirname, "..", "..", "views"),
       };
-
-      await transporter.sendMail(mailOptions);
+      transporter.use("compile", hbs(handlebarOptions));
+      const mailOptions = {
+        from: this.configService.get("app.email"),
+        to: resetPasswordDto.email,
+        text: "Sparrow Password Reset",
+        template: "verifyEmail",
+        context: {
+          name: resetPasswordDto.name,
+          verificationCode,
+        },
+        subject: `Reset Your Sparrow Account Password`,
+      };
+      const promise = [
+        transporter.sendMail(mailOptions),
+        this.userRepository.updateVerificationCode(
+          resetPasswordDto.email,
+          verificationCode,
+        ),
+      ];
+      await Promise.all(promise);
     } catch (error) {
       console.log(`Nodemailer error sending email to`, error);
     }
@@ -184,5 +211,30 @@ export class UserService {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+
+  async verifyVerificationCode(
+    email: string,
+    verificationCode: string,
+  ): Promise<void> {
+    try {
+      const user = await this.getUserByEmail(email);
+      if (user.verificationCode !== verificationCode) {
+        throw new UnauthorizedException(ErrorMessages.Unauthorized);
+      }
+      return;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  async updatePassword(email: string, password: string) {
+    try {
+      return await this.userRepository.updatePassword(email, password);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  generateEmailVerificationCode(): string {
+    return (Math.random() + 1).toString(36).substring(2, 8);
   }
 }
