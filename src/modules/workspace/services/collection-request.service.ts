@@ -28,7 +28,7 @@ export class CollectionRequestService {
     private readonly collectionService: CollectionService,
   ) {}
 
-  async addFolder(payload: FolderDto): Promise<UpdateResult<Collection>> {
+  async addFolder(payload: FolderDto): Promise<CollectionItem> {
     try {
       const user = await this.contextService.get("user");
       const uuid = uuidv4();
@@ -47,11 +47,11 @@ export class CollectionRequestService {
         items: [],
       };
       collection.items.push(updatedFolder);
-      const data = await this.collectionReposistory.updateCollection(
+      await this.collectionReposistory.updateCollection(
         payload.collectionId,
         collection,
       );
-      return data;
+      return updatedFolder;
     } catch (error) {
       throw new BadRequestException(error);
     }

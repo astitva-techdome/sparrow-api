@@ -43,6 +43,24 @@ export class WorkspaceService {
       throw new BadRequestException(error);
     }
   }
+  async getAllWorkSpaces(userId: string): Promise<Workspace[]> {
+    try {
+      const user = await this.userRepository.getUserById(userId);
+      if (!user) {
+        throw new BadRequestException(
+          "The user with this id does not exist in the system",
+        );
+      }
+      const workspaces: Workspace[] = [];
+      for (const { workspaceId } of user.personalWorkspaces) {
+        const workspace = await this.get(workspaceId);
+        workspaces.push(workspace);
+      }
+      return workspaces;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
 
   async checkPermissions(teamData: Team): Promise<Array<PermissionForUserDto>> {
     const teamOwners = teamData.owners;
