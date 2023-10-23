@@ -11,7 +11,6 @@ import {
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { WorkspaceService } from "../services/workspace.service";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
@@ -31,6 +30,7 @@ import { ParserService } from "@src/modules/common/services/parser.service";
 import { CollectionService } from "../services/collection.service";
 import axios from "axios";
 import { ImportCollectionDto } from "../payloads/collection.payload";
+import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 
 /**
  * Workspace Controller
@@ -38,7 +38,7 @@ import { ImportCollectionDto } from "../payloads/collection.payload";
 @ApiBearerAuth()
 @ApiTags("workspace")
 @Controller("api/workspace")
-@UseGuards(AuthGuard("jwt"), BlacklistGuard)
+@UseGuards(JwtAuthGuard, BlacklistGuard)
 export class WorkSpaceController {
   constructor(
     private readonly workspaceService: WorkspaceService,

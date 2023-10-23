@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from "@nestjs/common";
 import { AppService } from "@app/app.service";
 import { ApiBearerAuth, ApiResponse } from "@nestjs/swagger";
-import { AuthGuard } from "@nestjs/passport";
+import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 
 /**
  * App Controller
@@ -20,7 +20,7 @@ export class AppController {
    * @returns {string} the application environment url
    */
   @Get()
-  @UseGuards(AuthGuard("jwt"))
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: "Request Received" })
   @ApiResponse({ status: 400, description: "Request Failed" })
   getString(): string {
