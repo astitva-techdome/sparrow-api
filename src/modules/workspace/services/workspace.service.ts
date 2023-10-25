@@ -61,6 +61,19 @@ export class WorkspaceService {
       throw new BadRequestException(error);
     }
   }
+  async getAllTeamWorkSpaces(teamId: string): Promise<Workspace[]> {
+    try {
+      const team = await this.teamRepository.get(teamId);
+      const workspaces: Workspace[] = [];
+      for (const { id } of team.workspaces) {
+        const workspace = await this.get(id.toString());
+        workspaces.push(workspace);
+      }
+      return workspaces;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
 
   async checkPermissions(teamData: Team): Promise<Array<PermissionForUserDto>> {
     const teamOwners = teamData.owners;
