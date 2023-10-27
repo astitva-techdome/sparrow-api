@@ -251,6 +251,7 @@ export class collectionController {
         collectionId,
         requestDto,
         noOfRequests,
+        user.name,
       );
 
       const responseData = new ApiResponseService(
