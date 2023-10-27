@@ -7,11 +7,13 @@ import {
   ItemTypeEnum,
   RequestBody,
   RequestMetaData,
+  SourceTypeEnum,
 } from "../models/collection.model";
 import { OpenAPI303, ParameterObject } from "../models/openapi303.model";
 import { HTTPMethods } from "fastify";
 import { Injectable } from "@nestjs/common";
 import { ContextService } from "./context.service";
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class ParserService {
@@ -29,6 +31,8 @@ export class ParserService {
         requestObj.name = key;
         requestObj.description = innerValue.description;
         requestObj.type = ItemTypeEnum.REQUEST;
+        requestObj.source = SourceTypeEnum.SPEC;
+        requestObj.id = uuidv4();
         requestObj.request = {} as RequestMetaData;
         requestObj.request.method = innerKey as HTTPMethods;
         requestObj.request.operationId = innerValue.operationId;
@@ -71,6 +75,7 @@ export class ParserService {
           folderObj.name = tag;
           folderObj.description = tagArr ? tagArr[0].description : "";
           folderObj.type = ItemTypeEnum.FOLDER;
+          folderObj.id = uuidv4();
           folderObj.items = [];
         }
         folderObj.items.push(requestObj);
@@ -90,15 +95,46 @@ export class ParserService {
       totalRequests = totalRequests + itemObj.items.length;
     });
     const user = await this.contextService.get("user");
+    const newItems: CollectionItem[] = [];
+    for (let x = 0; x < items.length; x++) {
+      const itemsObj: CollectionItem = {
+        name: items[x].name,
+        description: items[x].description,
+        id: items[x].id,
+        type: items[x].type,
+        source: SourceTypeEnum.SPEC,
+      };
+      const innerArray: CollectionItem[] = [];
+      for (let y = 0; y < items[x].items.length; y++) {
+        const data = this.handleCircularReference(items[x].items[y]);
+        innerArray.push(JSON.parse(data));
+      }
+      itemsObj.items = innerArray;
+      newItems.push(itemsObj);
+    }
     const collection: Collection = {
       name: openApiDocument.info.title,
       totalRequests,
-      items: items,
+      items: newItems,
       createdBy: user.name,
       updatedBy: user.name,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     return collection;
+  }
+  handleCircularReference(obj: CollectionItem) {
+    const cache: any = [];
+    return JSON.stringify(obj, function (key, value) {
+      if (typeof value === "object" && value !== null) {
+        if (cache.indexOf(value) !== -1) {
+          // Circular reference found, replace with undefined
+          return undefined;
+        }
+        // Store value in our collection
+        cache.push(value);
+      }
+      return value;
+    });
   }
 }

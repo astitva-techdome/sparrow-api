@@ -250,7 +250,6 @@ export class WorkSpaceController {
         file.mimetype === "application/json"
           ? JSON.parse(dataString)
           : yml.load(dataString);
-
       const collectionObj = await this.parserService.parse(dataObj);
       const collection = await this.collectionService.importCollection(
         collectionObj,
@@ -286,6 +285,37 @@ export class WorkSpaceController {
         responseType === "application/json" ? data : yml.load(data);
 
       const collectionObj = await this.parserService.parse(dataObj);
+      const collection = await this.collectionService.importCollection(
+        collectionObj,
+      );
+      await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
+        id: collection.insertedId,
+        name: collectionObj.name,
+      });
+      const responseData = new ApiResponseService(
+        "Collection Imported",
+        HttpStatusCode.OK,
+        collection,
+      );
+      res.status(responseData.httpStatusCode).send(responseData);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  @Post(":workspaceId/importJson/collection")
+  @ApiResponse({
+    status: 201,
+    description: "Collection json Import Successfull",
+  })
+  @ApiResponse({ status: 400, description: "Failed to Import  Collection" })
+  async importJsonCollection(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+    @Body() jsonObj: string,
+  ) {
+    try {
+      const collectionObj = await this.parserService.parse(jsonObj);
       const collection = await this.collectionService.importCollection(
         collectionObj,
       );

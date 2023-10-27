@@ -17,6 +17,7 @@ import {
   Collection,
   CollectionItem,
   ItemTypeEnum,
+  SourceTypeEnum,
 } from "@src/modules/common/models/collection.model";
 import { CollectionService } from "./collection.service";
 @Injectable()
@@ -44,6 +45,7 @@ export class CollectionRequestService {
         name: payload.name,
         description: payload.description ?? "",
         type: ItemTypeEnum.FOLDER,
+        source: SourceTypeEnum.USER,
         items: [],
       };
       collection.items.push(updatedFolder);
@@ -143,6 +145,7 @@ export class CollectionRequestService {
         name: request.items.name,
         type: request.items.type,
         description: request.items.description,
+        source: SourceTypeEnum.USER,
       };
 
       if (request.items.type === ItemTypeEnum.REQUEST) {
@@ -160,6 +163,7 @@ export class CollectionRequestService {
             type: request.items.items.type,
             description: request.items.items.description,
             request: request.items.items.request,
+            source: SourceTypeEnum.USER,
           },
         ];
 
