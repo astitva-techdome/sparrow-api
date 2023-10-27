@@ -99,7 +99,6 @@ export class collectionRepository {
     const _id = new ObjectId(collectionId);
     const data = await this.db
       .collection<Collection>(Collections.COLLECTION)
-      // .findOneAndUpdate(
       .updateOne(
         { _id },
         {
@@ -156,6 +155,14 @@ export class collectionRepository {
     request: CollectionRequestDto,
   ): Promise<UpdateResult<Collection>> {
     const _id = new ObjectId(collectionId);
+    const defaultParams = {
+      updatedAt: new Date(),
+      updatedBy: this.contextService.get("user").name,
+    };
+    request.items = {
+      ...request.items,
+      request: { ...request.items.request, ...defaultParams },
+    };
     if (request.items.type === ItemTypeEnum.REQUEST) {
       return await this.db
         .collection<Collection>(Collections.COLLECTION)
@@ -164,6 +171,8 @@ export class collectionRepository {
           {
             $set: {
               "items.$": request.items,
+              updatedAt: new Date(),
+              updatedBy: this.contextService.get("user").name,
             },
           },
         );
@@ -179,6 +188,8 @@ export class collectionRepository {
           {
             $set: {
               "items.$[i].items.$[j]": request.items.items,
+              updatedAt: new Date(),
+              updatedBy: this.contextService.get("user").name,
             },
           },
           {
@@ -210,6 +221,8 @@ export class collectionRepository {
             },
             $set: {
               totalRequests: noOfRequests - 1,
+              updatedAt: new Date(),
+              updatedBy: this.contextService.get("user").name,
             },
           },
           {
@@ -229,6 +242,8 @@ export class collectionRepository {
             },
             $set: {
               totalRequests: noOfRequests - 1,
+              updatedAt: new Date(),
+              updatedBy: this.contextService.get("user").name,
             },
           },
         );

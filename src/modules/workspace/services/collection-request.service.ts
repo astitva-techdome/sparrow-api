@@ -137,6 +137,7 @@ export class CollectionRequestService {
     collectionId: string,
     request: CollectionRequestDto,
     noOfRequests: number,
+    userName: string,
   ): Promise<UpdateResult<Collection>> {
     try {
       const uuid = uuidv4();
@@ -147,9 +148,14 @@ export class CollectionRequestService {
         description: request.items.description,
         source: SourceTypeEnum.USER,
       };
-
+      const requestInfo = {
+        createdBy: userName,
+        updatedBy: userName,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
       if (request.items.type === ItemTypeEnum.REQUEST) {
-        requestObj.request = request.items.request;
+        requestObj.request = { ...request.items.request, ...requestInfo };
         return await this.collectionReposistory.addRequest(
           collectionId,
           requestObj,
@@ -162,7 +168,7 @@ export class CollectionRequestService {
             name: request.items.items.name,
             type: request.items.items.type,
             description: request.items.items.description,
-            request: request.items.items.request,
+            request: { ...request.items.items.request, ...requestInfo },
             source: SourceTypeEnum.USER,
           },
         ];
