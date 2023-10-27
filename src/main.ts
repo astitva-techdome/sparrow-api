@@ -64,7 +64,7 @@ const { PORT } = process.env;
     .decorateReply("end", function () {
       this.send("");
     });
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.register(fastyfyMultipart);
   await app.listen(PORT, "0.0.0.0");
 })();

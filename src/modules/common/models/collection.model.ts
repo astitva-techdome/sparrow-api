@@ -28,8 +28,8 @@ export enum BodyModeEnum {
 }
 
 export enum SourceTypeEnum {
-  "SPEC" = "SPEC",
-  "USER" = "USER",
+  SPEC = "SPEC",
+  USER = "USER",
 }
 export class QueryParams {
   @IsString()
@@ -147,6 +147,11 @@ export class CollectionItem {
   @IsEnum(ItemTypeEnum)
   @IsNotEmpty()
   type: ItemTypeEnum;
+
+  @ApiProperty()
+  @IsEnum(SourceTypeEnum)
+  @IsOptional()
+  source?: SourceTypeEnum;
 
   @ApiProperty({ type: [CollectionItem] })
   @IsArray()
