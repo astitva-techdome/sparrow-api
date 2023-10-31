@@ -158,7 +158,10 @@ export class TeamRepository {
     return responseData.value;
   }
 
-  private async doesTeamExistsForUser(userId: ObjectId, teamName: string) {
+  private async doesTeamExistsForUser(
+    userId: ObjectId,
+    teamName: string,
+  ): Promise<WithId<User>> {
     return await this.db.collection<User>(Collections.USER).findOne({
       _id: userId,
       teams: {

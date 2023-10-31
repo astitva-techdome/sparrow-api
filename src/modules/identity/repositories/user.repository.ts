@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { Db, ObjectId, WithId } from "mongodb";
+import { Db, InsertOneResult, ObjectId, WithId } from "mongodb";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { createHmac } from "crypto";
 import { RegisterPayload } from "../payloads/register.payload";
@@ -71,7 +71,7 @@ export class UserRepository {
    * @param {RegisterPayload} payload user payload
    * @returns {Promise<IUser>} created user data
    */
-  async createUser(payload: RegisterPayload) {
+  async createUser(payload: RegisterPayload): Promise<InsertOneResult<User>> {
     const createdUser = await this.db
       .collection<User>(Collections.USER)
       .insertOne({
@@ -96,7 +96,10 @@ export class UserRepository {
    * @param {UpdateUserDto} payload
    * @returns {Promise<IUser>} mutated User data
    */
-  async updateUser(userId: string, payload: UpdateUserDto) {
+  async updateUser(
+    userId: string,
+    payload: UpdateUserDto,
+  ): Promise<WithId<User>> {
     const _id = new ObjectId(userId);
     if (payload.password) {
       payload.password = createHmac("sha256", payload.password).digest("hex");
@@ -178,7 +181,11 @@ export class UserRepository {
     );
     return;
   }
-  async createGoogleAuthUser(oAuthId: string, name: string, email: string) {
+  async createGoogleAuthUser(
+    oAuthId: string,
+    name: string,
+    email: string,
+  ): Promise<InsertOneResult> {
     const user: User = {
       name,
       email,
@@ -211,7 +218,7 @@ export class UserRepository {
     );
   }
 
-  async updatePassword(email: string, password: string) {
+  async updatePassword(email: string, password: string): Promise<void> {
     await this.db.collection<User>(Collections.USER).findOneAndUpdate(
       { email },
       {

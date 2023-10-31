@@ -164,6 +164,11 @@ export class CollectionItem {
   @IsOptional()
   @Type(() => RequestMetaData)
   request?: RequestMetaData;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  isDeleted?: boolean;
 }
 
 export class Collection {
@@ -177,11 +182,21 @@ export class Collection {
   @IsNotEmpty()
   totalRequests: number;
 
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  uuid?: string;
+
   @ApiProperty({ type: [CollectionItem] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CollectionItem)
   items: CollectionItem[];
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  activeSync?: boolean;
 
   @IsOptional()
   @IsDateString()

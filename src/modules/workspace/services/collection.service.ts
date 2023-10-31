@@ -81,6 +81,14 @@ export class CollectionService {
     }
   }
 
+  async getActiveSyncedCollection(uuid: string): Promise<WithId<Collection>> {
+    try {
+      return await this.collectionReposistory.getActiveSyncedCollection(uuid);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
   async checkPermission(workspaceId: string, userid: ObjectId): Promise<void> {
     try {
       const workspace = await this.workspaceReposistory.get(workspaceId);
@@ -129,6 +137,16 @@ export class CollectionService {
   async importCollection(collection: Collection): Promise<InsertOneResult> {
     try {
       return await this.collectionReposistory.addCollection(collection);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  async updateImportedCollection(
+    id: string,
+    collection: Collection,
+  ): Promise<UpdateResult<Collection>> {
+    try {
+      return await this.collectionReposistory.updateCollection(id, collection);
     } catch (error) {
       throw new BadRequestException(error);
     }

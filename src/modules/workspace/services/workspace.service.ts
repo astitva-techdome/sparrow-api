@@ -11,7 +11,13 @@ import {
   WorkspaceType,
 } from "@src/modules/common/models/workspace.model";
 import { ContextService } from "@src/modules/common/services/context.service";
-import { ObjectId, WithId } from "mongodb";
+import {
+  DeleteResult,
+  InsertOneResult,
+  ObjectId,
+  UpdateResult,
+  WithId,
+} from "mongodb";
 import { Role } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
@@ -105,7 +111,9 @@ export class WorkspaceService {
    * @param {CreateOrUpdateWorkspaceDto} workspaceData
    * @returns {Promise<InsertOneWriteOpResult<Workspace>>} result of the insert operation
    */
-  async create(workspaceData: CreateOrUpdateWorkspaceDto) {
+  async create(
+    workspaceData: CreateOrUpdateWorkspaceDto,
+  ): Promise<InsertOneResult<Document>> {
     try {
       const userId = this.contextService.get("user")._id;
       const teamId = new ObjectId(workspaceData.id);
@@ -180,7 +188,10 @@ export class WorkspaceService {
    * @param {Partial<Workspace>} updates
    * @returns {Promise<UpdateWriteOpResult>} result of the update operation
    */
-  async update(id: string, updates: CreateOrUpdateWorkspaceDto) {
+  async update(
+    id: string,
+    updates: CreateOrUpdateWorkspaceDto,
+  ): Promise<UpdateResult<Document>> {
     try {
       const data = await this.workspaceRepository.update(id, updates);
       return data;
@@ -194,7 +205,7 @@ export class WorkspaceService {
    * @param {string} id
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
-  async delete(id: string) {
+  async delete(id: string): Promise<DeleteResult> {
     try {
       const data = await this.workspaceRepository.delete(id);
       return data;
@@ -206,7 +217,7 @@ export class WorkspaceService {
   async addCollectionInWorkSpace(
     workspaceId: string,
     collection: CollectionDto,
-  ) {
+  ): Promise<void> {
     try {
       const data = await this.get(workspaceId);
       if (!data) {
@@ -216,6 +227,7 @@ export class WorkspaceService {
         workspaceId,
         collection,
       );
+      return;
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -224,7 +236,7 @@ export class WorkspaceService {
     workspaceId: string,
     collectionId: string,
     name: string,
-  ) {
+  ): Promise<void> {
     try {
       const data = await this.get(workspaceId);
       if (!data) {
@@ -235,12 +247,16 @@ export class WorkspaceService {
         collectionId,
         name,
       );
+      return;
     } catch (error) {
       throw new BadRequestException(error);
     }
   }
 
-  async deleteCollectionInWorkSpace(workspaceId: string, collectionId: string) {
+  async deleteCollectionInWorkSpace(
+    workspaceId: string,
+    collectionId: string,
+  ): Promise<void> {
     try {
       const data = await this.get(workspaceId);
       if (!data) {

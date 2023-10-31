@@ -14,11 +14,16 @@ import { HTTPMethods } from "fastify";
 import { Injectable } from "@nestjs/common";
 import { ContextService } from "./context.service";
 import { v4 as uuidv4 } from "uuid";
+import { CollectionService } from "@src/modules/workspace/services/collection.service";
+import { WithId } from "mongodb";
 
 @Injectable()
 export class ParserService {
-  constructor(private readonly contextService: ContextService) {}
-  async parse(file: string): Promise<Collection> {
+  constructor(
+    private readonly contextService: ContextService,
+    private readonly collectionService: CollectionService,
+  ) {}
+  async parse(file: string): Promise<Record<string, string>> {
     const openApiDocument = (await SwaggerParser.validate(file)) as OpenAPI303;
 
     const folderObjMap = new Map();
@@ -33,7 +38,8 @@ export class ParserService {
         requestObj.type = ItemTypeEnum.REQUEST;
         requestObj.source = SourceTypeEnum.SPEC;
         requestObj.id = uuidv4();
-        requestObj.request = {} as RequestMetaData;
+        (requestObj.isDeleted = false),
+          (requestObj.request = {} as RequestMetaData);
         requestObj.request.method = innerKey as HTTPMethods;
         requestObj.request.operationId = innerValue.operationId;
         requestObj.request.url = key;
@@ -74,6 +80,7 @@ export class ParserService {
           folderObj = {} as CollectionItem;
           folderObj.name = tag;
           folderObj.description = tagArr ? tagArr[0].description : "";
+          folderObj.isDeleted = false;
           folderObj.type = ItemTypeEnum.FOLDER;
           folderObj.id = uuidv4();
           folderObj.items = [];
@@ -83,7 +90,7 @@ export class ParserService {
       }
     }
     const itemObject = Object.fromEntries(folderObjMap);
-    const items: CollectionItem[] = [];
+    let items: CollectionItem[] = [];
     let totalRequests = 0;
     for (const key in itemObject) {
       if (itemObject.hasOwnProperty(key)) {
@@ -95,6 +102,28 @@ export class ParserService {
       totalRequests = totalRequests + itemObj.items.length;
     });
     const user = await this.contextService.get("user");
+
+    let mergedFolderItems: CollectionItem[] = [];
+    const existingCollection: WithId<Collection> =
+      await this.collectionService.getActiveSyncedCollection(
+        openApiDocument.info.title,
+      );
+    if (existingCollection) {
+      //check on folder level
+      mergedFolderItems = this.compareAndMerge(existingCollection.items, items);
+      for (let x = 0; x < existingCollection.items.length; x++) {
+        const newItem: CollectionItem[] = items.filter((item) => {
+          return item.name === existingCollection.items[x].name;
+        });
+        //check on request level
+        const mergedFolderRequests: CollectionItem[] = this.compareAndMerge(
+          existingCollection.items[x].items,
+          newItem[0]?.items || [],
+        );
+        mergedFolderItems[x].items = mergedFolderRequests;
+      }
+      items = mergedFolderItems;
+    }
     const newItems: CollectionItem[] = [];
     for (let x = 0; x < items.length; x++) {
       const itemsObj: CollectionItem = {
@@ -102,6 +131,7 @@ export class ParserService {
         description: items[x].description,
         id: items[x].id,
         type: items[x].type,
+        isDeleted: items[x].isDeleted,
         source: SourceTypeEnum.SPEC,
       };
       const innerArray: CollectionItem[] = [];
@@ -116,12 +146,25 @@ export class ParserService {
       name: openApiDocument.info.title,
       totalRequests,
       items: newItems,
+      uuid: openApiDocument.info.title,
       createdBy: user.name,
       updatedBy: user.name,
+      activeSync: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    return collection;
+    if (existingCollection) {
+      await this.collectionService.updateImportedCollection(
+        existingCollection._id.toString(),
+        collection,
+      );
+      return { id: existingCollection._id.toString(), name: collection.name };
+    } else {
+      const newCollection = await this.collectionService.importCollection(
+        collection,
+      );
+      return { id: newCollection.insertedId.toString(), name: collection.name };
+    }
   }
   handleCircularReference(obj: CollectionItem) {
     const cache: any = [];
@@ -136,5 +179,67 @@ export class ParserService {
       }
       return value;
     });
+  }
+  compareAndMerge(
+    existingitems: CollectionItem[],
+    newItems: CollectionItem[],
+  ): CollectionItem[] {
+    const newItemMap = newItems
+      ? new Map(
+          newItems.map((item) => [
+            item.type === ItemTypeEnum.FOLDER
+              ? item.name
+              : item.name + item.request.method,
+            item,
+          ]),
+        )
+      : new Map();
+    const existingItemMap = existingitems
+      ? new Map(
+          existingitems.map((item) => [
+            item.type === ItemTypeEnum.FOLDER
+              ? item.name
+              : item.name + item.request.method,
+            item,
+          ]),
+        )
+      : new Map();
+    // Merge old and new items while marking deleted
+    const mergedArray: CollectionItem[] = existingitems.map((existingItem) => {
+      if (
+        newItemMap.has(
+          existingItem.type === ItemTypeEnum.FOLDER
+            ? existingItem.name
+            : existingItem.name + existingItem.request.method,
+        )
+      ) {
+        return {
+          ...newItemMap.get(
+            existingItem.type === ItemTypeEnum.FOLDER
+              ? existingItem.name
+              : existingItem.name + existingItem.request.method,
+          ),
+          isDeleted: false,
+        };
+      } else if (existingItem.source === SourceTypeEnum.USER) {
+        return { ...existingItem, isDeleted: false };
+      } else {
+        return { ...existingItem, isDeleted: true };
+      }
+    });
+    // Add new items from newArray that are not already in the mergedArray
+    newItems.forEach((newItem) => {
+      if (
+        !existingItemMap.has(
+          newItem.type === ItemTypeEnum.FOLDER
+            ? newItem.name
+            : newItem.name + newItem.request.method,
+        )
+      ) {
+        mergedArray.push({ ...newItem, isDeleted: false });
+      }
+    });
+
+    return mergedArray;
   }
 }

@@ -31,6 +31,7 @@ import { CollectionService } from "../services/collection.service";
 import axios from "axios";
 import { ImportCollectionDto } from "../payloads/collection.payload";
 import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
+import { ObjectId } from "mongodb";
 
 /**
  * Workspace Controller
@@ -251,17 +252,14 @@ export class WorkSpaceController {
           ? JSON.parse(dataString)
           : yml.load(dataString);
       const collectionObj = await this.parserService.parse(dataObj);
-      const collection = await this.collectionService.importCollection(
-        collectionObj,
-      );
       await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-        id: collection.insertedId,
+        id: new ObjectId(collectionObj.insertedId),
         name: collectionObj.name,
       });
       const responseData = new ApiResponseService(
         "Collection Imported",
         HttpStatusCode.OK,
-        collection,
+        collectionObj,
       );
       res.status(responseData.httpStatusCode).send(responseData);
     } catch (error) {
@@ -285,17 +283,14 @@ export class WorkSpaceController {
         responseType === "application/json" ? data : yml.load(data);
 
       const collectionObj = await this.parserService.parse(dataObj);
-      const collection = await this.collectionService.importCollection(
-        collectionObj,
-      );
       await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-        id: collection.insertedId,
+        id: new ObjectId(collectionObj.insertedId),
         name: collectionObj.name,
       });
       const responseData = new ApiResponseService(
         "Collection Imported",
         HttpStatusCode.OK,
-        collection,
+        collectionObj,
       );
       res.status(responseData.httpStatusCode).send(responseData);
     } catch (error) {
@@ -316,17 +311,14 @@ export class WorkSpaceController {
   ) {
     try {
       const collectionObj = await this.parserService.parse(jsonObj);
-      const collection = await this.collectionService.importCollection(
-        collectionObj,
-      );
       await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-        id: collection.insertedId,
+        id: new ObjectId(collectionObj.id),
         name: collectionObj.name,
       });
       const responseData = new ApiResponseService(
         "Collection Imported",
         HttpStatusCode.OK,
-        collection,
+        collectionObj,
       );
       res.status(responseData.httpStatusCode).send(responseData);
     } catch (error) {
