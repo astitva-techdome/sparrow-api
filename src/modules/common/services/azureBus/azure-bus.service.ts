@@ -19,7 +19,7 @@ export class AzureBusService {
     this.sbClient = new ServiceBusClient(this.connectionString);
   }
 
-  async createSender(topicName: string) {
+  async createSender(topicName: string): Promise<void> {
     this.sender = this.sbClient.createSender(topicName);
     return;
   }
@@ -40,7 +40,7 @@ export class AzureBusService {
     subscription: string,
     processMessage: (arg0: ServiceBusReceivedMessage) => void,
     processError: (arg0: ProcessErrorArgs) => void,
-  ) {
+  ): Promise<void> {
     this.receiver = this.sbClient.createReceiver(topicName, subscription);
     this.receiver.subscribe({
       processMessage: async (data) => await processMessage(data.body),

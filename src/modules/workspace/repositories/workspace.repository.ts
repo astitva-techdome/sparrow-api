@@ -1,5 +1,12 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { Db, DeleteResult, ObjectId, UpdateResult, WithId } from "mongodb";
+import {
+  Db,
+  DeleteResult,
+  InsertOneResult,
+  ObjectId,
+  UpdateResult,
+  WithId,
+} from "mongodb";
 import { Workspace } from "../../common/models/workspace.model";
 import { Collections } from "../../common/enum/database.collection.enum";
 import {
@@ -40,7 +47,7 @@ export class WorkspaceRepository {
     return data;
   }
 
-  async addWorkspace(params: Workspace) {
+  async addWorkspace(params: Workspace): Promise<InsertOneResult<Document>> {
     const response = await this.db
       .collection(Collections.WORKSPACE)
       .insertOne(params);

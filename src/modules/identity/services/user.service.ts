@@ -17,7 +17,7 @@ import {
 } from "@src/modules/common/models/user.model";
 import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
 import * as nodemailer from "nodemailer";
-import { ObjectId, WithId } from "mongodb";
+import { InsertOneResult, ObjectId, WithId } from "mongodb";
 import { createHmac } from "crypto";
 import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 import hbs = require("nodemailer-express-handlebars");
@@ -66,7 +66,10 @@ export class UserService {
    * @param {string} password
    * @returns {Promise<IUser>} queried user data
    */
-  async getUserByEmailAndPass(email: string, password: string) {
+  async getUserByEmailAndPass(
+    email: string,
+    password: string,
+  ): Promise<WithId<User>> {
     return await this.userRepository.getUserByEmailAndPass(email, password);
   }
 
@@ -183,7 +186,7 @@ export class UserService {
     }
   }
 
-  async logoutUser(userId: string, refreshToken: string) {
+  async logoutUser(userId: string, refreshToken: string): Promise<void> {
     try {
       const user = await this.userRepository.findUserByUserId(
         new ObjectId(userId),
@@ -197,11 +200,16 @@ export class UserService {
         throw new BadRequestException();
       }
       await this.userRepository.deleteRefreshToken(userId, hashrefreshToken[0]);
+      return;
     } catch (error) {
       throw new BadRequestException(error);
     }
   }
-  async createGoogleAuthUser(oauthId: string, name: string, email: string) {
+  async createGoogleAuthUser(
+    oauthId: string,
+    name: string,
+    email: string,
+  ): Promise<InsertOneResult> {
     try {
       return await this.userRepository.createGoogleAuthUser(
         oauthId,
@@ -227,9 +235,10 @@ export class UserService {
       throw new BadRequestException(error);
     }
   }
-  async updatePassword(email: string, password: string) {
+  async updatePassword(email: string, password: string): Promise<void> {
     try {
-      return await this.userRepository.updatePassword(email, password);
+      await this.userRepository.updatePassword(email, password);
+      return;
     } catch (error) {
       throw new BadRequestException(error);
     }

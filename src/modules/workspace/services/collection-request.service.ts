@@ -46,6 +46,7 @@ export class CollectionRequestService {
         description: payload.description ?? "",
         type: ItemTypeEnum.FOLDER,
         source: SourceTypeEnum.USER,
+        isDeleted: false,
         items: [],
       };
       collection.items.push(updatedFolder);
@@ -147,6 +148,7 @@ export class CollectionRequestService {
         type: request.items.type,
         description: request.items.description,
         source: SourceTypeEnum.USER,
+        isDeleted: false,
       };
       const requestInfo = {
         createdBy: userName,

@@ -29,7 +29,7 @@ import { CollectionRequestService } from "./services/collection-request.service"
     CollectionService,
     CollectionRequestService,
   ],
-  exports: [],
+  exports: [CollectionService, collectionRepository, WorkspaceRepository],
   controllers: [
     WorkSpaceController,
     PermissionController,

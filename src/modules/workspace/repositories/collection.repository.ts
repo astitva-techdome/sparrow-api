@@ -249,4 +249,11 @@ export class collectionRepository {
         );
     }
   }
+
+  async getActiveSyncedCollection(uuid: string): Promise<WithId<Collection>> {
+    const data = await this.db
+      .collection<Collection>(Collections.COLLECTION)
+      .findOne({ uuid });
+    return data;
+  }
 }

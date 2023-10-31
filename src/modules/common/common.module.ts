@@ -7,6 +7,7 @@ import { RedisService } from "./services/redis.service";
 import { AzureBusService } from "./services/azureBus/azure-bus.service";
 import { WorkspaceModule } from "../workspace/workspace.module";
 import { ApiResponseService } from "./services/api-response.service";
+import { ParserService } from "./services/parser.service";
 
 @Global()
 @Module({
@@ -39,6 +40,7 @@ import { ApiResponseService } from "./services/api-response.service";
     ContextService,
     RedisService,
     ApiResponseService,
+    ParserService,
   ],
   exports: [
     "DATABASE_CONNECTION",
@@ -47,6 +49,7 @@ import { ApiResponseService } from "./services/api-response.service";
     RedisService,
     AzureBusService,
     ApiResponseService,
+    ParserService,
   ],
 })
 export class CommonModule {}

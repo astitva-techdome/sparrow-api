@@ -7,7 +7,7 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import { LoginPayload } from "../payloads/login.payload";
 import { ConfigService } from "@nestjs/config";
-import { Db, ObjectId } from "mongodb";
+import { Db, ObjectId, WithId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { createHmac } from "crypto";
@@ -138,7 +138,7 @@ export class AuthService {
    * @param {LoginPayload} payload login payload to authenticate with
    * @returns {Promise<IUser>} registered User
    */
-  async validateUser(payload: LoginPayload) {
+  async validateUser(payload: LoginPayload): Promise<WithId<User>> {
     const user = await this.getUserByEmailAndPass(
       payload.email,
       payload.password,
@@ -151,14 +151,20 @@ export class AuthService {
     this.contextService.set("user", user);
     return user;
   }
-  async getUserByEmailAndPass(email: string, password: string) {
+  async getUserByEmailAndPass(
+    email: string,
+    password: string,
+  ): Promise<WithId<User>> {
     return await this.db.collection<User>(Collections.USER).findOne({
       email,
       password: createHmac("sha256", password).digest("hex"),
     });
   }
 
-  async validateRefreshToken(userId: string, refreshToken: string) {
+  async validateRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<Record<string, ITokenReturnBody>> {
     try {
       const _id = new ObjectId(userId);
       const user = await this.db
