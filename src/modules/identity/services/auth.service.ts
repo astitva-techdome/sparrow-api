@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -205,7 +206,7 @@ export class AuthService {
 
   async checkRefreshTokenSize(user: User): Promise<void> {
     if (user.refresh_tokens.length === this.refreshTokenMaxSize) {
-      throw new Error("Maximum request limit reached");
+      throw new BadRequestException("Maximum request limit reached");
     }
   }
 }
