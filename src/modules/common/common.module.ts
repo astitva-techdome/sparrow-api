@@ -8,6 +8,8 @@ import { AzureBusService } from "./services/azureBus/azure-bus.service";
 import { WorkspaceModule } from "../workspace/workspace.module";
 import { ApiResponseService } from "./services/api-response.service";
 import { ParserService } from "./services/parser.service";
+import { LoggingExceptionsFilter } from "./exception/logging.exception-filter";
+import pino from "pino";
 
 @Global()
 @Module({
@@ -36,20 +38,37 @@ import { ParserService } from "./services/parser.service";
           db: configService.get("redis.db"),
         }),
     },
+    {
+      provide: "ErrorLogger",
+      useValue: pino(
+        {
+          level: pino.levels.labels["50"],
+        },
+        pino.destination({
+          dest: "./logs/error.log",
+          sync: true,
+          append: true,
+          mkdir: true,
+        }),
+      ),
+    },
     AzureBusService,
     ContextService,
     RedisService,
     ApiResponseService,
     ParserService,
+    LoggingExceptionsFilter,
   ],
   exports: [
     "DATABASE_CONNECTION",
+    "ErrorLogger",
     Redis,
     ContextService,
     RedisService,
     AzureBusService,
     ApiResponseService,
     ParserService,
+    LoggingExceptionsFilter,
   ],
 })
 export class CommonModule {}
