@@ -48,123 +48,109 @@ export class TeamUserService {
    * @returns {Promise<InsertOneWriteOpResult<Team>>} result of the insert operation
    */
   async addUser(payload: CreateOrUpdateTeamUserDto): Promise<WithId<Team>> {
-    try {
-      const teamFilter = new ObjectId(payload.teamId);
-      const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
-      const userFilter = new ObjectId(payload.userId);
-      const userData = await this.userRepository.findUserByUserId(userFilter);
-      await this.HasPermission(teamData.owners);
-      const updatedUsers = [...teamData.users];
-      updatedUsers.push({
-        id: payload.userId,
-        email: userData.email,
-        name: userData.name,
-      });
-      const updatedTeamParams = {
-        users: updatedUsers,
-      };
+    const teamFilter = new ObjectId(payload.teamId);
+    const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
+    const userFilter = new ObjectId(payload.userId);
+    const userData = await this.userRepository.findUserByUserId(userFilter);
+    await this.HasPermission(teamData.owners);
+    const updatedUsers = [...teamData.users];
+    updatedUsers.push({
+      id: payload.userId,
+      email: userData.email,
+      name: userData.name,
+    });
+    const updatedTeamParams = {
+      users: updatedUsers,
+    };
 
-      const updatedTeams = [...userData.teams];
-      updatedTeams.push({
-        id: new ObjectId(payload.teamId),
-        name: teamData.name,
-      });
-      const teamWorkspaces = [...teamData.workspaces];
-      const message = {
-        teamWorkspaces: teamWorkspaces,
-        userId: userData._id,
-      };
-      await this.azureBusService.sendMessage(
-        TOPIC.USER_ADDED_TO_TEAM_TOPIC,
-        message,
-      );
-      const updateUserParams = {
-        teams: updatedTeams,
-      };
-      await this.userRepository.updateUserById(userFilter, updateUserParams);
+    const updatedTeams = [...userData.teams];
+    updatedTeams.push({
+      id: new ObjectId(payload.teamId),
+      name: teamData.name,
+    });
+    const teamWorkspaces = [...teamData.workspaces];
+    const message = {
+      teamWorkspaces: teamWorkspaces,
+      userId: userData._id,
+    };
+    await this.azureBusService.sendMessage(
+      TOPIC.USER_ADDED_TO_TEAM_TOPIC,
+      message,
+    );
+    const updateUserParams = {
+      teams: updatedTeams,
+    };
+    await this.userRepository.updateUserById(userFilter, updateUserParams);
 
-      const updatedTeamResponse = await this.teamRepository.updateTeamById(
-        teamFilter,
-        updatedTeamParams,
-      );
-      return updatedTeamResponse;
-    } catch (error) {
-      throw new BadRequestException("Failed to add User in Team");
-    }
+    const updatedTeamResponse = await this.teamRepository.updateTeamById(
+      teamFilter,
+      updatedTeamParams,
+    );
+    return updatedTeamResponse;
   }
 
   async removeUser(payload: CreateOrUpdateTeamUserDto): Promise<WithId<Team>> {
-    try {
-      const teamFilter = new ObjectId(payload.teamId);
-      const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
-      const userFilter = new ObjectId(payload.userId);
-      const userData = await this.userRepository.findUserByUserId(userFilter);
-      const teamOwners = teamData.owners;
-      await this.HasPermission(teamOwners);
-      const teamUser = [...teamData.users];
-      const filteredData = teamUser.filter(
-        (item) => item.id !== payload.userId,
-      );
-      const filteredOwner = teamOwners.filter(
-        (id: string) => id.toString() !== payload.userId.toString(),
-      );
-      const teamUpdatedParams = {
-        users: filteredData,
-        owners: filteredOwner,
-      };
-      const userTeams = [...userData.teams];
-      const userFilteredTeams = userTeams.filter(
-        (item) => item.id.toString() !== payload.teamId.toString(),
-      );
-      const userUpdatedParams = {
-        teams: userFilteredTeams,
-      };
-      await this.userRepository.updateUserById(userFilter, userUpdatedParams);
-      const teamWorkspaces = [...teamData.workspaces];
-      const message = {
-        teamWorkspaces: teamWorkspaces,
-        userId: userData._id,
-      };
-      await this.azureBusService.sendMessage(
-        TOPIC.USER_REMOVED_FROM_TEAM_TOPIC,
-        message,
-      );
-      const data = await this.teamRepository.updateTeamById(
-        teamFilter,
-        teamUpdatedParams,
-      );
-      return data;
-    } catch (error) {
-      throw new BadRequestException("Failed to Remove User");
-    }
+    const teamFilter = new ObjectId(payload.teamId);
+    const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
+    const userFilter = new ObjectId(payload.userId);
+    const userData = await this.userRepository.findUserByUserId(userFilter);
+    const teamOwners = teamData.owners;
+    await this.HasPermission(teamOwners);
+    const teamUser = [...teamData.users];
+    const filteredData = teamUser.filter((item) => item.id !== payload.userId);
+    const filteredOwner = teamOwners.filter(
+      (id: string) => id.toString() !== payload.userId.toString(),
+    );
+    const teamUpdatedParams = {
+      users: filteredData,
+      owners: filteredOwner,
+    };
+    const userTeams = [...userData.teams];
+    const userFilteredTeams = userTeams.filter(
+      (item) => item.id.toString() !== payload.teamId.toString(),
+    );
+    const userUpdatedParams = {
+      teams: userFilteredTeams,
+    };
+    await this.userRepository.updateUserById(userFilter, userUpdatedParams);
+    const teamWorkspaces = [...teamData.workspaces];
+    const message = {
+      teamWorkspaces: teamWorkspaces,
+      userId: userData._id,
+    };
+    await this.azureBusService.sendMessage(
+      TOPIC.USER_REMOVED_FROM_TEAM_TOPIC,
+      message,
+    );
+    const data = await this.teamRepository.updateTeamById(
+      teamFilter,
+      teamUpdatedParams,
+    );
+    return data;
   }
 
   async addOwner(payload: CreateOrUpdateTeamUserDto): Promise<WithId<Team>> {
-    try {
-      const teamFilter = new ObjectId(payload.teamId);
-      const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
-      const teamOwners = [...teamData.owners];
-      await this.HasPermission(teamOwners);
-      await this.isUserTeamMember(payload.userId, teamData.users);
-      teamOwners.push(payload.userId);
-      const updatedTeamData = {
-        owners: teamOwners,
-      };
-      const message = {
-        userId: payload.userId,
-        teamWorkspaces: teamData.workspaces,
-      };
-      await this.azureBusService.sendMessage(
-        TOPIC.TEAM_OWNER_ADDED_TOPIC,
-        message,
-      );
-      const response = await this.teamRepository.updateTeamById(
-        teamFilter,
-        updatedTeamData,
-      );
-      return response;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const teamFilter = new ObjectId(payload.teamId);
+    const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
+    const teamOwners = [...teamData.owners];
+    await this.HasPermission(teamOwners);
+    await this.isUserTeamMember(payload.userId, teamData.users);
+    teamOwners.push(payload.userId);
+    const updatedTeamData = {
+      owners: teamOwners,
+    };
+    const message = {
+      userId: payload.userId,
+      teamWorkspaces: teamData.workspaces,
+    };
+    await this.azureBusService.sendMessage(
+      TOPIC.TEAM_OWNER_ADDED_TOPIC,
+      message,
+    );
+    const response = await this.teamRepository.updateTeamById(
+      teamFilter,
+      updatedTeamData,
+    );
+    return response;
   }
 }

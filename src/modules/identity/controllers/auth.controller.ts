@@ -3,7 +3,6 @@ import {
   Body,
   Post,
   UseGuards,
-  BadRequestException,
   Get,
   Req,
   Res,
@@ -63,31 +62,27 @@ export class AuthController {
   @ApiResponse({ status: 400, description: "Bad Request" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async login(@Body() payload: LoginPayload, @Res() res: FastifyReply) {
-    try {
-      const user = await this.authService.validateUser(payload);
+    const user = await this.authService.validateUser(payload);
 
-      await this.authService.checkRefreshTokenSize(user);
+    await this.authService.checkRefreshTokenSize(user);
 
-      const tokenPromises = [
-        this.authService.createToken(user._id),
-        this.authService.createRefreshToken(user._id),
-      ];
-      const [accessToken, refreshToken] = await Promise.all(tokenPromises);
+    const tokenPromises = [
+      this.authService.createToken(user._id),
+      this.authService.createRefreshToken(user._id),
+    ];
+    const [accessToken, refreshToken] = await Promise.all(tokenPromises);
 
-      const data = {
-        accessToken,
-        refreshToken,
-      };
-      const responseData = new ApiResponseService(
-        "Login Successfull",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = {
+      accessToken,
+      refreshToken,
+    };
+    const responseData = new ApiResponseService(
+      "Login Successfull",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+    return data;
   }
 
   @Post("/refresh-token")
@@ -105,22 +100,18 @@ export class AuthController {
     @Req() request: RefreshTokenRequest,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const userId = request.user._id;
-      const refreshToken = request.user.refreshToken;
-      const data = await this.authService.validateRefreshToken(
-        userId,
-        refreshToken,
-      );
-      const responseData = new ApiResponseService(
-        "Token Generated",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const userId = request.user._id;
+    const refreshToken = request.user.refreshToken;
+    const data = await this.authService.validateRefreshToken(
+      userId,
+      refreshToken,
+    );
+    const responseData = new ApiResponseService(
+      "Token Generated",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   //initializes Google authentication
@@ -141,35 +132,31 @@ export class AuthController {
   })
   @UseGuards(GoogleOAuthGuard)
   async googleCallback(@Req() req: any, @Res() res: FastifyReply) {
-    try {
-      const { oAuthId, name, email } = req.user;
-      const isUserExists = await this.userService.getUserByEmail(email);
-      let id: ObjectId;
-      if (isUserExists) {
-        id = isUserExists._id;
-        this.contextService.set("user", isUserExists);
-        await this.authService.checkRefreshTokenSize(isUserExists);
-      } else {
-        const user = await this.userService.createGoogleAuthUser(
-          oAuthId,
-          name,
-          email,
-        );
-        this.contextService.set("user", { id: user.insertedId, name, email });
-        id = user.insertedId;
-      }
-      const tokenPromises = [
-        this.authService.createToken(id),
-        this.authService.createRefreshToken(id),
-      ];
-      const [accessToken, refreshToken] = await Promise.all(tokenPromises);
-
-      res.header("accessToken", accessToken);
-      res.header("refreshToken", refreshToken);
-      const url = encodeURI(this.configService.get("oauth.google.redirectUrl"));
-      res.redirect(HttpStatusCode.MOVED_PERMANENTLY, url);
-    } catch (error) {
-      throw new BadRequestException(error);
+    const { oAuthId, name, email } = req.user;
+    const isUserExists = await this.userService.getUserByEmail(email);
+    let id: ObjectId;
+    if (isUserExists) {
+      id = isUserExists._id;
+      this.contextService.set("user", isUserExists);
+      await this.authService.checkRefreshTokenSize(isUserExists);
+    } else {
+      const user = await this.userService.createGoogleAuthUser(
+        oAuthId,
+        name,
+        email,
+      );
+      this.contextService.set("user", { id: user.insertedId, name, email });
+      id = user.insertedId;
     }
+    const tokenPromises = [
+      this.authService.createToken(id),
+      this.authService.createRefreshToken(id),
+    ];
+    const [accessToken, refreshToken] = await Promise.all(tokenPromises);
+
+    res.header("accessToken", accessToken);
+    res.header("refreshToken", refreshToken);
+    const url = encodeURI(this.configService.get("oauth.google.redirectUrl"));
+    res.redirect(HttpStatusCode.MOVED_PERMANENTLY, url);
   }
 }

@@ -42,43 +42,31 @@ export class WorkspaceService {
   ) {}
 
   async get(id: string): Promise<WithId<Workspace>> {
-    try {
-      const data = await this.workspaceRepository.get(id);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.workspaceRepository.get(id);
+    return data;
   }
   async getAllWorkSpaces(userId: string): Promise<Workspace[]> {
-    try {
-      const user = await this.userRepository.getUserById(userId);
-      if (!user) {
-        throw new BadRequestException(
-          "The user with this id does not exist in the system",
-        );
-      }
-      const workspaces: Workspace[] = [];
-      for (const { workspaceId } of user.personalWorkspaces) {
-        const workspace = await this.get(workspaceId);
-        workspaces.push(workspace);
-      }
-      return workspaces;
-    } catch (error) {
-      throw new BadRequestException(error);
+    const user = await this.userRepository.getUserById(userId);
+    if (!user) {
+      throw new BadRequestException(
+        "The user with this id does not exist in the system",
+      );
     }
+    const workspaces: Workspace[] = [];
+    for (const { workspaceId } of user.personalWorkspaces) {
+      const workspace = await this.get(workspaceId);
+      workspaces.push(workspace);
+    }
+    return workspaces;
   }
   async getAllTeamWorkSpaces(teamId: string): Promise<Workspace[]> {
-    try {
-      const team = await this.teamRepository.get(teamId);
-      const workspaces: Workspace[] = [];
-      for (const { id } of team.workspaces) {
-        const workspace = await this.get(id.toString());
-        workspaces.push(workspace);
-      }
-      return workspaces;
-    } catch (error) {
-      throw new BadRequestException(error);
+    const team = await this.teamRepository.get(teamId);
+    const workspaces: Workspace[] = [];
+    for (const { id } of team.workspaces) {
+      const workspace = await this.get(id.toString());
+      workspaces.push(workspace);
     }
+    return workspaces;
   }
 
   async checkPermissions(teamData: Team): Promise<Array<PermissionForUserDto>> {
@@ -114,72 +102,65 @@ export class WorkspaceService {
   async create(
     workspaceData: CreateOrUpdateWorkspaceDto,
   ): Promise<InsertOneResult<Document>> {
-    try {
-      const userId = this.contextService.get("user")._id;
-      const teamId = new ObjectId(workspaceData.id);
-      let teamData;
-      let permissionDataForTeam;
-      if (workspaceData.type === WorkspaceType.TEAM) {
-        teamData = await this.permissionService.isTeamOwner(teamId);
-        permissionDataForTeam = await this.checkPermissions(
-          teamData as unknown as Team,
-        );
-      }
-      const ownerInfo: OwnerInformationDto = {
-        id:
-          workspaceData.type === WorkspaceType.PERSONAL
-            ? userId
-            : workspaceData.id,
-        name:
-          workspaceData.type === WorkspaceType.PERSONAL
-            ? this.contextService.get("user").name
-            : teamData.name,
-        type: workspaceData.type as WorkspaceType,
-      };
-      const permissionForUser = [
-        {
-          role: Role.ADMIN,
-          id: userId,
-        },
-      ];
-      const params = {
-        name: workspaceData.name,
-        owner: ownerInfo,
-        permissions:
-          workspaceData.type === WorkspaceType.PERSONAL
-            ? permissionForUser
-            : permissionDataForTeam,
-        createdAt: new Date(),
-        createdBy: userId,
-      };
-      const response = await this.workspaceRepository.addWorkspace(params);
-      if (workspaceData.type === WorkspaceType.TEAM) {
-        const teamWorkspaces = [...teamData.workspaces];
-        teamWorkspaces.push({
-          id: response.insertedId,
-          name: workspaceData.name,
-        });
-        const updateTeamParams = {
-          workspaces: teamWorkspaces,
-        };
-        await this.teamRepository.updateTeamById(teamId, updateTeamParams);
-      } else {
-        const userData = await this.userRepository.findUserByUserId(
-          new ObjectId(userId),
-        );
-        userData.personalWorkspaces.push({
-          workspaceId: response.insertedId.toString(),
-          name: ownerInfo.name,
-        });
-        await this.userRepository.updateUserById(
-          new ObjectId(userId),
-          userData,
-        );
-      }
-      return response;
-    } catch (error) {
-      throw new BadRequestException(error);
+    const userId = this.contextService.get("user")._id;
+    const teamId = new ObjectId(workspaceData.id);
+    let teamData;
+    let permissionDataForTeam;
+    if (workspaceData.type === WorkspaceType.TEAM) {
+      teamData = await this.permissionService.isTeamOwner(teamId);
+      permissionDataForTeam = await this.checkPermissions(
+        teamData as unknown as Team,
+      );
     }
+    const ownerInfo: OwnerInformationDto = {
+      id:
+        workspaceData.type === WorkspaceType.PERSONAL
+          ? userId
+          : workspaceData.id,
+      name:
+        workspaceData.type === WorkspaceType.PERSONAL
+          ? this.contextService.get("user").name
+          : teamData.name,
+      type: workspaceData.type as WorkspaceType,
+    };
+    const permissionForUser = [
+      {
+        role: Role.ADMIN,
+        id: userId,
+      },
+    ];
+    const params = {
+      name: workspaceData.name,
+      owner: ownerInfo,
+      permissions:
+        workspaceData.type === WorkspaceType.PERSONAL
+          ? permissionForUser
+          : permissionDataForTeam,
+      createdAt: new Date(),
+      createdBy: userId,
+    };
+    const response = await this.workspaceRepository.addWorkspace(params);
+    if (workspaceData.type === WorkspaceType.TEAM) {
+      const teamWorkspaces = [...teamData.workspaces];
+      teamWorkspaces.push({
+        id: response.insertedId,
+        name: workspaceData.name,
+      });
+      const updateTeamParams = {
+        workspaces: teamWorkspaces,
+      };
+      await this.teamRepository.updateTeamById(teamId, updateTeamParams);
+    } else {
+      const userData = await this.userRepository.findUserByUserId(
+        new ObjectId(userId),
+      );
+      userData.personalWorkspaces.push({
+        workspaceId: response.insertedId.toString(),
+        name: ownerInfo.name,
+      });
+      await this.userRepository.updateUserById(new ObjectId(userId), userData);
+    }
+    return response;
   }
 
   /**
@@ -192,12 +173,8 @@ export class WorkspaceService {
     id: string,
     updates: CreateOrUpdateWorkspaceDto,
   ): Promise<UpdateResult<Document>> {
-    try {
-      const data = await this.workspaceRepository.update(id, updates);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.workspaceRepository.update(id, updates);
+    return data;
   }
 
   /**
@@ -206,72 +183,56 @@ export class WorkspaceService {
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
   async delete(id: string): Promise<DeleteResult> {
-    try {
-      const data = await this.workspaceRepository.delete(id);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.workspaceRepository.delete(id);
+    return data;
   }
 
   async addCollectionInWorkSpace(
     workspaceId: string,
     collection: CollectionDto,
   ): Promise<void> {
-    try {
-      const data = await this.get(workspaceId);
-      if (!data) {
-        throw new NotFoundException("Workspace with this id does't exist");
-      }
-      await this.workspaceRepository.addCollectionInWorkspace(
-        workspaceId,
-        collection,
-      );
-      return;
-    } catch (error) {
-      throw new BadRequestException(error);
+    const data = await this.get(workspaceId);
+    if (!data) {
+      throw new NotFoundException("Workspace with this id does't exist");
     }
+    await this.workspaceRepository.addCollectionInWorkspace(
+      workspaceId,
+      collection,
+    );
+    return;
   }
   async updateCollectionInWorkSpace(
     workspaceId: string,
     collectionId: string,
     name: string,
   ): Promise<void> {
-    try {
-      const data = await this.get(workspaceId);
-      if (!data) {
-        throw new NotFoundException("Workspace with this id does't exist");
-      }
-      await this.workspaceRepository.updateCollectioninWorkspace(
-        workspaceId,
-        collectionId,
-        name,
-      );
-      return;
-    } catch (error) {
-      throw new BadRequestException(error);
+    const data = await this.get(workspaceId);
+    if (!data) {
+      throw new NotFoundException("Workspace with this id does't exist");
     }
+    await this.workspaceRepository.updateCollectioninWorkspace(
+      workspaceId,
+      collectionId,
+      name,
+    );
+    return;
   }
 
   async deleteCollectionInWorkSpace(
     workspaceId: string,
     collectionId: string,
   ): Promise<void> {
-    try {
-      const data = await this.get(workspaceId);
-      if (!data) {
-        throw new NotFoundException("Workspace with this id does't exist");
-      }
-
-      const filteredCollections = data.collection.filter((collection) => {
-        return collection.id.toString() !== collectionId;
-      });
-      await this.workspaceRepository.deleteCollectioninWorkspace(
-        workspaceId,
-        filteredCollections,
-      );
-    } catch (error) {
-      throw new BadRequestException(error);
+    const data = await this.get(workspaceId);
+    if (!data) {
+      throw new NotFoundException("Workspace with this id does't exist");
     }
+
+    const filteredCollections = data.collection.filter((collection) => {
+      return collection.id.toString() !== collectionId;
+    });
+    await this.workspaceRepository.deleteCollectioninWorkspace(
+      workspaceId,
+      filteredCollections,
+    );
   }
 }

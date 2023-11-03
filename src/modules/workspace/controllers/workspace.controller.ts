@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -67,17 +66,17 @@ export class WorkSpaceController {
     @Body() createWorkspaceDto: CreateOrUpdateWorkspaceDto,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.workspaceService.create(createWorkspaceDto);
-      const responseData = new ApiResponseService(
-        "Workspace Created",
-        HttpStatusCode.CREATED,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.workspaceService.create(createWorkspaceDto);
+
+    const workspace = await this.workspaceService.get(
+      data.insertedId.toString(),
+    );
+    const responseData = new ApiResponseService(
+      "Workspace Created",
+      HttpStatusCode.CREATED,
+      workspace,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":workspaceId")
@@ -91,17 +90,13 @@ export class WorkSpaceController {
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.workspaceService.get(workspaceId);
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.workspaceService.get(workspaceId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
   @Get("user/:userId")
   @ApiOperation({
@@ -120,17 +115,13 @@ export class WorkSpaceController {
     @Param("userId") userId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.workspaceService.getAllWorkSpaces(userId);
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.workspaceService.getAllWorkSpaces(userId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
   @Get("team/:teamId")
   @ApiOperation({
@@ -149,17 +140,13 @@ export class WorkSpaceController {
     @Param("teamId") teamId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.workspaceService.getAllTeamWorkSpaces(teamId);
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.workspaceService.getAllTeamWorkSpaces(teamId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
   @Put(":workspaceId")
   @ApiOperation({
@@ -173,20 +160,15 @@ export class WorkSpaceController {
     @Body() updateWorkspaceDto: CreateOrUpdateWorkspaceDto,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.workspaceService.update(
-        workspaceId,
-        updateWorkspaceDto,
-      );
-      const responseData = new ApiResponseService(
-        "Workspace Updated",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.workspaceService.update(workspaceId, updateWorkspaceDto);
+
+    const workspace = await this.workspaceService.get(workspaceId);
+    const responseData = new ApiResponseService(
+      "Workspace Updated",
+      HttpStatusCode.OK,
+      workspace,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":workspaceId")
@@ -200,17 +182,13 @@ export class WorkSpaceController {
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.workspaceService.delete(workspaceId);
-      const responseData = new ApiResponseService(
-        "Workspace Deleted",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.workspaceService.delete(workspaceId);
+    const responseData = new ApiResponseService(
+      "Workspace Deleted",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/user/:userId")
@@ -231,17 +209,14 @@ export class WorkSpaceController {
       workspaceId: workspaceId,
       role: data.role,
     };
-    try {
-      const response = await this.permissionService.create(params);
-      const responseData = new ApiResponseService(
-        "User Added",
-        HttpStatusCode.OK,
-        response,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.permissionService.create(params);
+    const workspace = await this.workspaceService.get(workspaceId);
+    const responseData = new ApiResponseService(
+      "User Added",
+      HttpStatusCode.OK,
+      workspace,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":workspaceId/user/:userId")
@@ -260,18 +235,15 @@ export class WorkSpaceController {
       userId: userId,
       workspaceId: workspaceId,
     };
-    try {
-      const data =
-        await this.permissionService.removeSinglePermissionInWorkspace(params);
-      const responseData = new ApiResponseService(
-        "User Removed",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.permissionService.removeSinglePermissionInWorkspace(
+      params,
+    );
+    const responseData = new ApiResponseService(
+      "User Removed",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/importFile/collection")
@@ -288,27 +260,26 @@ export class WorkSpaceController {
     @UploadedFile()
     file: MemoryStorageFile,
   ) {
-    try {
-      const dataBuffer = file.buffer;
-      const dataString = dataBuffer.toString("utf8");
-      const dataObj =
-        file.mimetype === "application/json"
-          ? JSON.parse(dataString)
-          : yml.load(dataString);
-      const collectionObj = await this.parserService.parse(dataObj);
-      await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-        id: new ObjectId(collectionObj.insertedId),
-        name: collectionObj.name,
-      });
-      const responseData = new ApiResponseService(
-        "Collection Imported",
-        HttpStatusCode.OK,
-        collectionObj,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const dataBuffer = file.buffer;
+    const dataString = dataBuffer.toString("utf8");
+    const dataObj =
+      file.mimetype === "application/json"
+        ? JSON.parse(dataString)
+        : yml.load(dataString);
+    const collectionObj = await this.parserService.parse(dataObj);
+    await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
+      id: new ObjectId(collectionObj.insertedId),
+      name: collectionObj.name,
+    });
+    const collection = await this.collectionService.getCollection(
+      collectionObj.insertedId,
+    );
+    const responseData = new ApiResponseService(
+      "Collection Imported",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/importUrl/collection")
@@ -323,27 +294,22 @@ export class WorkSpaceController {
     @Res() res: FastifyReply,
     @Body() importCollectionDto: ImportCollectionDto,
   ) {
-    try {
-      const response = await axios.get(importCollectionDto.url);
-      const data = response.data;
-      const responseType = response.headers["content-type"];
-      const dataObj =
-        responseType === "application/json" ? data : yml.load(data);
+    const response = await axios.get(importCollectionDto.url);
+    const data = response.data;
+    const responseType = response.headers["content-type"];
+    const dataObj = responseType === "application/json" ? data : yml.load(data);
 
-      const collectionObj = await this.parserService.parse(dataObj);
-      await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-        id: new ObjectId(collectionObj.insertedId),
-        name: collectionObj.name,
-      });
-      const responseData = new ApiResponseService(
-        "Collection Imported",
-        HttpStatusCode.OK,
-        collectionObj,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const collectionObj = await this.parserService.parse(dataObj);
+    await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
+      id: new ObjectId(collectionObj.insertedId),
+      name: collectionObj.name,
+    });
+    const responseData = new ApiResponseService(
+      "Collection Imported",
+      HttpStatusCode.OK,
+      collectionObj,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/importJson/collection")
@@ -361,20 +327,20 @@ export class WorkSpaceController {
     @Res() res: FastifyReply,
     @Body() jsonObjDto: ImportJsonObjCollectionDto,
   ) {
-    try {
-      const collectionObj = await this.parserService.parse(jsonObjDto.jsonObj);
-      await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-        id: new ObjectId(collectionObj.id),
-        name: collectionObj.name,
-      });
-      const responseData = new ApiResponseService(
-        "Collection Imported",
-        HttpStatusCode.OK,
-        collectionObj,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const collectionObj = await this.parserService.parse(jsonObjDto.jsonObj);
+    await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
+      id: new ObjectId(collectionObj.id),
+      name: collectionObj.name,
+    });
+
+    const collection = await this.collectionService.getCollection(
+      collectionObj.insertedId,
+    );
+    const responseData = new ApiResponseService(
+      "Collection Imported",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 }

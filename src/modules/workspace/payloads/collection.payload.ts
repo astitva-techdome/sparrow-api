@@ -77,16 +77,17 @@ export class CreateCollectionDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ required: true, example: "64f878a0293b1e4415866493" })
+  @ApiProperty({ required: true, example: "6544cdea4b3d3b043a96c307" })
   @IsMongoId()
   @IsNotEmpty()
   workspaceId: string;
 
-  @ApiProperty({ required: false, type: [CollectionItem] })
+  @ApiProperty({ type: [CollectionItem] })
   @IsArray()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CollectionItem)
-  items: CollectionItem[];
+  items?: CollectionItem[];
 }
 
 export class UpdateCollectionDto {
@@ -95,11 +96,12 @@ export class UpdateCollectionDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ required: false, type: [CollectionItem] })
+  @ApiProperty({ type: [CollectionItem] })
   @IsArray()
   @ValidateNested({ each: true })
+  @IsOptional()
   @Type(() => CollectionItem)
-  items: CollectionItem[];
+  items?: CollectionItem[];
 }
 
 export class ImportCollectionDto {

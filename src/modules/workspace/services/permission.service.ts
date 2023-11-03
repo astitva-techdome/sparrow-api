@@ -11,6 +11,7 @@ import { ConfigService } from "@nestjs/config";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { RedisService } from "@src/modules/common/services/redis.service";
 import {
+  Workspace,
   WorkspaceDto,
   WorkspaceType,
 } from "@src/modules/common/models/workspace.model";
@@ -85,58 +86,54 @@ export class PermissionService {
    * @returns {Promise<InsertOneWriteOpResult<Permission>>} result of the insert operation
    */
   async create(permissionData: CreatePermissionDto) {
-    try {
-      const currentUserId = this.contextService.get("user")._id;
-      new ObjectId(permissionData.userId);
-      const workspaceId = new ObjectId(permissionData.workspaceId);
-      const workspaceData = await this.workspaceRepository.findWorkspaceById(
-        workspaceId,
+    const currentUserId = this.contextService.get("user")._id;
+    new ObjectId(permissionData.userId);
+    const workspaceId = new ObjectId(permissionData.workspaceId);
+    const workspaceData = await this.workspaceRepository.findWorkspaceById(
+      workspaceId,
+    );
+    const userPermissions = workspaceData.permissions;
+    await this.userHasPermission(userPermissions, currentUserId);
+    if (workspaceData.owner.type === WorkspaceType.PERSONAL) {
+      throw new BadRequestException(
+        "You cannot add members in Personal Workspace.",
       );
-      const userPermissions = workspaceData.permissions;
-      await this.userHasPermission(userPermissions, currentUserId);
-      if (workspaceData.owner.type === WorkspaceType.PERSONAL) {
-        throw new BadRequestException(
-          "You cannot add members in Personal Workspace.",
-        );
-      }
-      workspaceData.permissions.push({
-        role: permissionData.role,
-        id: permissionData.userId,
-      });
-      const updatedWOrkspaceData = await this.workspaceRepository.update(
-        workspaceId.toString(),
-        workspaceData as unknown as CreateOrUpdateWorkspaceDto,
-      );
-      const userData = await this.userRepository.findUserByUserId(
-        new ObjectId(permissionData.userId),
-      );
-      userData.teams.push({
-        id: workspaceData.owner.id,
-        name: workspaceData.owner.name,
-      });
-      await this.userRepository.updateUserById(
-        new ObjectId(permissionData.userId),
-        userData as unknown as UserDto,
-      );
-      const teamData = await this.teamRepository.findTeamByTeamId(
-        new ObjectId(workspaceData.owner.id),
-      );
-      teamData.users.push({
-        id: userData._id.toString(),
-        email: userData.email,
-        name: userData.name,
-      });
-      await this.teamRepository.updateTeamById(
-        new ObjectId(workspaceData.owner.id),
-        teamData as unknown as TeamDto,
-      );
-      await this.redisService.set(
-        this.userBlacklistPrefix + permissionData.userId.toString(),
-      );
-      return updatedWOrkspaceData;
-    } catch (error) {
-      throw new BadRequestException(error);
     }
+    workspaceData.permissions.push({
+      role: permissionData.role,
+      id: permissionData.userId,
+    });
+    const updatedWOrkspaceData = await this.workspaceRepository.update(
+      workspaceId.toString(),
+      workspaceData as unknown as CreateOrUpdateWorkspaceDto,
+    );
+    const userData = await this.userRepository.findUserByUserId(
+      new ObjectId(permissionData.userId),
+    );
+    userData.teams.push({
+      id: workspaceData.owner.id,
+      name: workspaceData.owner.name,
+    });
+    await this.userRepository.updateUserById(
+      new ObjectId(permissionData.userId),
+      userData as unknown as UserDto,
+    );
+    const teamData = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(workspaceData.owner.id),
+    );
+    teamData.users.push({
+      id: userData._id.toString(),
+      email: userData.email,
+      name: userData.name,
+    });
+    await this.teamRepository.updateTeamById(
+      new ObjectId(workspaceData.owner.id),
+      teamData as unknown as TeamDto,
+    );
+    await this.redisService.set(
+      this.userBlacklistPrefix + permissionData.userId.toString(),
+    );
+    return updatedWOrkspaceData;
   }
 
   async addPermissionInWorkspace(
@@ -240,58 +237,53 @@ export class PermissionService {
     await Promise.all(workspaceDataPromises);
   }
 
-  async updatePermissionInWorkspace(payload: CreatePermissionDto) {
-    try {
-      await this.isWorkspaceAdmin(new ObjectId(payload.workspaceId));
-      const workspaceData = await this.workspaceRepository.findWorkspaceById(
-        new ObjectId(payload.workspaceId),
-      );
-      const workspacePermissions = [...workspaceData.permissions];
-      for (let index = 0; index < workspacePermissions.length; index++) {
-        if (workspacePermissions[index].id.toString() === payload.userId) {
-          workspacePermissions[index].role = payload.role;
-        }
+  async updatePermissionInWorkspace(
+    payload: CreatePermissionDto,
+  ): Promise<Workspace> {
+    await this.isWorkspaceAdmin(new ObjectId(payload.workspaceId));
+    const workspaceData = await this.workspaceRepository.findWorkspaceById(
+      new ObjectId(payload.workspaceId),
+    );
+    const workspacePermissions = [...workspaceData.permissions];
+    for (let index = 0; index < workspacePermissions.length; index++) {
+      if (workspacePermissions[index].id.toString() === payload.userId) {
+        workspacePermissions[index].role = payload.role;
       }
-      const updatedPermissionParams = {
-        permissions: workspacePermissions,
-      };
-      const data = await this.workspaceRepository.updateWorkspaceById(
-        new ObjectId(payload.workspaceId),
-        updatedPermissionParams,
-      );
-      await this.redisService.set(
-        this.userBlacklistPrefix + payload.userId.toString(),
-      );
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
     }
+    const updatedPermissionParams = {
+      permissions: workspacePermissions,
+    };
+    await this.workspaceRepository.updateWorkspaceById(
+      new ObjectId(payload.workspaceId),
+      updatedPermissionParams,
+    );
+    await this.redisService.set(
+      this.userBlacklistPrefix + payload.userId.toString(),
+    );
+    const workspace = await this.workspaceRepository.get(payload.workspaceId);
+    return workspace;
   }
 
   async removeSinglePermissionInWorkspace(payload: RemovePermissionDto) {
-    try {
-      await this.isWorkspaceAdmin(new ObjectId(payload.workspaceId));
-      const workspaceData = await this.workspaceRepository.findWorkspaceById(
-        new ObjectId(payload.workspaceId),
-      );
-      const workspacePermissions = [...workspaceData.permissions];
-      const filteredPermissionsData = workspacePermissions.filter(
-        (item) => item.id.toString() !== payload.userId.toString(),
-      );
-      const updatedPermissionParams = {
-        permissions: filteredPermissionsData,
-      };
-      const data = await this.workspaceRepository.updateWorkspaceById(
-        new ObjectId(payload.workspaceId),
-        updatedPermissionParams,
-      );
-      await this.redisService.set(
-        this.userBlacklistPrefix + payload.userId.toString(),
-      );
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.isWorkspaceAdmin(new ObjectId(payload.workspaceId));
+    const workspaceData = await this.workspaceRepository.findWorkspaceById(
+      new ObjectId(payload.workspaceId),
+    );
+    const workspacePermissions = [...workspaceData.permissions];
+    const filteredPermissionsData = workspacePermissions.filter(
+      (item) => item.id.toString() !== payload.userId.toString(),
+    );
+    const updatedPermissionParams = {
+      permissions: filteredPermissionsData,
+    };
+    const data = await this.workspaceRepository.updateWorkspaceById(
+      new ObjectId(payload.workspaceId),
+      updatedPermissionParams,
+    );
+    await this.redisService.set(
+      this.userBlacklistPrefix + payload.userId.toString(),
+    );
+    return data;
   }
 
   async setAdminPermissionForOwner(_id: ObjectId) {

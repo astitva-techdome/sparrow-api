@@ -55,51 +55,35 @@ export class CollectionService {
   }
 
   async getCollection(id: string): Promise<WithId<Collection>> {
-    try {
-      return await this.collectionReposistory.get(id);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    return await this.collectionReposistory.get(id);
   }
 
   async getAllCollections(id: string): Promise<WithId<Collection>[]> {
-    try {
-      const user = await this.contextService.get("user");
-      await this.checkPermission(id, user._id);
+    const user = await this.contextService.get("user");
+    await this.checkPermission(id, user._id);
 
-      const workspace = await this.workspaceReposistory.get(id);
-      const collections = [];
-      for (let i = 0; i < workspace.collection?.length; i++) {
-        const collection = await this.collectionReposistory.get(
-          workspace.collection[i].id.toString(),
-        );
-        collections.push(collection);
-      }
-      return collections;
-    } catch (error) {
-      throw new BadRequestException(error);
+    const workspace = await this.workspaceReposistory.get(id);
+    const collections = [];
+    for (let i = 0; i < workspace.collection?.length; i++) {
+      const collection = await this.collectionReposistory.get(
+        workspace.collection[i].id.toString(),
+      );
+      collections.push(collection);
     }
+    return collections;
   }
 
   async getActiveSyncedCollection(uuid: string): Promise<WithId<Collection>> {
-    try {
-      return await this.collectionReposistory.getActiveSyncedCollection(uuid);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    return await this.collectionReposistory.getActiveSyncedCollection(uuid);
   }
 
   async checkPermission(workspaceId: string, userid: ObjectId): Promise<void> {
-    try {
-      const workspace = await this.workspaceReposistory.get(workspaceId);
-      const hasPermission = workspace.permissions.some((user) => {
-        return user.id.toString() === userid.toString();
-      });
-      if (!hasPermission) {
-        throw new UnauthorizedException(ErrorMessages.Unauthorized);
-      }
-    } catch (error) {
-      throw new BadRequestException(error);
+    const workspace = await this.workspaceReposistory.get(workspaceId);
+    const hasPermission = workspace.permissions.some((user) => {
+      return user.id.toString() === userid.toString();
+    });
+    if (!hasPermission) {
+      throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
   }
   async updateCollection(
@@ -107,48 +91,32 @@ export class CollectionService {
     updateCollectionDto: UpdateCollectionDto,
     workspaceId: string,
   ): Promise<UpdateResult> {
-    try {
-      const user = await this.contextService.get("user");
-      await this.checkPermission(workspaceId, user._id);
-      await this.collectionReposistory.get(collectionId);
-      const data = await this.collectionReposistory.update(
-        collectionId,
-        updateCollectionDto,
-      );
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const user = await this.contextService.get("user");
+    await this.checkPermission(workspaceId, user._id);
+    await this.collectionReposistory.get(collectionId);
+    const data = await this.collectionReposistory.update(
+      collectionId,
+      updateCollectionDto,
+    );
+    return data;
   }
 
   async deleteCollection(
     id: string,
     workspaceId: string,
   ): Promise<DeleteResult> {
-    try {
-      const user = await this.contextService.get("user");
-      await this.checkPermission(workspaceId, user._id);
-      const data = await this.collectionReposistory.delete(id);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const user = await this.contextService.get("user");
+    await this.checkPermission(workspaceId, user._id);
+    const data = await this.collectionReposistory.delete(id);
+    return data;
   }
   async importCollection(collection: Collection): Promise<InsertOneResult> {
-    try {
-      return await this.collectionReposistory.addCollection(collection);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    return await this.collectionReposistory.addCollection(collection);
   }
   async updateImportedCollection(
     id: string,
     collection: Collection,
   ): Promise<UpdateResult<Collection>> {
-    try {
-      return await this.collectionReposistory.updateCollection(id, collection);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    return await this.collectionReposistory.updateCollection(id, collection);
   }
 }

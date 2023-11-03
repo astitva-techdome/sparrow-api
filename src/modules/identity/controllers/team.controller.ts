@@ -7,7 +7,6 @@ import {
   UseGuards,
   Param,
   Res,
-  BadRequestException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -47,17 +46,15 @@ export class TeamController {
     @Body() createTeamDto: CreateOrUpdateTeamDto,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.teamService.create(createTeamDto);
-      const responseData = new ApiResponseService(
-        "Team Created",
-        HttpStatusCode.CREATED,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.teamService.create(createTeamDto);
+    const team = await this.teamService.get(data.insertedId.toString());
+    const responseData = new ApiResponseService(
+      "Team Created",
+      HttpStatusCode.CREATED,
+      team,
+    );
+
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":teamId")
@@ -68,17 +65,13 @@ export class TeamController {
   @ApiResponse({ status: 200, description: "Fetch Team Request Received" })
   @ApiResponse({ status: 400, description: "Fetch Team Request Failed" })
   async getTeam(@Param("teamId") teamId: string, @Res() res: FastifyReply) {
-    try {
-      const data = await this.teamService.get(teamId);
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        data,
-      );
-      return res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.teamService.get(teamId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      data,
+    );
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":teamId")
@@ -89,17 +82,13 @@ export class TeamController {
   @ApiResponse({ status: 200, description: "Team Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Team Failed" })
   async deleteTeam(@Param("teamId") teamId: string, @Res() res: FastifyReply) {
-    try {
-      const data = await this.teamService.delete(teamId);
-      const responseData = new ApiResponseService(
-        "Team Deleted",
-        HttpStatusCode.OK,
-        data,
-      );
-      return res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.teamService.delete(teamId);
+    const responseData = new ApiResponseService(
+      "Team Deleted",
+      HttpStatusCode.OK,
+      data,
+    );
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":teamId/user/:userId")
@@ -114,17 +103,14 @@ export class TeamController {
     @Param("userId") userId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.teamUserService.addUser({ teamId, userId });
-      const responseData = new ApiResponseService(
-        "User Added in Team",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException("Failed to Add User in Team");
-    }
+    await this.teamUserService.addUser({ teamId, userId });
+    const team = await this.teamService.get(teamId);
+    const responseData = new ApiResponseService(
+      "User Added in Team",
+      HttpStatusCode.OK,
+      team,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":teamId/user/:userId")
@@ -139,17 +125,13 @@ export class TeamController {
     @Param("userId") userId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.teamUserService.removeUser({ teamId, userId });
-      const responseData = new ApiResponseService(
-        "User Removed",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.teamUserService.removeUser({ teamId, userId });
+    const responseData = new ApiResponseService(
+      "User Removed",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":teamId/owner/:userId")
@@ -164,16 +146,13 @@ export class TeamController {
     @Param("userId") userId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.teamUserService.addOwner({ teamId, userId });
-      const responseData = new ApiResponseService(
-        "Owner added",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.teamUserService.addOwner({ teamId, userId });
+    const team = await this.teamService.get(teamId);
+    const responseData = new ApiResponseService(
+      "Owner added",
+      HttpStatusCode.OK,
+      team,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 }

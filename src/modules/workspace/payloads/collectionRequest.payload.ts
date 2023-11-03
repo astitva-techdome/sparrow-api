@@ -121,7 +121,7 @@ export class CollectionRequestMetaData {
 }
 
 export class CollectionRequestItem {
-  @ApiProperty({ example: "/pet/{petId}/uploadImage" })
+  @ApiProperty({ example: "e25a5332-7b80-48f3-8e4f-6e229bcedd43" })
   @IsOptional()
   @IsString()
   id?: string;

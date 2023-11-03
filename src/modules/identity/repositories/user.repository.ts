@@ -38,7 +38,10 @@ export class UserRepository {
     const _id = new ObjectId(id);
     const data = await this.db
       .collection<User>(Collections.USER)
-      .findOne({ _id }, { projection: { password: 0 } });
+      .findOne(
+        { _id },
+        { projection: { password: 0, verificationCode: 0, refresh_tokens: 0 } },
+      );
     return data;
   }
 

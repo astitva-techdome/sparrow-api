@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Body,
-  UseGuards,
-  Put,
-  Param,
-  Res,
-  BadRequestException,
-} from "@nestjs/common";
+import { Controller, Body, UseGuards, Put, Param, Res } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -42,20 +34,17 @@ export class PermissionController {
     @Body() updatePermissionDto: UpdatePermissionDto,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const data = await this.permissionService.updatePermissionInWorkspace({
-        workspaceId,
-        userId,
-        role: updatePermissionDto.role,
-      });
-      const responseData = new ApiResponseService(
-        "Permission Update",
-        HttpStatusCode.OK,
-        data,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const workspace = await this.permissionService.updatePermissionInWorkspace({
+      workspaceId,
+      userId,
+      role: updatePermissionDto.role,
+    });
+
+    const responseData = new ApiResponseService(
+      "Permission Update",
+      HttpStatusCode.OK,
+      workspace,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 }
