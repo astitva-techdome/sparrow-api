@@ -6,10 +6,11 @@ import {
 import headers from "@fastify/helmet";
 import fastifyRateLimiter from "@fastify/rate-limit";
 import { AppModule } from "@app/app.module";
-import { ValidationPipe } from "@nestjs/common";
+import { BadRequestException, ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import fastyfyMultipart from "@fastify/multipart";
 import { FastifyInstance } from "fastify";
+import { ValidationError } from "class-validator";
 /**
  * The url endpoint for open api ui
  * @type {string}
@@ -64,7 +65,16 @@ const { PORT } = process.env;
     .decorateReply("end", function () {
       this.send("");
     });
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const result =
+          errors[0].constraints[Object.keys(errors[0].constraints)[0]];
+        throw new BadRequestException(result);
+      },
+    }),
+  );
   app.register(fastyfyMultipart);
   await app.listen(PORT, "0.0.0.0");
 })();

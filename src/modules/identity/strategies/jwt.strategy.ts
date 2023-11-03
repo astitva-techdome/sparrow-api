@@ -46,7 +46,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       {
         _id: new ObjectId(_id),
       },
-      { projection: { password: 0 } },
+      { projection: { password: 0, refresh_tokens: 0, verificationCode: 0 } },
     );
 
     if (!user) {

@@ -9,6 +9,7 @@ import {
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  CollectionItem,
   ItemTypeEnum,
   QueryParams,
   RequestBody,
@@ -72,26 +73,52 @@ export class createCollectionItemsDto {
 }
 export class CreateCollectionDto {
   @IsString()
-  @ApiProperty()
+  @ApiProperty({ required: true, example: "Swagger Petstore - OpenAPI 3.0" })
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: true, example: "6544cdea4b3d3b043a96c307" })
   @IsMongoId()
   @IsNotEmpty()
   workspaceId: string;
+
+  @ApiProperty({ type: [CollectionItem] })
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CollectionItem)
+  items?: CollectionItem[];
 }
 
 export class UpdateCollectionDto {
-  @ApiProperty()
+  @ApiProperty({ example: "Swagger Petstore - OpenAPI 3.0" })
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty({ type: [CollectionItem] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @IsOptional()
+  @Type(() => CollectionItem)
+  items?: CollectionItem[];
 }
 
 export class ImportCollectionDto {
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+    example: "https://petstore.swagger.io/v2/swagger.json",
+  })
   @IsString()
   @IsNotEmpty()
   url: string;
+}
+
+export class ImportJsonObjCollectionDto {
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+  jsonObj: string;
 }

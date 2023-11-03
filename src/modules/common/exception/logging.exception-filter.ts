@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   HttpException,
   Inject,
+  BadRequestException,
 } from "@nestjs/common";
 import { FastifyReply } from "fastify";
 import { PinoLogger } from "nestjs-pino";
@@ -15,14 +16,18 @@ export class LoggingExceptionsFilter implements ExceptionFilter {
   ) {}
 
   catch(exception: HttpException, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<FastifyReply>();
-    const status = exception.getStatus();
-    this.errorLogger.error(exception.getResponse());
-    response.status(status).send({
-      statusCode: status,
-      message: exception.message,
-      error: exception.name,
-    });
+    if (exception instanceof HttpException) {
+      const ctx = host.switchToHttp();
+      const response = ctx.getResponse<FastifyReply>();
+      const status = exception.getStatus();
+      this.errorLogger.error(exception);
+      response.status(status).send({
+        statusCode: status,
+        message: exception.message,
+        error: exception.name,
+      });
+    } else {
+      throw new BadRequestException(exception);
+    }
   }
 }

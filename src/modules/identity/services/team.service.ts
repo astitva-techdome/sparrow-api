@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
 import { TeamRepository } from "../repositories/team.repository";
 import { DeleteResult, InsertOneResult, UpdateResult, WithId } from "mongodb";
@@ -19,12 +19,8 @@ export class TeamService {
   async create(
     teamData: CreateOrUpdateTeamDto,
   ): Promise<InsertOneResult<Team>> {
-    try {
-      const data = await this.teamRepository.create(teamData);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.teamRepository.create(teamData);
+    return data;
   }
 
   /**
@@ -33,12 +29,8 @@ export class TeamService {
    * @returns {Promise<Team>} queried team data
    */
   async get(id: string): Promise<WithId<Team>> {
-    try {
-      const data = await this.teamRepository.get(id);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.teamRepository.get(id);
+    return data;
   }
 
   /**
@@ -50,12 +42,8 @@ export class TeamService {
     id: string,
     payload: CreateOrUpdateTeamDto,
   ): Promise<UpdateResult<Team>> {
-    try {
-      const data = await this.teamRepository.update(id, payload);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.teamRepository.update(id, payload);
+    return data;
   }
 
   /**
@@ -64,11 +52,7 @@ export class TeamService {
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
   async delete(id: string): Promise<DeleteResult> {
-    try {
-      const data = await this.teamRepository.delete(id);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.teamRepository.delete(id);
+    return data;
   }
 }

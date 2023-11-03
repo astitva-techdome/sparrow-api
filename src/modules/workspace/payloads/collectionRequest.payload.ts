@@ -21,7 +21,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 export class CollectionRequestBody {
-  @ApiProperty()
+  @ApiProperty({ example: "application/json" })
   @IsEnum(BodyModeEnum)
   @IsNotEmpty()
   type: BodyModeEnum;
@@ -51,21 +51,21 @@ export class Params {
 }
 
 export class CollectionRequestMetaData {
-  @ApiProperty()
+  @ApiProperty({ example: "6538e910aa77d958912371f5" })
   @IsOptional()
   @IsString()
   id?: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "post" })
   @IsNotEmpty()
   method: HTTPMethods;
 
-  @ApiProperty()
+  @ApiProperty({ example: "uploadFile" })
   @IsString()
   @IsNotEmpty()
   operationId: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "/pet/{petId}/uploadImage" })
   @IsString()
   @IsNotEmpty()
   url: string;
@@ -76,21 +76,43 @@ export class CollectionRequestMetaData {
   @IsOptional()
   body?: CollectionRequestBody[];
 
-  @ApiProperty({ type: [Params] })
+  @ApiProperty({
+    type: [Params],
+    example: {
+      name: "search",
+      description: "The search term to filter results",
+      required: false,
+      schema: {},
+    },
+  })
   @IsArray()
   @Type(() => Params)
   @ValidateNested({ each: true })
   @IsOptional()
   queryParams?: Params[];
 
-  @ApiProperty({ type: [Params] })
+  @ApiProperty({
+    type: [Params],
+    example: {
+      name: "userID",
+      description: "The unique identifier of the user",
+      required: true,
+      schema: {},
+    },
+  })
   @IsArray()
   @Type(() => Params)
   @ValidateNested({ each: true })
   @IsOptional()
   pathParams?: Params[];
 
-  @ApiProperty({ type: [Params] })
+  @ApiProperty({
+    type: [Params],
+    example: {
+      name: "Authorization",
+      description: "Bearer token for authentication",
+    },
+  })
   @IsArray()
   @Type(() => Params)
   @ValidateNested({ each: true })
@@ -99,27 +121,35 @@ export class CollectionRequestMetaData {
 }
 
 export class CollectionRequestItem {
-  @ApiProperty()
+  @ApiProperty({ example: "e25a5332-7b80-48f3-8e4f-6e229bcedd43" })
   @IsOptional()
   @IsString()
   id?: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "/pet/{petId}/uploadImage" })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "Description About Pets" })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: ["FOLDER", "REQUEST"] })
   @IsEnum(ItemTypeEnum)
   @IsNotEmpty()
   type: ItemTypeEnum;
 
-  @ApiProperty({ type: [CollectionRequestItem] })
+  @ApiProperty({
+    type: [CollectionRequestItem],
+    example: {
+      name: "/pet",
+      description: "Update an existing pet by Id",
+      type: "REQUEST",
+      request: {},
+    },
+  })
   @ValidateNested({ each: true })
   @Type(() => CollectionRequestItem)
   @IsOptional()
@@ -178,20 +208,21 @@ export class QueryParams {
 }
 
 export class CollectionRequestDto {
-  @ApiProperty()
+  @ApiProperty({ example: "6538e910aa77d958912371f5" })
   @IsString()
   @IsNotEmpty()
   collectionId: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "6538e910aa77d958912371f5" })
   @IsString()
   @IsNotEmpty()
   workspaceId: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "6538e910aa77d958912371f5" })
   @IsString()
   @IsOptional()
   folderId: string;
+
   @ApiProperty()
   @Type(() => CollectionRequestItem)
   @ValidateNested({ each: true })
@@ -199,12 +230,12 @@ export class CollectionRequestDto {
 }
 
 export class FolderPayload {
-  @ApiProperty()
+  @ApiProperty({ example: "pet" })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "Everything about your Pets" })
   @IsString()
   @IsOptional()
   description: string;

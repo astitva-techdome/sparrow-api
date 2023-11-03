@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,7 +9,12 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import {
   CreateCollectionDto,
   UpdateCollectionDto,
@@ -42,34 +46,41 @@ export class collectionController {
   ) {}
 
   @Post()
+  @ApiOperation({
+    summary: "Create A Collection",
+    description:
+      "This will create a collection and add this collection in user's workspace",
+  })
   @ApiResponse({ status: 201, description: "Collection Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Collection Failed" })
   async createCollection(
     @Body() createCollectionDto: CreateCollectionDto,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const workspaceId = createCollectionDto.workspaceId;
-      const collection = await this.collectionService.createCollection(
-        createCollectionDto,
-      );
-
-      await this.workSpaceService.addCollectionInWorkSpace(workspaceId, {
-        id: collection.insertedId,
-        name: createCollectionDto.name,
-      });
-      const responseData = new ApiResponseService(
-        "Collection Created",
-        HttpStatusCode.CREATED,
-        collection,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const workspaceId = createCollectionDto.workspaceId;
+    const data = await this.collectionService.createCollection(
+      createCollectionDto,
+    );
+    const collection = await this.collectionService.getCollection(
+      data.insertedId.toString(),
+    );
+    await this.workSpaceService.addCollectionInWorkSpace(workspaceId, {
+      id: collection._id,
+      name: createCollectionDto.name,
+    });
+    const responseData = new ApiResponseService(
+      "Collection Created",
+      HttpStatusCode.CREATED,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":workspaceId")
+  @ApiOperation({
+    summary: "Get All Collections",
+    description: "This will get all collection of a workspace",
+  })
   @ApiResponse({
     status: 200,
     description: "Fetch Collection Request Received",
@@ -79,22 +90,22 @@ export class collectionController {
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const collection = await this.collectionService.getAllCollections(
-        workspaceId,
-      );
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        collection,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const collection = await this.collectionService.getAllCollections(
+      workspaceId,
+    );
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put(":collectionId/workspace/:workspaceId")
+  @ApiOperation({
+    summary: "Update A  Collections",
+    description: "This will update a collection ",
+  })
   @ApiResponse({ status: 200, description: "Collection Updated Successfully" })
   @ApiResponse({ status: 400, description: "Update Collection Failed" })
   async updateCollection(
@@ -103,11 +114,13 @@ export class collectionController {
     @Body() updateCollectionDto: UpdateCollectionDto,
     @Res() res: FastifyReply,
   ) {
-    const collection = await this.collectionService.updateCollection(
+    await this.collectionService.updateCollection(
       collectionId,
       updateCollectionDto,
       workspaceId,
     );
+
+    const collection = await this.collectionService.getCollection(collectionId);
     await this.workSpaceService.updateCollectionInWorkSpace(
       workspaceId,
       collectionId,
@@ -121,6 +134,10 @@ export class collectionController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
   @Delete(":collectionId/workspace/:workspaceId")
+  @ApiOperation({
+    summary: "Delete a Collections",
+    description: "This will delete a collection",
+  })
   @ApiResponse({ status: 201, description: "Removed Collection Successfully" })
   @ApiResponse({ status: 400, description: "Failed to remove Collection" })
   async deleteCollection(
@@ -128,28 +145,28 @@ export class collectionController {
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const collection = await this.collectionService.deleteCollection(
-        collectionId,
-        workspaceId,
-      );
+    const collection = await this.collectionService.deleteCollection(
+      collectionId,
+      workspaceId,
+    );
 
-      await this.workSpaceService.deleteCollectionInWorkSpace(
-        workspaceId.toString(),
-        collectionId,
-      );
-      const responseData = new ApiResponseService(
-        "Collection Removed",
-        HttpStatusCode.OK,
-        collection,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.workSpaceService.deleteCollectionInWorkSpace(
+      workspaceId.toString(),
+      collectionId,
+    );
+    const responseData = new ApiResponseService(
+      "Collection Removed",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":collectionId/workspace/:workspaceId/folder")
+  @ApiOperation({
+    summary: "Add a Folder",
+    description: "This will add a folder inside collection",
+  })
   @ApiResponse({ status: 200, description: "Request saved Successfully" })
   @ApiResponse({ status: 400, description: "Failed to save request" })
   async addFolder(
@@ -158,24 +175,25 @@ export class collectionController {
     @Body() body: FolderPayload,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const response = await this.collectionRequestService.addFolder({
-        collectionId,
-        workspaceId,
-        ...body,
-      });
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.CREATED,
-        response,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.collectionRequestService.addFolder({
+      collectionId,
+      workspaceId,
+      ...body,
+    });
+    const collection = await this.collectionService.getCollection(collectionId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.CREATED,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put(":collectionId/workspace/:workspaceId/folder/:folderId")
+  @ApiOperation({
+    summary: "Update a Folder",
+    description: "This will update a Folder from a Collection",
+  })
   @ApiResponse({ status: 200, description: "Request saved Successfully" })
   @ApiResponse({ status: 400, description: "Failed to save request" })
   async updateFolder(
@@ -185,25 +203,26 @@ export class collectionController {
     @Body() body: FolderPayload,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const response = await this.collectionRequestService.updateFolder({
-        collectionId,
-        workspaceId,
-        folderId,
-        ...body,
-      });
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        response,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.collectionRequestService.updateFolder({
+      collectionId,
+      workspaceId,
+      folderId,
+      ...body,
+    });
+    const collection = await this.collectionService.getCollection(collectionId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":collectionId/workspace/:workspaceId/folder/:folderId")
+  @ApiOperation({
+    summary: "Delete a Folder",
+    description: "This will delete a folder from a collection",
+  })
   @ApiResponse({ status: 200, description: "Request saved Successfully" })
   @ApiResponse({ status: 400, description: "Failed to save request" })
   async deleteFolder(
@@ -212,60 +231,59 @@ export class collectionController {
     @Param("folderId") folderId: string,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const response = await this.collectionRequestService.deleteFolder({
-        collectionId,
-        workspaceId,
-        folderId,
-      });
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        response,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const response = await this.collectionRequestService.deleteFolder({
+      collectionId,
+      workspaceId,
+      folderId,
+    });
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      response,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post("request")
+  @ApiOperation({
+    summary: "Add A Request",
+    description:
+      "This will add a request which will be individual request or  folder based request in collection",
+  })
   @ApiResponse({ status: 200, description: "Request Updated Successfully" })
   @ApiResponse({ status: 400, description: "Failed to Update a request" })
   async addRequest(
     @Body() requestDto: CollectionRequestDto,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const collectionId = requestDto.collectionId;
-      const workspaceId = requestDto.workspaceId;
-      const user = await this.contextService.get("user");
-      await this.collectionRequestService.checkPermission(
-        workspaceId,
-        user._id,
-      );
-      const noOfRequests = await this.collectionRequestService.getNoOfRequest(
-        collectionId,
-      );
-      const collection = await this.collectionRequestService.addRequest(
-        collectionId,
-        requestDto,
-        noOfRequests,
-        user.name,
-      );
-
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        collection,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const collectionId = requestDto.collectionId;
+    const workspaceId = requestDto.workspaceId;
+    const user = await this.contextService.get("user");
+    await this.collectionRequestService.checkPermission(workspaceId, user._id);
+    const noOfRequests = await this.collectionRequestService.getNoOfRequest(
+      collectionId,
+    );
+    await this.collectionRequestService.addRequest(
+      collectionId,
+      requestDto,
+      noOfRequests,
+      user.name,
+    );
+    const collection = await this.collectionService.getCollection(collectionId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put("request/:requestId")
+  @ApiOperation({
+    summary: "Update A Request",
+    description:
+      "This will update a request which will be individual request or  folder based request in collection",
+  })
   @ApiResponse({ status: 200, description: "Request saved Successfully" })
   @ApiResponse({ status: 400, description: "Failed to save request" })
   async updateRequest(
@@ -273,32 +291,31 @@ export class collectionController {
     @Body() requestDto: CollectionRequestDto,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const collectionId = requestDto.collectionId;
-      const workspaceId = requestDto.workspaceId;
-      const user = await this.contextService.get("user");
-      await this.collectionRequestService.checkPermission(
-        workspaceId,
-        user._id,
-      );
-      const collection = await this.collectionRequestService.updateRequest(
-        collectionId,
-        requestId,
-        requestDto,
-      );
+    const collectionId = requestDto.collectionId;
+    const workspaceId = requestDto.workspaceId;
+    const user = await this.contextService.get("user");
+    await this.collectionRequestService.checkPermission(workspaceId, user._id);
+    await this.collectionRequestService.updateRequest(
+      collectionId,
+      requestId,
+      requestDto,
+    );
+    const collection = await this.collectionService.getCollection(collectionId);
 
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        collection,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete("request/:requestId")
+  @ApiOperation({
+    summary: "Delete A Request",
+    description:
+      "This will delete a request which will be individual request or  folder based request in collection",
+  })
   @ApiResponse({ status: 200, description: "Request Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Failed to delete request" })
   async deleteRequest(
@@ -306,32 +323,26 @@ export class collectionController {
     @Body() requestDto: CollectionRequestDto,
     @Res() res: FastifyReply,
   ) {
-    try {
-      const collectionId = requestDto.collectionId;
-      const workspaceId = requestDto.workspaceId;
-      const user = await this.contextService.get("user");
-      await this.collectionRequestService.checkPermission(
-        workspaceId,
-        user._id,
-      );
-      const noOfRequests = await this.collectionRequestService.getNoOfRequest(
-        collectionId,
-      );
-      const collection = await this.collectionRequestService.deleteRequest(
-        collectionId,
-        requestId,
-        noOfRequests,
-        requestDto.folderId,
-      );
+    const collectionId = requestDto.collectionId;
+    const workspaceId = requestDto.workspaceId;
+    const user = await this.contextService.get("user");
+    await this.collectionRequestService.checkPermission(workspaceId, user._id);
+    const noOfRequests = await this.collectionRequestService.getNoOfRequest(
+      collectionId,
+    );
+    await this.collectionRequestService.deleteRequest(
+      collectionId,
+      requestId,
+      noOfRequests,
+      requestDto.folderId,
+    );
+    const collection = await this.collectionService.getCollection(collectionId);
 
-      const responseData = new ApiResponseService(
-        "Success",
-        HttpStatusCode.OK,
-        collection,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 }

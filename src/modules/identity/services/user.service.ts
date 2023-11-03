@@ -43,12 +43,8 @@ export class UserService {
    * @returns {Promise<IUser>} queried user data
    */
   async getUserById(id: string): Promise<WithId<User>> {
-    try {
-      const data = await this.userRepository.getUserById(id);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.userRepository.getUserById(id);
+    return data;
   }
 
   /**
@@ -85,30 +81,26 @@ export class UserService {
         "The account with the provided email currently exists. Please choose another one.",
       );
     }
-    try {
-      const createdUser = await this.userRepository.createUser(payload);
+    const createdUser = await this.userRepository.createUser(payload);
 
-      const tokenPromises = [
-        this.authService.createToken(createdUser.insertedId),
-        this.authService.createRefreshToken(createdUser.insertedId),
-      ];
-      const [accessToken, refreshToken] = await Promise.all(tokenPromises);
-      const data = {
-        accessToken,
-        refreshToken,
-      };
-      const workspaceObj = {
-        name: this.configService.get("app.defaultWorkspaceName"),
-        type: WorkspaceType.PERSONAL,
-      };
-      await this.azureBusService.sendMessage(
-        TOPIC.CREATE_USER_TOPIC,
-        workspaceObj,
-      );
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const tokenPromises = [
+      this.authService.createToken(createdUser.insertedId),
+      this.authService.createRefreshToken(createdUser.insertedId),
+    ];
+    const [accessToken, refreshToken] = await Promise.all(tokenPromises);
+    const data = {
+      accessToken,
+      refreshToken,
+    };
+    const workspaceObj = {
+      name: this.configService.get("app.defaultWorkspaceName"),
+      type: WorkspaceType.PERSONAL,
+    };
+    await this.azureBusService.sendMessage(
+      TOPIC.CREATE_USER_TOPIC,
+      workspaceObj,
+    );
+    return data;
   }
 
   /**
@@ -121,12 +113,8 @@ export class UserService {
     userId: string,
     payload: UpdateUserDto,
   ): Promise<WithId<User>> {
-    try {
-      const data = await this.userRepository.updateUser(userId, payload);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data = await this.userRepository.updateUser(userId, payload);
+    return data;
   }
 
   /**
@@ -135,113 +123,85 @@ export class UserService {
    * @returns {Promise<IGenericMessageBody>}
    */
   async deleteUser(userId: string) {
-    try {
-      const data: any = await this.userRepository.deleteUser(userId);
-      return data;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const data: any = await this.userRepository.deleteUser(userId);
+    return data;
   }
   async sendVerificationEmail(
     resetPasswordDto: ResetPasswordPayload,
   ): Promise<void> {
-    try {
-      const transporter = nodemailer.createTransport({
-        service: EmailServiceProvider.GMAIL,
-        auth: {
-          user: this.configService.get("app.email"),
-          pass: this.configService.get("app.password"),
-        },
-      });
-      const verificationCode = this.generateEmailVerificationCode();
-      const handlebarOptions = {
-        //view engine contains default and partial templates
-        viewEngine: {
-          defaultLayout: "",
-        },
-        viewPath: path.resolve(__dirname, "..", "..", "views"),
-      };
-      transporter.use("compile", hbs(handlebarOptions));
-      const mailOptions = {
-        from: this.configService.get("app.email"),
-        to: resetPasswordDto.email,
-        text: "Sparrow Password Reset",
-        template: "verifyEmail",
-        context: {
-          name: resetPasswordDto.name,
-          verificationCode,
-        },
-        subject: `Reset Your Sparrow Account Password`,
-      };
-      const promise = [
-        transporter.sendMail(mailOptions),
-        this.userRepository.updateVerificationCode(
-          resetPasswordDto.email,
-          verificationCode,
-        ),
-      ];
-      await Promise.all(promise);
-    } catch (error) {
-      console.log(`Nodemailer error sending email to`, error);
-    }
+    const transporter = nodemailer.createTransport({
+      service: EmailServiceProvider.GMAIL,
+      auth: {
+        user: this.configService.get("app.email"),
+        pass: this.configService.get("app.password"),
+      },
+    });
+    const verificationCode = this.generateEmailVerificationCode();
+    const handlebarOptions = {
+      //view engine contains default and partial templates
+      viewEngine: {
+        defaultLayout: "",
+      },
+      viewPath: path.resolve(__dirname, "..", "..", "views"),
+    };
+    transporter.use("compile", hbs(handlebarOptions));
+    const mailOptions = {
+      from: this.configService.get("app.email"),
+      to: resetPasswordDto.email,
+      text: "Sparrow Password Reset",
+      template: "verifyEmail",
+      context: {
+        name: resetPasswordDto.name,
+        verificationCode,
+      },
+      subject: `Reset Your Sparrow Account Password`,
+    };
+    const promise = [
+      transporter.sendMail(mailOptions),
+      this.userRepository.updateVerificationCode(
+        resetPasswordDto.email,
+        verificationCode,
+      ),
+    ];
+    await Promise.all(promise);
   }
 
   async logoutUser(userId: string, refreshToken: string): Promise<void> {
-    try {
-      const user = await this.userRepository.findUserByUserId(
-        new ObjectId(userId),
-      );
-      const hashrefreshToken = user.refresh_tokens.filter((token) => {
-        if (createHmac("sha256", refreshToken).digest("hex") === token) {
-          return token;
-        }
-      });
-      if (!hashrefreshToken) {
-        throw new BadRequestException();
+    const user = await this.userRepository.findUserByUserId(
+      new ObjectId(userId),
+    );
+    const hashrefreshToken = user.refresh_tokens.filter((token) => {
+      if (createHmac("sha256", refreshToken).digest("hex") === token) {
+        return token;
       }
-      await this.userRepository.deleteRefreshToken(userId, hashrefreshToken[0]);
-      return;
-    } catch (error) {
-      throw new BadRequestException(error);
+    });
+    if (!hashrefreshToken) {
+      throw new BadRequestException();
     }
+    await this.userRepository.deleteRefreshToken(userId, hashrefreshToken[0]);
+    return;
   }
   async createGoogleAuthUser(
     oauthId: string,
     name: string,
     email: string,
   ): Promise<InsertOneResult> {
-    try {
-      return await this.userRepository.createGoogleAuthUser(
-        oauthId,
-        name,
-        email,
-      );
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    return await this.userRepository.createGoogleAuthUser(oauthId, name, email);
   }
 
   async verifyVerificationCode(
     email: string,
     verificationCode: string,
   ): Promise<void> {
-    try {
-      const user = await this.getUserByEmail(email);
-      if (user.verificationCode !== verificationCode) {
-        throw new UnauthorizedException(ErrorMessages.Unauthorized);
-      }
-      return;
-    } catch (error) {
-      throw new BadRequestException(error);
+    const user = await this.getUserByEmail(email);
+    if (user.verificationCode !== verificationCode) {
+      throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
+    return;
   }
   async updatePassword(email: string, password: string): Promise<void> {
-    try {
-      await this.userRepository.updatePassword(email, password);
-      return;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.userRepository.updatePassword(email, password);
+    return;
   }
   generateEmailVerificationCode(): string {
     return (Math.random() + 1).toString(36).substring(2, 8);

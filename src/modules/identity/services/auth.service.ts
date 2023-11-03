@@ -166,42 +166,36 @@ export class AuthService {
     userId: string,
     refreshToken: string,
   ): Promise<Record<string, ITokenReturnBody>> {
-    try {
-      const _id = new ObjectId(userId);
-      const user = await this.db
-        .collection<User>(Collections.USER)
-        .findOne({ _id });
+    const _id = new ObjectId(userId);
+    const user = await this.db
+      .collection<User>(Collections.USER)
+      .findOne({ _id });
 
-      if (!user) {
-        throw new UnauthorizedException(ErrorMessages.Unauthorized);
-      }
-      const oldRefreshToken = user.refresh_tokens.filter((token) => {
-        if (createHmac("sha256", refreshToken).digest("hex") === token) {
-          return token;
-        }
-      });
-      if (!oldRefreshToken) {
-        throw new ForbiddenException("Access Denied");
-      }
-      const tokenPromises = [
-        this.createToken(user._id),
-        this.createRefreshToken(user._id),
-      ];
-      const [newAccessToken, newRefreshToken] = await Promise.all(
-        tokenPromises,
-      );
-
-      await this.userReposistory.deleteRefreshToken(
-        user._id.toString(),
-        oldRefreshToken[0],
-      );
-      return {
-        newAccessToken,
-        newRefreshToken,
-      };
-    } catch (error) {
+    if (!user) {
       throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
+    const oldRefreshToken = user.refresh_tokens.filter((token) => {
+      if (createHmac("sha256", refreshToken).digest("hex") === token) {
+        return token;
+      }
+    });
+    if (!oldRefreshToken) {
+      throw new ForbiddenException("Access Denied");
+    }
+    const tokenPromises = [
+      this.createToken(user._id),
+      this.createRefreshToken(user._id),
+    ];
+    const [newAccessToken, newRefreshToken] = await Promise.all(tokenPromises);
+
+    await this.userReposistory.deleteRefreshToken(
+      user._id.toString(),
+      oldRefreshToken[0],
+    );
+    return {
+      newAccessToken,
+      newRefreshToken,
+    };
   }
 
   async checkRefreshTokenSize(user: User): Promise<void> {
