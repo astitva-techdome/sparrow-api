@@ -97,7 +97,7 @@ export class UserService {
       type: WorkspaceType.PERSONAL,
     };
     await this.azureBusService.sendMessage(
-      TOPIC.USER_CREATED_TOPIC,
+      TOPIC.CREATE_USER_TOPIC,
       workspaceObj,
     );
     return data;

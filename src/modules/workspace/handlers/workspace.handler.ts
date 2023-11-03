@@ -17,7 +17,7 @@ export class WorkspaceHandler {
     this.sbClient = new ServiceBusClient(
       this.configService.get("azure.connectionString"),
     );
-    this.subscribe(TOPIC.USER_CREATED_TOPIC);
+    this.subscribe(TOPIC.CREATE_USER_TOPIC);
   }
   workspaceMessageSuccess = async (data: any) => {
     await this.workspaceService.create(data);
@@ -28,7 +28,7 @@ export class WorkspaceHandler {
   async subscribe(topicName: string) {
     await this.azureBusService.receiveSubscriber(
       topicName,
-      SUBSCRIPTION.USER_CREATED_SUBSCRIPTION,
+      SUBSCRIPTION.CREATE_USER_SUBSCRIPTION,
       this.workspaceMessageSuccess,
       this.workspaceMessageFailure,
     );
