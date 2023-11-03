@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { PermissionRepository } from "../repositories/permission.repository";
 import {
-  CreateOrUpdatePermissionDto,
+  CreatePermissionDto,
   PermissionDto,
 } from "../payloads/permission.payload";
 import { ObjectId, WithId } from "mongodb";
@@ -84,7 +84,7 @@ export class PermissionService {
    * @param {CreateOrUpdatePermissionDto} permissionData
    * @returns {Promise<InsertOneWriteOpResult<Permission>>} result of the insert operation
    */
-  async create(permissionData: CreateOrUpdatePermissionDto) {
+  async create(permissionData: CreatePermissionDto) {
     try {
       const currentUserId = this.contextService.get("user")._id;
       new ObjectId(permissionData.userId);
@@ -96,7 +96,7 @@ export class PermissionService {
       await this.userHasPermission(userPermissions, currentUserId);
       if (workspaceData.owner.type === WorkspaceType.PERSONAL) {
         throw new BadRequestException(
-          "You cannot add memebers in Personal Workspace.",
+          "You cannot add members in Personal Workspace.",
         );
       }
       workspaceData.permissions.push({
@@ -240,7 +240,7 @@ export class PermissionService {
     await Promise.all(workspaceDataPromises);
   }
 
-  async updatePermissionInWorkspace(payload: CreateOrUpdatePermissionDto) {
+  async updatePermissionInWorkspace(payload: CreatePermissionDto) {
     try {
       await this.isWorkspaceAdmin(new ObjectId(payload.workspaceId));
       const workspaceData = await this.workspaceRepository.findWorkspaceById(

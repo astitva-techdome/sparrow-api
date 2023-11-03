@@ -10,7 +10,12 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import {
   CreateCollectionDto,
   UpdateCollectionDto,
@@ -42,6 +47,11 @@ export class collectionController {
   ) {}
 
   @Post()
+  @ApiOperation({
+    summary: "Create A Collection",
+    description:
+      "This will create a collection and add this collection in user's workspace",
+  })
   @ApiResponse({ status: 201, description: "Collection Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Collection Failed" })
   async createCollection(
@@ -65,11 +75,15 @@ export class collectionController {
       );
       res.status(responseData.httpStatusCode).send(responseData);
     } catch (error) {
-      throw new BadRequestException(error);
+      throw error;
     }
   }
 
   @Get(":workspaceId")
+  @ApiOperation({
+    summary: "Get All Collections",
+    description: "This will get all collection of a workspace",
+  })
   @ApiResponse({
     status: 200,
     description: "Fetch Collection Request Received",
@@ -95,6 +109,10 @@ export class collectionController {
   }
 
   @Put(":collectionId/workspace/:workspaceId")
+  @ApiOperation({
+    summary: "Update A  Collections",
+    description: "This will update a collection ",
+  })
   @ApiResponse({ status: 200, description: "Collection Updated Successfully" })
   @ApiResponse({ status: 400, description: "Update Collection Failed" })
   async updateCollection(
@@ -121,6 +139,10 @@ export class collectionController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
   @Delete(":collectionId/workspace/:workspaceId")
+  @ApiOperation({
+    summary: "Delete a Collections",
+    description: "This will delete a collection",
+  })
   @ApiResponse({ status: 201, description: "Removed Collection Successfully" })
   @ApiResponse({ status: 400, description: "Failed to remove Collection" })
   async deleteCollection(
@@ -150,6 +172,10 @@ export class collectionController {
   }
 
   @Post(":collectionId/workspace/:workspaceId/folder")
+  @ApiOperation({
+    summary: "Add a Folder",
+    description: "This will add a folder inside collection",
+  })
   @ApiResponse({ status: 200, description: "Request saved Successfully" })
   @ApiResponse({ status: 400, description: "Failed to save request" })
   async addFolder(
@@ -176,6 +202,10 @@ export class collectionController {
   }
 
   @Put(":collectionId/workspace/:workspaceId/folder/:folderId")
+  @ApiOperation({
+    summary: "Update a Folder",
+    description: "This will update a Folder from a Collection",
+  })
   @ApiResponse({ status: 200, description: "Request saved Successfully" })
   @ApiResponse({ status: 400, description: "Failed to save request" })
   async updateFolder(
@@ -204,6 +234,10 @@ export class collectionController {
   }
 
   @Delete(":collectionId/workspace/:workspaceId/folder/:folderId")
+  @ApiOperation({
+    summary: "Delete a Folder",
+    description: "This will delete a folder from a collection",
+  })
   @ApiResponse({ status: 200, description: "Request saved Successfully" })
   @ApiResponse({ status: 400, description: "Failed to save request" })
   async deleteFolder(
@@ -230,6 +264,11 @@ export class collectionController {
   }
 
   @Post("request")
+  @ApiOperation({
+    summary: "Add A Request",
+    description:
+      "This will add a request which will be individual request or  folder based request in collection",
+  })
   @ApiResponse({ status: 200, description: "Request Updated Successfully" })
   @ApiResponse({ status: 400, description: "Failed to Update a request" })
   async addRequest(
@@ -266,6 +305,11 @@ export class collectionController {
   }
 
   @Put("request/:requestId")
+  @ApiOperation({
+    summary: "Update A Request",
+    description:
+      "This will update a request which will be individual request or  folder based request in collection",
+  })
   @ApiResponse({ status: 200, description: "Request saved Successfully" })
   @ApiResponse({ status: 400, description: "Failed to save request" })
   async updateRequest(
@@ -299,6 +343,11 @@ export class collectionController {
   }
 
   @Delete("request/:requestId")
+  @ApiOperation({
+    summary: "Delete A Request",
+    description:
+      "This will delete a request which will be individual request or  folder based request in collection",
+  })
   @ApiResponse({ status: 200, description: "Request Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Failed to delete request" })
   async deleteRequest(

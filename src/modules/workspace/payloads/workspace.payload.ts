@@ -12,9 +12,7 @@ import {
 import { PermissionDto } from "./permission.payload";
 
 export class CreateOrUpdateWorkspaceDto {
-  @ApiProperty({
-    example: "64f878a0293b1e4415866493",
-  })
+  @ApiProperty({ example: "64f878a0293b1e4415866493" })
   @IsMongoId()
   @IsOptional()
   id?: string;

@@ -11,7 +11,12 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { UserService } from "../services/user.service";
 import { RegisterPayload } from "../payloads/register.payload";
 import { UpdateUserDto } from "../payloads/user.payload";
@@ -37,6 +42,10 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @ApiOperation({
+    summary: "Create a User",
+    description: "Register and Create a new User",
+  })
   @ApiResponse({ status: 201, description: "Registration Completed" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
@@ -55,6 +64,10 @@ export class UserController {
   }
 
   @Get(":userId")
+  @ApiOperation({
+    summary: "Retrieve  User",
+    description: "This will return  information about a specific user",
+  })
   @UseGuards(JwtAuthGuard, BlacklistGuard)
   async getUser(@Param("userId") id: string, @Res() res: FastifyReply) {
     try {
@@ -71,6 +84,10 @@ export class UserController {
   }
 
   @Put(":userId")
+  @ApiOperation({
+    summary: "Update a User",
+    description: "This will update User Data",
+  })
   @UseGuards(JwtAuthGuard)
   async updateUser(
     @Param("userId") id: string,
@@ -91,6 +108,10 @@ export class UserController {
   }
 
   @Delete(":userId")
+  @ApiOperation({
+    summary: "Delete User Account",
+    description: "This will delete a User Account",
+  })
   @UseGuards(JwtAuthGuard)
   async deleteUser(@Param("userId") id: string, @Res() res: FastifyReply) {
     try {
@@ -106,6 +127,11 @@ export class UserController {
     }
   }
   @Post("send-verification-email")
+  @ApiOperation({
+    summary: "Send a Verification Email",
+    description:
+      "Sending a Verification Email containing a Reset Password Verification Code.",
+  })
   @UseGuards(JwtAuthGuard)
   async sendVerificationEmail(
     @Body() resetPasswordDto: ResetPasswordPayload,
@@ -123,6 +149,11 @@ export class UserController {
     }
   }
   @Get("logout")
+  @ApiOperation({
+    summary: "Logout User",
+    description:
+      "This will logout the user and delete RefreshToken(send RefreshToken for logout)",
+  })
   @UseGuards(RefreshTokenGuard)
   @ApiResponse({ status: 200, description: "Logout Successfull" })
   @ApiResponse({ status: 400, description: "Bad Request" })
@@ -145,6 +176,11 @@ export class UserController {
   }
 
   @Post("verify-email")
+  @ApiOperation({
+    summary: "Verify Reset Password Verification Code",
+    description:
+      "Verify the validity of a verification code sent for resetting the password.",
+  })
   @ApiResponse({ status: 200, description: "Email Verified" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   async verifyEmail(
@@ -166,6 +202,10 @@ export class UserController {
     }
   }
   @Post("change-password")
+  @ApiOperation({
+    summary: "Update User Password",
+    description: "Allows a user to update their password",
+  })
   @ApiResponse({ status: 200, description: "Email Verified" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   async updatePassword(

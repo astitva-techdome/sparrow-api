@@ -11,7 +11,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { WorkspaceService } from "../services/workspace.service";
 import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
 import { BlacklistGuard } from "../../common/guards/blacklist.guard";
@@ -29,7 +34,10 @@ import * as yml from "js-yaml";
 import { ParserService } from "@src/modules/common/services/parser.service";
 import { CollectionService } from "../services/collection.service";
 import axios from "axios";
-import { ImportCollectionDto } from "../payloads/collection.payload";
+import {
+  ImportCollectionDto,
+  ImportJsonObjCollectionDto,
+} from "../payloads/collection.payload";
 import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 import { ObjectId } from "mongodb";
 
@@ -49,6 +57,10 @@ export class WorkSpaceController {
   ) {}
 
   @Post()
+  @ApiOperation({
+    summary: "Create a new User Workspace",
+    description: "This will create a new Workspace for User",
+  })
   @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Workspace Failed" })
   async createWorkspace(
@@ -69,6 +81,10 @@ export class WorkSpaceController {
   }
 
   @Get(":workspaceId")
+  @ApiOperation({
+    summary: "Retrieve a Workspace",
+    description: "This will retrieve a workspace",
+  })
   @ApiResponse({ status: 200, description: "Fetch Workspace Request Received" })
   @ApiResponse({ status: 400, description: "Fetch Workspace Request Failed" })
   async getWorkspace(
@@ -88,6 +104,10 @@ export class WorkSpaceController {
     }
   }
   @Get("user/:userId")
+  @ApiOperation({
+    summary: "Retreive all User's Workspaces",
+    description: "This will retrieve all User's Wprkspaces",
+  })
   @ApiResponse({
     status: 200,
     description: "All Workspace Of User Received Successfully",
@@ -113,6 +133,10 @@ export class WorkSpaceController {
     }
   }
   @Get("team/:teamId")
+  @ApiOperation({
+    summary: "Retreive all Team's Workspaces",
+    description: "This will retrieve all Team's Workspaces",
+  })
   @ApiResponse({
     status: 200,
     description: "All Workspace Of Team Received Successfully",
@@ -138,6 +162,10 @@ export class WorkSpaceController {
     }
   }
   @Put(":workspaceId")
+  @ApiOperation({
+    summary: "Update a Workspace",
+    description: "This will update User's Workspace",
+  })
   @ApiResponse({ status: 200, description: "Workspace Updated Successfully" })
   @ApiResponse({ status: 400, description: "Update Workspace Failed" })
   async updateWorkspace(
@@ -162,6 +190,10 @@ export class WorkSpaceController {
   }
 
   @Delete(":workspaceId")
+  @ApiOperation({
+    summary: "Delete a Workspace",
+    description: "This will delete a  User's Workspace",
+  })
   @ApiResponse({ status: 200, description: "Workspace Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Workspace Failed" })
   async deleteWorkspace(
@@ -182,6 +214,10 @@ export class WorkSpaceController {
   }
 
   @Post(":workspaceId/user/:userId")
+  @ApiOperation({
+    summary: "Add a User in  Workspace",
+    description: "You can add another user to your Workspace",
+  })
   @ApiResponse({ status: 201, description: "User Added Successfully" })
   @ApiResponse({ status: 400, description: "Failed to Add User" })
   async addUserWorkspace(
@@ -209,6 +245,10 @@ export class WorkSpaceController {
   }
 
   @Delete(":workspaceId/user/:userId")
+  @ApiOperation({
+    summary: "Remove A User From Workspace",
+    description: "You can remove a another user from your Workspace",
+  })
   @ApiResponse({ status: 201, description: "Removed User Successfully" })
   @ApiResponse({ status: 400, description: "Failed to remove user" })
   async removerUserWorkspace(
@@ -235,6 +275,10 @@ export class WorkSpaceController {
   }
 
   @Post(":workspaceId/importFile/collection")
+  @ApiOperation({
+    summary: "Import a Collection From A File",
+    description: "You can import a collection from a json or ymal file",
+  })
   @UseInterceptors(FileInterceptor("file"))
   @ApiResponse({ status: 201, description: "Collection Import Successfull" })
   @ApiResponse({ status: 400, description: "Failed to Import  Collection" })
@@ -268,6 +312,10 @@ export class WorkSpaceController {
   }
 
   @Post(":workspaceId/importUrl/collection")
+  @ApiOperation({
+    summary: "Import a Collection from a url",
+    description: "You can import a collection from url",
+  })
   @ApiResponse({ status: 201, description: "Collection Import Successfull" })
   @ApiResponse({ status: 400, description: "Failed to Import  Collection" })
   async importCollections(
@@ -299,6 +347,10 @@ export class WorkSpaceController {
   }
 
   @Post(":workspaceId/importJson/collection")
+  @ApiOperation({
+    summary: "Import a Collection From A JsonObj",
+    description: "You can import a collection from jsonObj",
+  })
   @ApiResponse({
     status: 201,
     description: "Collection json Import Successfull",
@@ -307,10 +359,10 @@ export class WorkSpaceController {
   async importJsonCollection(
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
-    @Body() jsonObj: string,
+    @Body() jsonObjDto: ImportJsonObjCollectionDto,
   ) {
     try {
-      const collectionObj = await this.parserService.parse(jsonObj);
+      const collectionObj = await this.parserService.parse(jsonObjDto.jsonObj);
       await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
         id: new ObjectId(collectionObj.id),
         name: collectionObj.name,

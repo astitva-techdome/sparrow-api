@@ -9,7 +9,12 @@ import {
   Res,
 } from "@nestjs/common";
 import { ContextService } from "@src/modules/common/services/context.service";
-import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { AuthService } from "../services/auth.service";
 import { LoginPayload } from "../payloads/login.payload";
 import { UserRepository } from "../repositories/user.repository";
@@ -50,6 +55,10 @@ export class AuthController {
    * @param {LoginPayload} payload the login dto
    */
   @Post("login")
+  @ApiOperation({
+    summary: "User Login",
+    description: "Authenticate a User with their Credentials",
+  })
   @ApiResponse({ status: 201, description: "Login Completed" })
   @ApiResponse({ status: 400, description: "Bad Request" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
@@ -82,6 +91,11 @@ export class AuthController {
   }
 
   @Post("/refresh-token")
+  @ApiOperation({
+    summary: "Generate a new AccessToken with RefreshToken",
+    description:
+      "This will help us to Generate a new AccessToken and RefreshToken once AccessToken expires.(Send AccessToken)",
+  })
   @UseGuards(RefreshTokenGuard)
   @ApiBearerAuth()
   @ApiResponse({ status: 201, description: "Access Token Generated" })
@@ -111,11 +125,20 @@ export class AuthController {
 
   //initializes Google authentication
   @Get("google")
+  @ApiOperation({
+    summary: "Intializes Google Authentication",
+    description: "This will help us to authenticate user with  google",
+  })
   @UseGuards(GoogleOAuthGuard)
   async googlelogin() {}
 
   //google calls this after authentication
   @Get("google/callback")
+  @ApiOperation({
+    summary: "Google Callback",
+    description:
+      "This will help us to get User Details to create User after Google Authenciation",
+  })
   @UseGuards(GoogleOAuthGuard)
   async googleCallback(@Req() req: any, @Res() res: FastifyReply) {
     try {

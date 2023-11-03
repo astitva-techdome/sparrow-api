@@ -10,6 +10,7 @@ export class LoginPayload {
    */
   @ApiProperty({
     required: true,
+    example: "user@email.com",
   })
   @IsEmail()
   @IsNotEmpty()
@@ -20,6 +21,7 @@ export class LoginPayload {
    */
   @ApiProperty({
     required: true,
+    example: "userpassword",
   })
   @IsNotEmpty()
   @MinLength(8)

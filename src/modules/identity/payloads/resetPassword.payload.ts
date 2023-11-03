@@ -4,6 +4,7 @@ import { IsEmail, IsNotEmpty, MinLength } from "class-validator";
 export class ResetPasswordPayload {
   @ApiProperty({
     required: true,
+    example: "user@email.com",
   })
   @IsEmail()
   @IsNotEmpty()
@@ -11,6 +12,7 @@ export class ResetPasswordPayload {
 
   @ApiProperty({
     required: true,
+    example: "username",
   })
   @IsNotEmpty()
   name: string;
@@ -18,6 +20,7 @@ export class ResetPasswordPayload {
 
 export class VerifyEmailPayload {
   @ApiProperty({
+    example: "user@email.com",
     required: true,
   })
   @IsEmail()
@@ -25,6 +28,7 @@ export class VerifyEmailPayload {
   email: string;
   @ApiProperty({
     required: true,
+    example: "ABC123",
   })
   @MinLength(6)
   @IsNotEmpty()
@@ -33,12 +37,14 @@ export class VerifyEmailPayload {
 export class UpdatePasswordPayload {
   @ApiProperty({
     required: true,
+    example: "user@email.com",
   })
   @IsEmail()
   @IsNotEmpty()
   email: string;
   @ApiProperty({
     required: true,
+    example: "newPassword",
   })
   @MinLength(8)
   @IsNotEmpty()

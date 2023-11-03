@@ -9,25 +9,19 @@ import {
   IsOptional,
   IsString,
   Matches,
-  MinLength,
 } from "class-validator";
 
 export class UpdateUserDto {
   /**
    * Name field
    */
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+    example: "username",
+  })
   @Matches(/^[a-zA-Z ]+$/)
   @IsNotEmpty()
   name: string;
-
-  /**
-   * Password field
-   */
-  @ApiProperty()
-  @IsNotEmpty()
-  @MinLength(8)
-  password: string;
 }
 
 export class UserDto {

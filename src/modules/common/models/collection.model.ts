@@ -43,7 +43,14 @@ export class QueryParams {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 export class RequestBody {
-  @ApiProperty()
+  @ApiProperty({
+    enum: [
+      "application/json",
+      "application/xml",
+      "application/x-www-form-urlencoded",
+      "multipart/form-data",
+    ],
+  })
   @IsEnum(BodyModeEnum)
   @IsNotEmpty()
   type: BodyModeEnum;
@@ -73,16 +80,16 @@ export class Params {
 }
 
 export class RequestMetaData {
-  @ApiProperty()
+  @ApiProperty({ example: "put" })
   @IsNotEmpty()
   method: HTTPMethods;
 
-  @ApiProperty()
+  @ApiProperty({ example: "updatePet" })
   @IsString()
   @IsNotEmpty()
   operationId: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "/pet" })
   @IsString()
   @IsNotEmpty()
   url: string;
@@ -93,21 +100,42 @@ export class RequestMetaData {
   @IsOptional()
   body?: RequestBody[];
 
-  @ApiProperty({ type: [Params] })
+  @ApiProperty({
+    example: {
+      name: "search",
+      description: "The search term to filter results",
+      required: false,
+      schema: {},
+    },
+  })
   @IsArray()
   @Type(() => Params)
   @ValidateNested({ each: true })
   @IsOptional()
   queryParams?: Params[];
 
-  @ApiProperty({ type: [Params] })
+  @ApiProperty({
+    type: [Params],
+    example: {
+      name: "userID",
+      description: "The unique identifier of the user",
+      required: true,
+      schema: {},
+    },
+  })
   @IsArray()
   @Type(() => Params)
   @ValidateNested({ each: true })
   @IsOptional()
   pathParams?: Params[];
 
-  @ApiProperty({ type: [Params] })
+  @ApiProperty({
+    type: [Params],
+    example: {
+      name: "Authorization",
+      description: "Bearer token for authentication",
+    },
+  })
   @IsArray()
   @Type(() => Params)
   @ValidateNested({ each: true })
@@ -128,32 +156,42 @@ export class RequestMetaData {
 }
 
 export class CollectionItem {
-  @ApiProperty()
+  @ApiProperty({ example: "64f878a0293b1e4415866493" })
   @IsOptional()
   @IsString()
   id?: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "pet" })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: "Everything about your Pets" })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: ["FOLDER", "REQUEST"] })
   @IsEnum(ItemTypeEnum)
+  @IsString()
   @IsNotEmpty()
   type: ItemTypeEnum;
 
-  @ApiProperty()
+  @ApiProperty({ enum: ["SPEC", "USER"] })
   @IsEnum(SourceTypeEnum)
   @IsOptional()
+  @IsString()
   source?: SourceTypeEnum;
 
-  @ApiProperty({ type: [CollectionItem] })
+  @ApiProperty({
+    type: [CollectionItem],
+    example: {
+      name: "/pet",
+      description: "Update an existing pet by Id",
+      type: "REQUEST",
+      request: {},
+    },
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CollectionItem)
@@ -165,7 +203,6 @@ export class CollectionItem {
   @Type(() => RequestMetaData)
   request?: RequestMetaData;
 
-  @ApiProperty()
   @IsOptional()
   @IsBoolean()
   isDeleted?: boolean;

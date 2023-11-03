@@ -10,6 +10,7 @@ export class RegisterPayload {
    */
   @ApiProperty({
     required: true,
+    example: "user@email.com",
   })
   @IsEmail()
   @IsNotEmpty()
@@ -20,6 +21,7 @@ export class RegisterPayload {
    */
   @ApiProperty({
     required: true,
+    example: "username",
   })
   @Matches(/^[a-zA-Z ]+$/)
   @IsNotEmpty()
@@ -30,6 +32,7 @@ export class RegisterPayload {
    */
   @ApiProperty({
     required: true,
+    example: "userpassword",
   })
   @IsNotEmpty()
   @MinLength(8)

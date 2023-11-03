@@ -9,7 +9,12 @@ import {
   Res,
   BadRequestException,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { TeamService } from "../services/team.service";
 import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
 import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
@@ -32,6 +37,10 @@ export class TeamController {
   ) {}
 
   @Post()
+  @ApiOperation({
+    summary: "Create a new  Team",
+    description: "This will Create a  new Team",
+  })
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Team Failed" })
   async createTeam(
@@ -52,6 +61,10 @@ export class TeamController {
   }
 
   @Get(":teamId")
+  @ApiOperation({
+    summary: "Retrieve Team Details",
+    description: "This will retrieve team details",
+  })
   @ApiResponse({ status: 200, description: "Fetch Team Request Received" })
   @ApiResponse({ status: 400, description: "Fetch Team Request Failed" })
   async getTeam(@Param("teamId") teamId: string, @Res() res: FastifyReply) {
@@ -69,6 +82,10 @@ export class TeamController {
   }
 
   @Delete(":teamId")
+  @ApiOperation({
+    summary: "Delete a team",
+    description: "This will delete a team",
+  })
   @ApiResponse({ status: 200, description: "Team Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Team Failed" })
   async deleteTeam(@Param("teamId") teamId: string, @Res() res: FastifyReply) {
@@ -86,6 +103,10 @@ export class TeamController {
   }
 
   @Post(":teamId/user/:userId")
+  @ApiOperation({
+    summary: "Add A User in Team",
+    description: "This will add a user in your Team",
+  })
   @ApiResponse({ status: 201, description: "User Added Successfully" })
   @ApiResponse({ status: 400, description: "Failed to add user" })
   async addUserInTeam(
@@ -107,6 +128,10 @@ export class TeamController {
   }
 
   @Delete(":teamId/user/:userId")
+  @ApiOperation({
+    summary: "Remove A User From Team",
+    description: "This will remove a another user from Team",
+  })
   @ApiResponse({ status: 201, description: "User Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Failed to delete user" })
   async removeUserInTeam(
@@ -128,6 +153,10 @@ export class TeamController {
   }
 
   @Post(":teamId/owner/:userId")
+  @ApiOperation({
+    summary: "Add Another Owner For a Team",
+    description: "This will add another owner for a team",
+  })
   @ApiResponse({ status: 201, description: "Team Owner Added Successfully" })
   @ApiResponse({ status: 400, description: "Failed to add team owner" })
   async addTeamOwner(

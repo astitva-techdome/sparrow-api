@@ -101,9 +101,6 @@ export class UserRepository {
     payload: UpdateUserDto,
   ): Promise<WithId<User>> {
     const _id = new ObjectId(userId);
-    if (payload.password) {
-      payload.password = createHmac("sha256", payload.password).digest("hex");
-    }
     const updatedUser = await this.db
       .collection<User>(Collections.USER)
       .updateOne({ _id }, { $set: payload });
