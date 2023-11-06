@@ -74,5 +74,5 @@ export class EnvironmentVariables {
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  VALIDATIONCODE_EXPIRATION_TIME: number;
+  VALIDATION_CODE_EXPIRATION_TIME: number;
 }

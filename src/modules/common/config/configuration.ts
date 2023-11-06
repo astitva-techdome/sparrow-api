@@ -12,7 +12,7 @@ export default () => ({
     userBlacklistPrefix: "BL_",
     refreshTokenSecretKey: process.env.REFRESHTOKEN_SECRET_KEY,
     validationCodeExpirationTime: parseInt(
-      process.env.VALIDATIONCODE_EXPIRATION_TIME,
+      process.env.VALIDATION_CODE_EXPIRATION_TIME,
     ),
     refreshTokenExpirationTime: parseInt(
       process.env.REFRESHTOKEN_EXPIRATION_TIME,

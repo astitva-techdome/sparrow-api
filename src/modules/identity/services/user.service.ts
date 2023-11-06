@@ -204,7 +204,7 @@ export class UserService {
       (Date.now() - user.verificationCodeTimeStamp.getTime()) / 1000 >
       expireTime
     ) {
-      throw new UnauthorizedException(ErrorMessages.TokenExpiredError);
+      throw new UnauthorizedException(ErrorMessages.VerificationCodeExpired);
     }
     return;
   }

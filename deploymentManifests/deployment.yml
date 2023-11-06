@@ -128,7 +128,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key:  VALIDATIONCODE_EXPIRATION_TIME
+                key:  VALIDATION_CODE_EXPIRATION_TIME
                                                                              
 ---
 
