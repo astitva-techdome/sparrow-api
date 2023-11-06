@@ -213,6 +213,7 @@ export class UserRepository {
       {
         $set: {
           verificationCode,
+          verificationCodeTimeStamp: new Date(),
         },
       },
     );

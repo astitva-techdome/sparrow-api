@@ -197,6 +197,15 @@ export class UserService {
     if (user.verificationCode !== verificationCode) {
       throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
+    const expireTime = this.configService.get(
+      "app.validationCodeExpirationTime",
+    );
+    if (
+      (Date.now() - user.verificationCodeTimeStamp.getTime()) / 1000 >
+      expireTime
+    ) {
+      throw new UnauthorizedException(ErrorMessages.TokenExpiredError);
+    }
     return;
   }
   async updatePassword(email: string, password: string): Promise<void> {
