@@ -123,6 +123,7 @@ export class CollectionRequestService {
     request: CollectionRequestDto,
     noOfRequests: number,
     userName: string,
+    folderId?: string,
   ): Promise<UpdateResult<Collection>> {
     const uuid = uuidv4();
     const requestObj: CollectionItem = {
@@ -162,6 +163,7 @@ export class CollectionRequestService {
         collectionId,
         requestObj,
         noOfRequests,
+        folderId,
       );
       return collection;
     }

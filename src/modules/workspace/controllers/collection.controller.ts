@@ -268,6 +268,7 @@ export class collectionController {
       requestDto,
       noOfRequests,
       user.name,
+      requestDto?.folderId,
     );
     const collection = await this.collectionService.getCollection(collectionId);
     const responseData = new ApiResponseService(

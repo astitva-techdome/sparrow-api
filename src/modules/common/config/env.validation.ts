@@ -70,4 +70,9 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   GOOGLE_ACCESS_TYPE: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsNotEmpty()
+  VALIDATION_CODE_EXPIRATION_TIME: number;
 }

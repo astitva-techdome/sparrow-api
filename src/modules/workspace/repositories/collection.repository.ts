@@ -17,6 +17,7 @@ import {
   ItemTypeEnum,
 } from "@src/modules/common/models/collection.model";
 import { CollectionRequestDto } from "../payloads/collectionRequest.payload";
+import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 @Injectable()
 export class collectionRepository {
   constructor(
@@ -117,11 +118,12 @@ export class collectionRepository {
     collectionId: string,
     request: CollectionItem,
     noOfRequests: number,
+    folderId: string,
   ): Promise<UpdateResult<Collection>> {
     const _id = new ObjectId(collectionId);
     const collection = await this.getCollection(collectionId);
     const isFolderExists = collection.items.some((item) => {
-      return item.name === request.name;
+      return item.id === folderId;
     });
     if (isFolderExists) {
       return await this.db
@@ -136,17 +138,7 @@ export class collectionRepository {
           },
         );
     } else {
-      return await this.db
-        .collection<Collection>(Collections.COLLECTION)
-        .updateOne(
-          { _id },
-          {
-            $push: { items: request },
-            $set: {
-              totalRequests: noOfRequests + 1,
-            },
-          },
-        );
+      throw new BadRequestException(ErrorMessages.Unauthorized);
     }
   }
   async updateRequest(

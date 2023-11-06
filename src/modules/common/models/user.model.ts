@@ -66,6 +66,10 @@ export class User {
   @MaxLength(6)
   @IsOptional()
   verificationCode?: string;
+
+  @IsDate()
+  @IsOptional()
+  verificationCodeTimeStamp?: Date;
 }
 
 export class UserDto {
