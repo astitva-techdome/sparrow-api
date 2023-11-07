@@ -9,6 +9,7 @@ import { ObjectId, UpdateResult } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import {
   CollectionRequestDto,
+  CollectionRequestItem,
   DeleteFolderDto,
   FolderDto,
 } from "../payloads/collectionRequest.payload";
@@ -47,6 +48,10 @@ export class CollectionRequestService {
       source: SourceTypeEnum.USER,
       isDeleted: false,
       items: [],
+      createdBy: user.name,
+      updatedBy: user.name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
     collection.items.push(updatedFolder);
     await this.collectionReposistory.updateCollection(
@@ -56,7 +61,7 @@ export class CollectionRequestService {
     return updatedFolder;
   }
 
-  async updateFolder(payload: FolderDto): Promise<UpdateResult<Collection>> {
+  async updateFolder(payload: FolderDto): Promise<CollectionItem> {
     const user = await this.contextService.get("user");
     await this.checkPermission(payload.workspaceId, user._id);
     const collection = await this.collectionReposistory.getCollection(
@@ -69,11 +74,11 @@ export class CollectionRequestService {
     collection.items[index].name = payload.name;
     collection.items[index].description =
       payload.description ?? collection.items[index].description;
-    const data = await this.collectionReposistory.updateCollection(
+    await this.collectionReposistory.updateCollection(
       payload.collectionId,
       collection,
     );
-    return data;
+    return collection.items[index];
   }
 
   async deleteFolder(
@@ -124,7 +129,7 @@ export class CollectionRequestService {
     noOfRequests: number,
     userName: string,
     folderId?: string,
-  ): Promise<UpdateResult<Collection>> {
+  ): Promise<CollectionItem> {
     const uuid = uuidv4();
     const requestObj: CollectionItem = {
       id: uuid,
@@ -133,20 +138,19 @@ export class CollectionRequestService {
       description: request.items.description,
       source: SourceTypeEnum.USER,
       isDeleted: false,
-    };
-    const requestInfo = {
       createdBy: userName,
       updatedBy: userName,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     if (request.items.type === ItemTypeEnum.REQUEST) {
-      requestObj.request = { ...request.items.request, ...requestInfo };
-      return await this.collectionReposistory.addRequest(
+      requestObj.request = request.items.request;
+      await this.collectionReposistory.addRequest(
         collectionId,
         requestObj,
         noOfRequests,
       );
+      return requestObj;
     } else {
       requestObj.items = [
         {
@@ -154,18 +158,22 @@ export class CollectionRequestService {
           name: request.items.items.name,
           type: request.items.items.type,
           description: request.items.items.description,
-          request: { ...request.items.items.request, ...requestInfo },
+          request: { ...request.items.items.request },
           source: SourceTypeEnum.USER,
+          createdBy: userName,
+          updatedBy: userName,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       ];
 
-      const collection = await this.collectionReposistory.addRequestInFolder(
+      await this.collectionReposistory.addRequestInFolder(
         collectionId,
         requestObj,
         noOfRequests,
         folderId,
       );
-      return collection;
+      return requestObj.items[0];
     }
   }
 
@@ -173,7 +181,7 @@ export class CollectionRequestService {
     collectionId: string,
     requestId: string,
     request: CollectionRequestDto,
-  ): Promise<UpdateResult<Collection>> {
+  ): Promise<CollectionRequestItem> {
     return await this.collectionReposistory.updateRequest(
       collectionId,
       requestId,

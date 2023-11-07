@@ -141,18 +141,6 @@ export class RequestMetaData {
   @ValidateNested({ each: true })
   @IsOptional()
   headers?: Params[];
-
-  @IsDate()
-  createdAt: Date;
-
-  @IsDate()
-  updatedAt: Date;
-
-  @IsString()
-  createdBy: string;
-
-  @IsString()
-  updatedBy: string;
 }
 
 export class CollectionItem {
@@ -206,6 +194,18 @@ export class CollectionItem {
   @IsOptional()
   @IsBoolean()
   isDeleted?: boolean;
+
+  @IsDate()
+  createdAt: Date;
+
+  @IsDate()
+  updatedAt: Date;
+
+  @IsString()
+  createdBy: string;
+
+  @IsString()
+  updatedBy: string;
 }
 
 export class Collection {
