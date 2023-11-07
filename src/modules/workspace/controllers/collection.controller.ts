@@ -175,16 +175,15 @@ export class collectionController {
     @Body() body: FolderPayload,
     @Res() res: FastifyReply,
   ) {
-    await this.collectionRequestService.addFolder({
+    const newFolder = await this.collectionRequestService.addFolder({
       collectionId,
       workspaceId,
       ...body,
     });
-    const collection = await this.collectionService.getCollection(collectionId);
     const responseData = new ApiResponseService(
       "Success",
       HttpStatusCode.CREATED,
-      collection,
+      newFolder,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
@@ -203,17 +202,16 @@ export class collectionController {
     @Body() body: FolderPayload,
     @Res() res: FastifyReply,
   ) {
-    await this.collectionRequestService.updateFolder({
+    const updatedfolder = await this.collectionRequestService.updateFolder({
       collectionId,
       workspaceId,
       folderId,
       ...body,
     });
-    const collection = await this.collectionService.getCollection(collectionId);
     const responseData = new ApiResponseService(
       "Success",
       HttpStatusCode.OK,
-      collection,
+      updatedfolder,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
@@ -263,18 +261,17 @@ export class collectionController {
     const noOfRequests = await this.collectionRequestService.getNoOfRequest(
       collectionId,
     );
-    await this.collectionRequestService.addRequest(
+    const requestObj = await this.collectionRequestService.addRequest(
       collectionId,
       requestDto,
       noOfRequests,
       user.name,
       requestDto?.folderId,
     );
-    const collection = await this.collectionService.getCollection(collectionId);
     const responseData = new ApiResponseService(
       "Success",
       HttpStatusCode.OK,
-      collection,
+      requestObj,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
@@ -296,17 +293,16 @@ export class collectionController {
     const workspaceId = requestDto.workspaceId;
     const user = await this.contextService.get("user");
     await this.collectionRequestService.checkPermission(workspaceId, user._id);
-    await this.collectionRequestService.updateRequest(
+    const request = await this.collectionRequestService.updateRequest(
       collectionId,
       requestId,
       requestDto,
     );
-    const collection = await this.collectionService.getCollection(collectionId);
 
     const responseData = new ApiResponseService(
       "Success",
       HttpStatusCode.OK,
-      collection,
+      request,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }

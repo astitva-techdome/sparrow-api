@@ -133,6 +133,10 @@ export class ParserService {
         type: items[x].type,
         isDeleted: items[x].isDeleted,
         source: SourceTypeEnum.SPEC,
+        createdBy: user.name,
+        updatedBy: user.name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
       const innerArray: CollectionItem[] = [];
       for (let y = 0; y < items[x].items.length; y++) {

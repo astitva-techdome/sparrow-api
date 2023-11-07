@@ -16,7 +16,10 @@ import {
   CollectionItem,
   ItemTypeEnum,
 } from "@src/modules/common/models/collection.model";
-import { CollectionRequestDto } from "../payloads/collectionRequest.payload";
+import {
+  CollectionRequestDto,
+  CollectionRequestItem,
+} from "../payloads/collectionRequest.payload";
 import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 @Injectable()
 export class collectionRepository {
@@ -145,49 +148,45 @@ export class collectionRepository {
     collectionId: string,
     requestId: string,
     request: CollectionRequestDto,
-  ): Promise<UpdateResult<Collection>> {
+  ): Promise<CollectionRequestItem> {
     const _id = new ObjectId(collectionId);
     const defaultParams = {
       updatedAt: new Date(),
       updatedBy: this.contextService.get("user").name,
     };
-    request.items = {
-      ...request.items,
-      request: { ...request.items.request, ...defaultParams },
-    };
     if (request.items.type === ItemTypeEnum.REQUEST) {
-      return await this.db
-        .collection<Collection>(Collections.COLLECTION)
-        .updateOne(
-          { _id, "items.id": requestId },
-          {
-            $set: {
-              "items.$": request.items,
-              updatedAt: new Date(),
-              updatedBy: this.contextService.get("user").name,
-            },
+      request.items = { ...request.items, ...defaultParams };
+      await this.db.collection<Collection>(Collections.COLLECTION).updateOne(
+        { _id, "items.id": requestId },
+        {
+          $set: {
+            "items.$": request.items,
+            updatedAt: new Date(),
+            updatedBy: this.contextService.get("user").name,
           },
-        );
+        },
+      );
+      return { ...request.items, id: requestId };
     } else {
-      return await this.db
-        .collection<Collection>(Collections.COLLECTION)
-        .updateOne(
-          {
-            _id,
-            "items.id": request.folderId,
-            "items.items.id": requestId,
+      request.items.items = { ...request.items.items, ...defaultParams };
+      await this.db.collection<Collection>(Collections.COLLECTION).updateOne(
+        {
+          _id,
+          "items.id": request.folderId,
+          "items.items.id": requestId,
+        },
+        {
+          $set: {
+            "items.$[i].items.$[j]": request.items.items,
+            updatedAt: new Date(),
+            updatedBy: this.contextService.get("user").name,
           },
-          {
-            $set: {
-              "items.$[i].items.$[j]": request.items.items,
-              updatedAt: new Date(),
-              updatedBy: this.contextService.get("user").name,
-            },
-          },
-          {
-            arrayFilters: [{ "i.id": request.folderId }, { "j.id": requestId }],
-          },
-        );
+        },
+        {
+          arrayFilters: [{ "i.id": request.folderId }, { "j.id": requestId }],
+        },
+      );
+      return { ...request.items.items, id: requestId };
     }
   }
 
