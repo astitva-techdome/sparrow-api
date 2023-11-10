@@ -17,7 +17,10 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { WorkspaceService } from "../services/workspace.service";
-import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
+import {
+  CreateWorkspaceDto,
+  UpdateWorkspaceDto,
+} from "../payloads/workspace.payload";
 import { BlacklistGuard } from "../../common/guards/blacklist.guard";
 import { PermissionService } from "../services/permission.service";
 import { AddWorkspaceUserDto } from "../payloads/workspaceUser.payload";
@@ -63,7 +66,7 @@ export class WorkSpaceController {
   @ApiResponse({ status: 201, description: "Workspace Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Workspace Failed" })
   async createWorkspace(
-    @Body() createWorkspaceDto: CreateOrUpdateWorkspaceDto,
+    @Body() createWorkspaceDto: CreateWorkspaceDto,
     @Res() res: FastifyReply,
   ) {
     const data = await this.workspaceService.create(createWorkspaceDto);
@@ -157,7 +160,7 @@ export class WorkSpaceController {
   @ApiResponse({ status: 400, description: "Update Workspace Failed" })
   async updateWorkspace(
     @Param("workspaceId") workspaceId: string,
-    @Body() updateWorkspaceDto: CreateOrUpdateWorkspaceDto,
+    @Body() updateWorkspaceDto: UpdateWorkspaceDto,
     @Res() res: FastifyReply,
   ) {
     await this.workspaceService.update(workspaceId, updateWorkspaceDto);

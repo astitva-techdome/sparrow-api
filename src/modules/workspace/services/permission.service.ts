@@ -19,7 +19,7 @@ import { UserRepository } from "../../identity/repositories/user.repository";
 import { WorkspaceRepository } from "@src/modules/workspace/repositories/workspace.repository";
 import { TeamRepository } from "../../identity/repositories/team.repository";
 import {
-  CreateOrUpdateWorkspaceDto,
+  UpdateWorkspaceDto,
   WorkspaceDtoForIdDocument,
 } from "../payloads/workspace.payload";
 import { UserDto } from "@src/modules/common/models/user.model";
@@ -105,7 +105,7 @@ export class PermissionService {
     });
     const updatedWOrkspaceData = await this.workspaceRepository.update(
       workspaceId.toString(),
-      workspaceData as unknown as CreateOrUpdateWorkspaceDto,
+      workspaceData as unknown as UpdateWorkspaceDto,
     );
     const userData = await this.userRepository.findUserByUserId(
       new ObjectId(permissionData.userId),

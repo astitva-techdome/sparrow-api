@@ -10,7 +10,7 @@ import {
 import { Workspace } from "../../common/models/workspace.model";
 import { Collections } from "../../common/enum/database.collection.enum";
 import {
-  CreateOrUpdateWorkspaceDto,
+  UpdateWorkspaceDto,
   WorkspaceDtoForIdDocument,
 } from "../payloads/workspace.payload";
 import { ContextService } from "../../common/services/context.service";
@@ -90,7 +90,7 @@ export class WorkspaceRepository {
    * @param {Partial<Workspace>} updates
    * @returns {Promise<UpdateWriteOpResult>} result of the update operation
    */
-  update(id: string, updates: CreateOrUpdateWorkspaceDto) {
+  update(id: string, updates: UpdateWorkspaceDto) {
     const _id = new ObjectId(id);
     const defaultParams = {
       updatedAt: new Date(),

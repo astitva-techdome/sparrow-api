@@ -4,7 +4,10 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
-import { CreateOrUpdateWorkspaceDto } from "../payloads/workspace.payload";
+import {
+  CreateWorkspaceDto,
+  UpdateWorkspaceDto,
+} from "../payloads/workspace.payload";
 import {
   OwnerInformationDto,
   Workspace,
@@ -100,7 +103,7 @@ export class WorkspaceService {
    * @returns {Promise<InsertOneWriteOpResult<Workspace>>} result of the insert operation
    */
   async create(
-    workspaceData: CreateOrUpdateWorkspaceDto,
+    workspaceData: CreateWorkspaceDto,
   ): Promise<InsertOneResult<Document>> {
     const userId = this.contextService.get("user")._id;
     const teamId = new ObjectId(workspaceData.id);
@@ -171,7 +174,7 @@ export class WorkspaceService {
    */
   async update(
     id: string,
-    updates: CreateOrUpdateWorkspaceDto,
+    updates: UpdateWorkspaceDto,
   ): Promise<UpdateResult<Document>> {
     const data = await this.workspaceRepository.update(id, updates);
     return data;
