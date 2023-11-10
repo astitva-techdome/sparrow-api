@@ -11,7 +11,7 @@ import {
 } from "class-validator";
 import { PermissionDto } from "./permission.payload";
 
-export class CreateOrUpdateWorkspaceDto {
+export class WorkspaceDto {
   @ApiProperty({ example: "64f878a0293b1e4415866493" })
   @IsMongoId()
   @IsOptional()
@@ -23,13 +23,6 @@ export class CreateOrUpdateWorkspaceDto {
   @IsString()
   @IsNotEmpty()
   name: string;
-
-  @ApiProperty({
-    example: WorkspaceType.TEAM,
-  })
-  @IsEnum(WorkspaceType)
-  @IsNotEmpty()
-  type: WorkspaceType;
 
   @IsArray()
   @IsOptional()
@@ -52,6 +45,16 @@ export class CreateOrUpdateWorkspaceDto {
   createdBy?: string;
 }
 
+export class CreateWorkspaceDto extends WorkspaceDto {
+  @ApiProperty({
+    example: WorkspaceType.TEAM,
+  })
+  @IsEnum(WorkspaceType)
+  @IsNotEmpty()
+  type: WorkspaceType;
+}
+
+export class UpdateWorkspaceDto extends WorkspaceDto {}
 export class WorkspaceDtoForIdDocument {
   @IsMongoId()
   @IsOptional()
