@@ -129,7 +129,7 @@ spec:
               secretKeyRef:
                 name: sparrow-api-secret
                 key:  REDIS_DB
-          - name:  REDIS_DB
+          - name:  VALIDATION_CODE_EXPIRATION_TIME
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
