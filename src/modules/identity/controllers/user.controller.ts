@@ -115,7 +115,6 @@ export class UserController {
     description:
       "Sending a Verification Email containing a Reset Password Verification Code.",
   })
-  @UseGuards(JwtAuthGuard)
   async sendVerificationEmail(
     @Body() resetPasswordDto: ResetPasswordPayload,
     @Res() res: FastifyReply,

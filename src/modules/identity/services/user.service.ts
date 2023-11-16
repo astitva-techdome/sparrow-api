@@ -129,6 +129,10 @@ export class UserService {
   async sendVerificationEmail(
     resetPasswordDto: ResetPasswordPayload,
   ): Promise<void> {
+    const userDetails = await this.getUserByEmail(resetPasswordDto.email);
+    if (userDetails) {
+      throw new UnauthorizedException();
+    }
     const transporter = nodemailer.createTransport({
       service: EmailServiceProvider.GMAIL,
       auth: {
@@ -151,7 +155,7 @@ export class UserService {
       text: "Sparrow Password Reset",
       template: "verifyEmail",
       context: {
-        name: resetPasswordDto.name,
+        name: userDetails.name,
         verificationCode,
       },
       subject: `Reset Your Sparrow Account Password`,
