@@ -9,13 +9,6 @@ export class ResetPasswordPayload {
   @IsEmail()
   @IsNotEmpty()
   email: string;
-
-  @ApiProperty({
-    required: true,
-    example: "username",
-  })
-  @IsNotEmpty()
-  name: string;
 }
 
 export class VerifyEmailPayload {
