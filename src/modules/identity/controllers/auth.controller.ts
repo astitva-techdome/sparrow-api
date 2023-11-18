@@ -157,6 +157,9 @@ export class AuthController {
     res.header("accessToken", accessToken);
     res.header("refreshToken", refreshToken);
     const url = encodeURI(this.configService.get("oauth.google.redirectUrl"));
-    res.redirect(HttpStatusCode.MOVED_PERMANENTLY, url);
+    res.redirect(
+      HttpStatusCode.MOVED_PERMANENTLY,
+      `${url}?${accessToken.token}&${refreshToken.token}`,
+    );
   }
 }
