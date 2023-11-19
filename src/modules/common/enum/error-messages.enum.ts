@@ -4,4 +4,5 @@ export enum ErrorMessages {
   SystemUnauthorized = "UnauthorizedException",
   TokenExpiredError = "TokenExpiredError",
   VerificationCodeExpired = "Verification Code Expired",
+  BadRequestError = "Bad Request",
 }

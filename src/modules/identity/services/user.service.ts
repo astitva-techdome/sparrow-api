@@ -131,7 +131,7 @@ export class UserService {
   ): Promise<void> {
     const userDetails = await this.getUserByEmail(resetPasswordDto.email);
     if (userDetails) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(ErrorMessages.BadRequestError);
     }
     const transporter = nodemailer.createTransport({
       service: EmailServiceProvider.GMAIL,
