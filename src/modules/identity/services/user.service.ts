@@ -130,7 +130,7 @@ export class UserService {
     resetPasswordDto: ResetPasswordPayload,
   ): Promise<void> {
     const userDetails = await this.getUserByEmail(resetPasswordDto.email);
-    if (userDetails) {
+    if (!userDetails) {
       throw new UnauthorizedException(ErrorMessages.BadRequestError);
     }
     const transporter = nodemailer.createTransport({
