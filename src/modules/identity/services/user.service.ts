@@ -213,6 +213,11 @@ export class UserService {
     return;
   }
   async updatePassword(email: string, password: string): Promise<void> {
+    const user = await this.getUserByEmailAndPass(email, password);
+
+    if (user) {
+      throw new UnauthorizedException(ErrorMessages.PasswordExist);
+    }
     await this.userRepository.updatePassword(email, password);
     return;
   }
