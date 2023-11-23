@@ -10,6 +10,7 @@ import { ApiResponseService } from "./services/api-response.service";
 import { ParserService } from "./services/parser.service";
 import { LoggingExceptionsFilter } from "./exception/logging.exception-filter";
 import pino from "pino";
+import { KafkaService } from "./services/kafka/kafka.service";
 
 @Global()
 @Module({
@@ -53,6 +54,7 @@ import pino from "pino";
       ),
     },
     AzureBusService,
+    KafkaService,
     ContextService,
     RedisService,
     ApiResponseService,
@@ -66,6 +68,7 @@ import pino from "pino";
     ContextService,
     RedisService,
     AzureBusService,
+    KafkaService,
     ApiResponseService,
     ParserService,
     LoggingExceptionsFilter,
