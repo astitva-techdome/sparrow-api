@@ -5,4 +5,5 @@ export enum ErrorMessages {
   TokenExpiredError = "TokenExpiredError",
   VerificationCodeExpired = "Verification Code Expired",
   BadRequestError = "Bad Request",
+  PasswordExist = "Old Password and New Password cannot be same",
 }
