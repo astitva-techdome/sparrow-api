@@ -11,6 +11,8 @@ import { ParserService } from "./services/parser.service";
 import { LoggingExceptionsFilter } from "./exception/logging.exception-filter";
 import pino from "pino";
 import { KafkaService } from "./services/kafka/kafka.service";
+import { ProducerService } from "./services/kafka/producer.service";
+import { ConsumerService } from "./services/kafka/consumer.service";
 
 @Global()
 @Module({
@@ -60,6 +62,8 @@ import { KafkaService } from "./services/kafka/kafka.service";
     ApiResponseService,
     ParserService,
     LoggingExceptionsFilter,
+    ProducerService,
+    ConsumerService,
   ],
   exports: [
     "DATABASE_CONNECTION",
@@ -72,6 +76,8 @@ import { KafkaService } from "./services/kafka/kafka.service";
     ApiResponseService,
     ParserService,
     LoggingExceptionsFilter,
+    ProducerService,
+    ConsumerService,
   ],
 })
 export class CommonModule {}

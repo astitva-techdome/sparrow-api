@@ -1,36 +1,24 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 import { WorkspaceService } from "../services/workspace.service";
-import { ServiceBusClient } from "@azure/service-bus";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
-import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
-import { SUBSCRIPTION } from "@src/modules/common/enum/subscription.enum";
-import { ConfigService } from "@nestjs/config";
+import { ConsumerService } from "@src/modules/common/services/kafka/consumer.service";
 
 @Injectable()
-export class WorkspaceHandler {
-  private readonly sbClient: ServiceBusClient;
+export class WorkspaceHandler implements OnModuleInit {
   constructor(
     private readonly workspaceService: WorkspaceService,
-    private readonly azureBusService: AzureBusService,
-    private readonly configService: ConfigService,
-  ) {
-    this.sbClient = new ServiceBusClient(
-      this.configService.get("azure.connectionString"),
-    );
-    this.subscribe(TOPIC.CREATE_USER_TOPIC);
-  }
-  workspaceMessageSuccess = async (data: any) => {
-    await this.workspaceService.create(data);
-  };
-  workspaceMessageFailure = async (err: any) => {
-    throw new BadRequestException(err);
-  };
-  async subscribe(topicName: string) {
-    await this.azureBusService.receiveSubscriber(
-      topicName,
-      SUBSCRIPTION.CREATE_USER_SUBSCRIPTION,
-      this.workspaceMessageSuccess,
-      this.workspaceMessageFailure,
-    );
+    private readonly consumerService: ConsumerService,
+  ) {}
+
+  async onModuleInit() {
+    await this.consumerService.consume({
+      topic: { topic: TOPIC.CREATE_USER_TOPIC },
+      config: { groupId: "test-consumer" },
+      onMessage: async (message) => {
+        await this.workspaceService.create(
+          JSON.parse(message.value.toString()),
+        );
+      },
+    });
   }
 }
