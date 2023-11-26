@@ -9,7 +9,6 @@ import { RegisterPayload } from "../payloads/register.payload";
 import { ConfigService } from "@nestjs/config";
 import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
-import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import {
   EmailServiceProvider,
@@ -23,7 +22,6 @@ import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 import hbs = require("nodemailer-express-handlebars");
 import path from "path";
 import { ProducerService } from "@src/modules/common/services/kafka/producer.service";
-// import { KafkaService } from "@src/modules/common/services/kafka/kafka.service";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -36,7 +34,6 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
-    private readonly azureBusService: AzureBusService, // private readonly kafkaService: KafkaService,
     private readonly producerService: ProducerService,
   ) {}
 

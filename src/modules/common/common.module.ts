@@ -4,13 +4,11 @@ import { ContextService } from "./services/context.service";
 import { Redis } from "ioredis";
 import { ConfigService } from "@nestjs/config";
 import { RedisService } from "./services/redis.service";
-import { AzureBusService } from "./services/azureBus/azure-bus.service";
 import { WorkspaceModule } from "../workspace/workspace.module";
 import { ApiResponseService } from "./services/api-response.service";
 import { ParserService } from "./services/parser.service";
 import { LoggingExceptionsFilter } from "./exception/logging.exception-filter";
 import pino from "pino";
-import { KafkaService } from "./services/kafka/kafka.service";
 import { ProducerService } from "./services/kafka/producer.service";
 import { ConsumerService } from "./services/kafka/consumer.service";
 
@@ -55,8 +53,6 @@ import { ConsumerService } from "./services/kafka/consumer.service";
         }),
       ),
     },
-    AzureBusService,
-    KafkaService,
     ContextService,
     RedisService,
     ApiResponseService,
@@ -71,8 +67,6 @@ import { ConsumerService } from "./services/kafka/consumer.service";
     Redis,
     ContextService,
     RedisService,
-    AzureBusService,
-    KafkaService,
     ApiResponseService,
     ParserService,
     LoggingExceptionsFilter,

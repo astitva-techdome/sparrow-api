@@ -1,41 +1,29 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { ServiceBusClient } from "@azure/service-bus";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
-import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { SUBSCRIPTION } from "@src/modules/common/enum/subscription.enum";
-import { ConfigService } from "@nestjs/config";
 import { PermissionService } from "../services/permission.service";
+import { ConsumerService } from "@src/modules/common/services/kafka/consumer.service";
 
 @Injectable()
-export class PermissionHandler {
-  private readonly sbClient: ServiceBusClient;
+export class PermissionHandler implements OnModuleInit {
   constructor(
     private readonly permissionService: PermissionService,
-    private readonly azureBusService: AzureBusService,
-    private readonly configService: ConfigService,
-  ) {
-    this.sbClient = new ServiceBusClient(
-      this.configService.get("azure.connectionString"),
-    );
-    this.subscribe(TOPIC.USER_ADDED_TO_TEAM_TOPIC);
-  }
-  permissionMessageSuccess = async (data: any) => {
-    const permissionArray = data.teamWorkspaces;
-    const userId = data.userId;
-    await this.permissionService.addPermissionInWorkspace(
-      permissionArray,
-      userId,
-    );
-  };
-  permissionMessageFailure = async (err: any) => {
-    throw new BadRequestException(err);
-  };
-  async subscribe(topicName: string) {
-    await this.azureBusService.receiveSubscriber(
-      topicName,
-      SUBSCRIPTION.USER_ADDED_TO_TEAM_SUBSCRIPTION,
-      this.permissionMessageSuccess,
-      this.permissionMessageFailure,
-    );
+    private readonly consumerService: ConsumerService,
+  ) {}
+
+  async onModuleInit() {
+    await this.consumerService.consume({
+      topic: { topic: TOPIC.USER_ADDED_TO_TEAM_TOPIC },
+      config: { groupId: SUBSCRIPTION.USER_ADDED_TO_TEAM_SUBSCRIPTION },
+      onMessage: async (message) => {
+        const data = JSON.parse(message.value.toString());
+        const permissionArray = data.teamWorkspaces;
+        const userId = data.userId;
+        await this.permissionService.addPermissionInWorkspace(
+          permissionArray,
+          userId,
+        );
+      },
+    });
   }
 }
