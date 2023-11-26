@@ -170,7 +170,6 @@ export class UserService {
   }
 
   async logoutUser(userId: string, refreshToken: string): Promise<void> {
-    console.log("REFRESH ===> ", refreshToken);
     const user = await this.userRepository.findUserByUserId(
       new ObjectId(userId),
     );
