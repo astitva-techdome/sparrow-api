@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { BadRequestException, Injectable, OnModuleInit } from "@nestjs/common";
 import { WorkspaceService } from "../services/workspace.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import { ConsumerService } from "@src/modules/common/services/kafka/consumer.service";
@@ -19,6 +19,9 @@ export class WorkspaceHandler implements OnModuleInit {
         await this.workspaceService.create(
           JSON.parse(message.value.toString()),
         );
+      },
+      onError: async (error) => {
+        throw new BadRequestException(error);
       },
     });
   }

@@ -1,6 +1,11 @@
 import { Injectable, OnApplicationShutdown } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { ConsumerConfig, ConsumerSubscribeTopic, KafkaMessage } from "kafkajs";
+import {
+  ConsumerConfig,
+  ConsumerSubscribeTopic,
+  KafkaJSError,
+  KafkaMessage,
+} from "kafkajs";
 import { IConsumer } from "./consumer.interface";
 import { KafkajsConsumer } from "./kafkajs.consumer";
 
@@ -8,6 +13,7 @@ interface KafkajsConsumerOptions {
   topic: ConsumerSubscribeTopic;
   config: ConsumerConfig;
   onMessage: (message: KafkaMessage) => Promise<void>;
+  onError: (error: KafkaJSError) => Promise<void>;
 }
 
 @Injectable()

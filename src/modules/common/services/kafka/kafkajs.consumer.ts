@@ -8,6 +8,7 @@ import {
 } from "kafkajs";
 import * as retry from "async-retry";
 import { IConsumer } from "./consumer.interface";
+import sleep from "../../util/sleep.util";
 
 export class KafkajsConsumer implements IConsumer {
   private readonly kafka: Kafka;
@@ -53,16 +54,12 @@ export class KafkajsConsumer implements IConsumer {
       await this.consumer.connect();
     } catch (err) {
       this.logger.error("Failed to connect to Kafka.", err);
-      await this.sleep(5000);
+      await sleep(5000);
       await this.connect();
     }
   }
 
   async disconnect() {
     await this.consumer.disconnect();
-  }
-
-  sleep(timeout: number) {
-    return new Promise<void>((resolve) => setTimeout(resolve, timeout));
   }
 }

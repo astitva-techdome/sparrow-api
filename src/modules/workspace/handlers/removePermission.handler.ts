@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { BadRequestException, Injectable, OnModuleInit } from "@nestjs/common";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import { SUBSCRIPTION } from "@src/modules/common/enum/subscription.enum";
 import { PermissionService } from "../services/permission.service";
@@ -23,6 +23,9 @@ export class RemovePermissionHandler implements OnModuleInit {
           permissionArray,
           userId,
         );
+      },
+      onError: async (error) => {
+        throw new BadRequestException(error);
       },
     });
   }
