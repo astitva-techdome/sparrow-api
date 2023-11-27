@@ -78,5 +78,5 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  KAFKA_BROKERS: string;
+  KAFKA_BROKER: string;
 }

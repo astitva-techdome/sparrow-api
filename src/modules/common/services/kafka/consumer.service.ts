@@ -23,7 +23,7 @@ export class ConsumerService implements OnApplicationShutdown {
   constructor(private readonly configService: ConfigService) {}
 
   async consume({ topic, config, onMessage }: KafkajsConsumerOptions) {
-    const kafkaBroker = [this.configService.get("kafka.brokers")];
+    const kafkaBroker = [this.configService.get("kafka.broker")];
     const consumer = new KafkajsConsumer(topic, config, kafkaBroker);
     await consumer.connect();
     await consumer.consume(onMessage);
