@@ -42,6 +42,6 @@ export default () => ({
     },
   },
   kafka: {
-    brokers: process.env.KAFKA_BROKERS,
+    broker: process.env.KAFKA_BROKER,
   },
 });
