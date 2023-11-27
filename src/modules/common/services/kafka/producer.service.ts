@@ -18,10 +18,8 @@ export class ProducerService implements OnApplicationShutdown {
   private async getProducer(topic: string) {
     let producer = this.producers.get(topic);
     if (!producer) {
-      producer = new KafkajsProducer(
-        topic,
-        JSON.parse(this.configService.get("kafka.brokers")),
-      );
+      const kafkaBroker = [this.configService.get("kafka.brokers")];
+      producer = new KafkajsProducer(topic, kafkaBroker);
       await producer.connect();
       this.producers.set(topic, producer);
     }
