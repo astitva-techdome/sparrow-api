@@ -75,4 +75,8 @@ export class EnvironmentVariables {
   @IsNumber()
   @IsNotEmpty()
   VALIDATION_CODE_EXPIRATION_TIME: number;
+
+  @IsString()
+  @IsNotEmpty()
+  KAFKA_BROKERS: string;
 }

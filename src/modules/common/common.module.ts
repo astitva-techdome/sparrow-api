@@ -4,12 +4,13 @@ import { ContextService } from "./services/context.service";
 import { Redis } from "ioredis";
 import { ConfigService } from "@nestjs/config";
 import { RedisService } from "./services/redis.service";
-import { AzureBusService } from "./services/azureBus/azure-bus.service";
 import { WorkspaceModule } from "../workspace/workspace.module";
 import { ApiResponseService } from "./services/api-response.service";
 import { ParserService } from "./services/parser.service";
 import { LoggingExceptionsFilter } from "./exception/logging.exception-filter";
 import pino from "pino";
+import { ProducerService } from "./services/kafka/producer.service";
+import { ConsumerService } from "./services/kafka/consumer.service";
 
 @Global()
 @Module({
@@ -52,12 +53,13 @@ import pino from "pino";
         }),
       ),
     },
-    AzureBusService,
     ContextService,
     RedisService,
     ApiResponseService,
     ParserService,
     LoggingExceptionsFilter,
+    ProducerService,
+    ConsumerService,
   ],
   exports: [
     "DATABASE_CONNECTION",
@@ -65,10 +67,11 @@ import pino from "pino";
     Redis,
     ContextService,
     RedisService,
-    AzureBusService,
     ApiResponseService,
     ParserService,
     LoggingExceptionsFilter,
+    ProducerService,
+    ConsumerService,
   ],
 })
 export class CommonModule {}

@@ -9,7 +9,6 @@ import { RegisterPayload } from "../payloads/register.payload";
 import { ConfigService } from "@nestjs/config";
 import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
-import { AzureBusService } from "@src/modules/common/services/azureBus/azure-bus.service";
 import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import {
   EmailServiceProvider,
@@ -22,6 +21,7 @@ import { createHmac } from "crypto";
 import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 import hbs = require("nodemailer-express-handlebars");
 import path from "path";
+import { ProducerService } from "@src/modules/common/services/kafka/producer.service";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -34,7 +34,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
-    private readonly azureBusService: AzureBusService,
+    private readonly producerService: ProducerService,
   ) {}
 
   /**
@@ -96,10 +96,9 @@ export class UserService {
       name: this.configService.get("app.defaultWorkspaceName"),
       type: WorkspaceType.PERSONAL,
     };
-    await this.azureBusService.sendMessage(
-      TOPIC.CREATE_USER_TOPIC,
-      workspaceObj,
-    );
+    await this.producerService.produce(TOPIC.CREATE_USER_TOPIC, {
+      value: JSON.stringify(workspaceObj),
+    });
     return data;
   }
 
@@ -190,7 +189,19 @@ export class UserService {
     name: string,
     email: string,
   ): Promise<InsertOneResult> {
-    return await this.userRepository.createGoogleAuthUser(oauthId, name, email);
+    const user = await this.userRepository.createGoogleAuthUser(
+      oauthId,
+      name,
+      email,
+    );
+    const workspaceObj = {
+      name: this.configService.get("app.defaultWorkspaceName"),
+      type: WorkspaceType.PERSONAL,
+    };
+    await this.producerService.produce(TOPIC.CREATE_USER_TOPIC, {
+      value: JSON.stringify(workspaceObj),
+    });
+    return user;
   }
 
   async verifyVerificationCode(

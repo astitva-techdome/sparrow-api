@@ -41,4 +41,7 @@ export default () => ({
       accessType: process.env.GOOGLE_ACCESS_TYPE,
     },
   },
+  kafka: {
+    brokers: process.env.KAFKA_BROKERS,
+  },
 });

@@ -154,8 +154,6 @@ export class AuthController {
     ];
     const [accessToken, refreshToken] = await Promise.all(tokenPromises);
 
-    res.header("accessToken", accessToken);
-    res.header("refreshToken", refreshToken);
     const url = encodeURI(this.configService.get("oauth.google.redirectUrl"));
     res.redirect(
       HttpStatusCode.MOVED_PERMANENTLY,
