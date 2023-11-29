@@ -8,7 +8,6 @@ import {
 } from "@nestjs/common";
 import { FastifyReply } from "fastify";
 import { PinoLogger } from "nestjs-pino";
-import { ErrorMessages } from "../enum/error-messages.enum";
 
 @Catch()
 export class LoggingExceptionsFilter implements ExceptionFilter {
@@ -22,13 +21,6 @@ export class LoggingExceptionsFilter implements ExceptionFilter {
       const response = ctx.getResponse<FastifyReply>();
       const status = exception.getStatus();
       this.errorLogger.error(exception);
-      if (exception.name == ErrorMessages.SystemUnauthorized) {
-        return response.status(status).send({
-          statusCode: status,
-          message: ErrorMessages.Unauthorized,
-          error: exception.name,
-        });
-      }
       return response.status(status).send({
         statusCode: status,
         message: exception.message,
