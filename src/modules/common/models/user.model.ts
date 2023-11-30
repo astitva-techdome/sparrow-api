@@ -20,6 +20,20 @@ export enum EmailServiceProvider {
   GMAIL = "GMAIL",
   OUTLOOK = "OUTLOOK",
 }
+
+export class EarlyAccessEmail {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsDate()
+  @IsOptional()
+  createdAt?: Date;
+
+  @IsDate()
+  @IsOptional()
+  updatedAt?: Date;
+}
 export class User {
   @IsString()
   @IsNotEmpty()

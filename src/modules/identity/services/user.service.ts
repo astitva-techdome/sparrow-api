@@ -14,7 +14,10 @@ import {
   EmailServiceProvider,
   User,
 } from "@src/modules/common/models/user.model";
-import { ResetPasswordPayload } from "../payloads/resetPassword.payload";
+import {
+  EarlyAccessPayload,
+  ResetPasswordPayload,
+} from "../payloads/resetPassword.payload";
 import * as nodemailer from "nodemailer";
 import { InsertOneResult, ObjectId, WithId } from "mongodb";
 import { createHmac } from "crypto";
@@ -169,6 +172,34 @@ export class UserService {
     await Promise.all(promise);
   }
 
+  async sendWelcomeEmail(earlyAccessDto: EarlyAccessPayload): Promise<void> {
+    const transporter = nodemailer.createTransport({
+      service: EmailServiceProvider.GMAIL,
+      auth: {
+        user: this.configService.get("app.email"),
+        pass: this.configService.get("app.password"),
+      },
+    });
+    const handlebarOptions = {
+      viewEngine: {
+        defaultLayout: "",
+      },
+      viewPath: path.resolve(__dirname, "..", "..", "views"),
+    };
+    transporter.use("compile", hbs(handlebarOptions));
+
+    const mailOptions = {
+      from: this.configService.get("app.email"),
+      to: earlyAccessDto.email,
+      subject: `Welcome to Sparrow `,
+      template: "welcomeEmail",
+    };
+    const promise = [
+      transporter.sendMail(mailOptions),
+      this.userRepository.saveEarlyAccessEmail(earlyAccessDto.email),
+    ];
+    await Promise.all(promise);
+  }
   async logoutUser(userId: string, refreshToken: string): Promise<void> {
     const user = await this.userRepository.findUserByUserId(
       new ObjectId(userId),
