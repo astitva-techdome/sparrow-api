@@ -24,7 +24,6 @@ import { GoogleOAuthGuard } from "@src/modules/common/guards/google-oauth.guard"
 import { UserService } from "../services/user.service";
 import { ObjectId } from "mongodb";
 import { ConfigService } from "@nestjs/config";
-import sleep from "@src/modules/common/util/sleep.util";
 /**
  * Authentication Controller
  */
@@ -147,7 +146,6 @@ export class AuthController {
       );
       this.contextService.set("user", { id: user.insertedId, name, email });
       id = user.insertedId;
-      await sleep(this.OAUTH_SIGNUP_DELAY_MS);
     }
     const tokenPromises = [
       this.authService.createToken(id),
