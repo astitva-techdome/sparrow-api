@@ -16,7 +16,6 @@ import {
 } from "@nestjs/swagger";
 import { AuthService } from "../services/auth.service";
 import { LoginPayload } from "../payloads/login.payload";
-import { UserRepository } from "../repositories/user.repository";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { RefreshTokenGuard } from "@src/modules/common/guards/refresh-token.guard";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
@@ -25,6 +24,7 @@ import { GoogleOAuthGuard } from "@src/modules/common/guards/google-oauth.guard"
 import { UserService } from "../services/user.service";
 import { ObjectId } from "mongodb";
 import { ConfigService } from "@nestjs/config";
+import sleep from "@src/modules/common/util/sleep.util";
 /**
  * Authentication Controller
  */
@@ -37,6 +37,7 @@ export interface RefreshTokenRequest extends FastifyRequest {
 @Controller("api/auth")
 @ApiTags("authentication")
 export class AuthController {
+  private readonly OAUTH_SIGNUP_DELAY_MS = 5000;
   /**
    * Constructor
    * @param {AuthService} authService authentication service
@@ -45,7 +46,6 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly contextService: ContextService,
     private readonly userService: UserService,
-    private readonly userReposistory: UserRepository,
     private readonly configService: ConfigService,
   ) {}
 
@@ -147,6 +147,7 @@ export class AuthController {
       );
       this.contextService.set("user", { id: user.insertedId, name, email });
       id = user.insertedId;
+      await sleep(this.OAUTH_SIGNUP_DELAY_MS);
     }
     const tokenPromises = [
       this.authService.createToken(id),
