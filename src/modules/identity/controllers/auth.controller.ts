@@ -16,7 +16,6 @@ import {
 } from "@nestjs/swagger";
 import { AuthService } from "../services/auth.service";
 import { LoginPayload } from "../payloads/login.payload";
-import { UserRepository } from "../repositories/user.repository";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { RefreshTokenGuard } from "@src/modules/common/guards/refresh-token.guard";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
@@ -37,6 +36,7 @@ export interface RefreshTokenRequest extends FastifyRequest {
 @Controller("api/auth")
 @ApiTags("authentication")
 export class AuthController {
+  private readonly OAUTH_SIGNUP_DELAY_MS = 5000;
   /**
    * Constructor
    * @param {AuthService} authService authentication service
@@ -45,7 +45,6 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly contextService: ContextService,
     private readonly userService: UserService,
-    private readonly userReposistory: UserRepository,
     private readonly configService: ConfigService,
   ) {}
 
