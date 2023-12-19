@@ -135,8 +135,8 @@ export class UserService {
     const transporter = nodemailer.createTransport({
       service: EmailServiceProvider.GMAIL,
       auth: {
-        user: this.configService.get("app.email"),
-        pass: this.configService.get("app.password"),
+        user: this.configService.get("app.senderEmail"),
+        pass: this.configService.get("app.senderPassword"),
       },
     });
     const verificationCode = this.generateEmailVerificationCode();
@@ -149,7 +149,7 @@ export class UserService {
     };
     transporter.use("compile", hbs(handlebarOptions));
     const mailOptions = {
-      from: this.configService.get("app.email"),
+      from: this.configService.get("app.senderEmail"),
       to: resetPasswordDto.email,
       text: "Sparrow Password Reset",
       template: "verifyEmail",
@@ -213,7 +213,7 @@ export class UserService {
       throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
     const expireTime = this.configService.get(
-      "app.validationCodeExpirationTime",
+      "app.emailValidationCodeExpirationTime",
     );
     if (
       (Date.now() - user.verificationCodeTimeStamp.getTime()) / 1000 >
