@@ -20,7 +20,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json --detectOpenHandles --forceExit",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "docker:start:dev": "docker compose up -d",
+    "docker:destroy": "docker compose down"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
