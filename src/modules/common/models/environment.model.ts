@@ -12,6 +12,10 @@ import {
 } from "class-validator";
 import { ObjectId } from "mongodb";
 
+export enum DefaultEnvironment {
+  GLOBAL = "Global Environment",
+}
+
 export enum EnvironmentType {
   GLOBAL = "GLOBAL",
   LOCAL = "LOCAL",

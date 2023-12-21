@@ -31,6 +31,7 @@ import { CollectionDto } from "@src/modules/common/models/collection.model";
 import { Logger } from "nestjs-pino";
 import { UserRepository } from "@src/modules/identity/repositories/user.repository";
 import {
+  DefaultEnvironment,
   EnvironmentDto,
   EnvironmentType,
 } from "@src/modules/common/models/environment.model";
@@ -124,7 +125,7 @@ export class WorkspaceService {
     }
 
     const createEnvironmentDto: CreateEnvironmentDto = {
-      name: "Global Environment",
+      name: DefaultEnvironment.GLOBAL,
       variable: [
         {
           key: "",
