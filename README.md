@@ -21,11 +21,10 @@ One-stop API management tool
  
 1. 🐦 [What is Sparrow ?](#what-is-sparrow)
 2. 🔨 [Installation](#installation)
-3. 👨‍💻 [Recommended IDE Setup](#recommended-ide-setup)
-5. 📖 [Env variables](#env-variables)
-6. ❤️ [Subscribe to our Newsletter](#subscribe-to-our-newsletter)
-6. ❤️ [How to Contribute ?](#contributors)
-7. ©️ [License](#license)
+3. 📖 [Env variables](#env-variables)
+4. 📣 [Subscribe to our Newsletter](#subscribe-to-our-newsletter)
+5. ❤️ [How to Contribute ?](#contributors)
+6. ©️ [License](#license)
  
 ## <a name="what-is-sparrow">🐦 What is Sparrow ?</a>
  
@@ -51,7 +50,7 @@ cd sparrow-api
 # Install PNPM globally
 npm i -g pnpm
 
-# Setup required components locally - Mongo, Kafka, Redis
+# Setup required components locally - Mongo, Kafka, Redis (Wait for 3-5 minutes after running this command)
 pnpm docker:up
 
 # Insatll dependencies
@@ -75,12 +74,14 @@ The above will start the app in development mode and watch for changes on local.
 
 ### 📝 Note
 ---
-pnpm docker:up will expose the following components on following ports 
+1) "pnpm docker:up" command will expose the below components on respective ports, make sure you have those ports free on your system 
 
-- 27017 (Mongo)
-- 6379 (Redis)
-- 2181 (Zookeeper)
-- 29092, 9092, 9101 (Kafka)
+	- 27017 (Mongo)
+	- 6379 (Redis)
+	- 2181 (Zookeeper)
+	- 29092, 9092, 9101 (Kafka)
+
+2) Wait for 3-5 minutes after running "pnpm docker:up", so that kafka can initiate properly.
  
 ## <a name="env-variables">📖 Env variables</a>
  
@@ -90,7 +91,7 @@ All env variables are present in .env.example file which contains default values
  
 ![Atom](https://img.shields.io/badge/Coming%20Soon-%2366595C.svg?style=for-the-badge&logo=atom&logoColor=white)
  
-## <a name="subscribe-to-our-newsletter">📨 Newsletter</a>
+## <a name="subscribe-to-our-newsletter">📣 Newsletter</a>
  
 Subscribe to our newsletter by applying [here!](https://code.visualstudio.com/) 
  
