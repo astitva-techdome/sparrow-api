@@ -1,20 +1,30 @@
-# Pull base image
-FROM node:hydrogen
+# Use the official Node.js 18 image as a base image
+FROM node:18
 
-# App directory
-WORKDIR /app
+# Install pnpm globally
+RUN npm install -g pnpm
 
-# Copy app source code
+# Install pnpm globally
+RUN npm install -g nodemon
+
+# Set the working directory
+WORKDIR /src
+
+# Copy package.json and pnpm-lock.yaml to the working directory
+COPY package.json .
+COPY pnpm-lock.yaml .
+
+# Install project dependencies
+RUN pnpm install
+
+# Copy the rest of the application code
+COPY .env.example .env
+
+# Copy the rest of the application code
 COPY . .
 
-# App dependencies
-RUN npm i -g pnpm
-RUN pnpm i
 
-#Expose port and begin application
 EXPOSE 9000
 
-# Start the app
-CMD [ "pnpm", "run", "start"]
-
-# CMD if [ "$ENVIRONMENT" = "PROD" ]; then echo"prod"; pnpm run start; else echo "dev"; pnpm run start:dev; fi
+# Specify the default command to run your application
+CMD ["pnpm", "start:dev"]
