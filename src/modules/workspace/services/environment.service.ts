@@ -1,9 +1,10 @@
 import {
   BadRequestException,
   Injectable,
+  UnauthorizedException,
   // UnauthorizedException,
 } from "@nestjs/common";
-import { InsertOneResult, WithId } from "mongodb";
+import { InsertOneResult, ObjectId, WithId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { CreateEnvironmentDto } from "../payloads/environment.payload";
 import {
@@ -11,12 +12,14 @@ import {
   EnvironmentType,
 } from "@src/modules/common/models/environment.model";
 import { EnvironmentRepository } from "../repositories/environment.repository";
+import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
+import { WorkspaceRepository } from "../repositories/workspace.repository";
 
 @Injectable()
 export class EnvironmentService {
   constructor(
     private readonly environmentRepository: EnvironmentRepository,
-    //   private readonly workspaceReposistory: WorkspaceRepository,
+    private readonly workspaceReposistory: WorkspaceRepository,
     private readonly contextService: ContextService,
   ) {}
 
@@ -26,7 +29,10 @@ export class EnvironmentService {
   ): Promise<InsertOneResult> {
     try {
       const user = await this.contextService.get("user");
-      // await this.checkPermission(createEnvironmentDto.workspaceId, user._id);
+
+      if (type === EnvironmentType.LOCAL) {
+        await this.checkPermission(createEnvironmentDto.workspaceId, user._id);
+      }
 
       const newEnvironment: Environment = {
         name: createEnvironmentDto.name,
@@ -50,13 +56,13 @@ export class EnvironmentService {
     return await this.environmentRepository.get(id);
   }
 
-  // async checkPermission(workspaceId: string, userid: ObjectId): Promise<void> {
-  //     const workspace = await this.workspaceReposistory.get(workspaceId);
-  //     const hasPermission = workspace.permissions.some((user) => {
-  //       return user.id.toString() === userid.toString();
-  //     });
-  //     if (!hasPermission) {
-  //       throw new UnauthorizedException(ErrorMessages.Unauthorized);
-  //     }
-  //   }
+  async checkPermission(workspaceId: string, userid: ObjectId): Promise<void> {
+    const workspace = await this.workspaceReposistory.get(workspaceId);
+    const hasPermission = workspace.permissions.some((user) => {
+      return user.id.toString() === userid.toString();
+    });
+    if (!hasPermission) {
+      throw new UnauthorizedException(ErrorMessages.Unauthorized);
+    }
+  }
 }
