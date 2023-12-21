@@ -14,6 +14,9 @@ import { CollectionService } from "./services/collection.service";
 import { collectionRepository } from "./repositories/collection.repository";
 import { collectionController } from "./controllers/collection.controller";
 import { CollectionRequestService } from "./services/collection-request.service";
+import { EnvironmentService } from "./services/environment.service";
+import { EnvironmentRepository } from "./repositories/environment.repository";
+import { EnvironmentController } from "./controllers/environment.controller";
 @Module({
   imports: [IdentityModule],
   providers: [
@@ -28,12 +31,21 @@ import { CollectionRequestService } from "./services/collection-request.service"
     collectionRepository,
     CollectionService,
     CollectionRequestService,
+    EnvironmentService,
+    EnvironmentRepository,
   ],
-  exports: [CollectionService, collectionRepository, WorkspaceRepository],
+  exports: [
+    CollectionService,
+    collectionRepository,
+    WorkspaceRepository,
+    EnvironmentService,
+    EnvironmentRepository,
+  ],
   controllers: [
     WorkSpaceController,
     PermissionController,
     collectionController,
+    EnvironmentController,
   ],
 })
 export class WorkspaceModule {}

@@ -18,10 +18,6 @@ export enum EnvironmentType {
 }
 
 export class VariableDto {
-  @IsBoolean()
-  @IsNotEmpty()
-  checked: boolean;
-
   @IsString()
   @IsNotEmpty()
   key: string;
@@ -29,17 +25,11 @@ export class VariableDto {
   @IsString()
   @IsNotEmpty()
   value: string;
-}
 
-export class WorkspaceDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  id: string;
-
-  @IsString()
+  @IsBoolean()
   @IsNotEmpty()
   @IsOptional()
-  name?: string;
+  checked?: boolean;
 }
 
 export class Environment {
@@ -51,15 +41,11 @@ export class Environment {
   @Type(() => VariableDto)
   @ValidateNested({ each: true })
   @IsOptional()
-  variables: VariableDto[];
+  variable: VariableDto[];
 
   @IsEnum(EnvironmentType)
   @IsNotEmpty()
   type: EnvironmentType;
-
-  @Type(() => WorkspaceDto)
-  @IsOptional()
-  workspace?: WorkspaceDto;
 
   @IsDate()
   @IsOptional()
