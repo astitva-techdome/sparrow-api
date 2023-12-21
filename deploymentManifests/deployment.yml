@@ -39,21 +39,21 @@ spec:
               secretKeyRef:
                 name: sparrow-api-secret
                 key: APP_URL     
-          - name: WEBTOKEN_SECRET_KEY
+          - name: JWT_SECRET_KEY
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key: WEBTOKEN_SECRET_KEY
-          - name: VALIDATION_CODE_EXPIRATION_TIME
+                key: JWT_SECRET_KEY
+          - name: EMAIL_VALIDATION_CODE_EXPIRY_TIME
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key: VALIDATION_CODE_EXPIRATION_TIME
-          - name: WEBTOKEN_EXPIRATION_TIME
+                key: EMAIL_VALIDATION_CODE_EXPIRY_TIME
+          - name: JWT_EXPIRATION_TIME
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key: WEBTOKEN_EXPIRATION_TIME
+                key: JWT_EXPIRATION_TIME
           - name: DB_URL
             valueFrom:
               secretKeyRef:
@@ -64,31 +64,31 @@ spec:
               secretKeyRef:
                 name: sparrow-api-secret
                 key: AZURE_CONNECTION_STRING    
-          - name: REFRESHTOKEN_SECRET_KEY
+          - name: REFRESH_TOKEN_SECRET_KEY
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key: REFRESHTOKEN_SECRET_KEY  
-          - name: REFRESHTOKEN_EXPIRATION_TIME
+                key: REFRESH_TOKEN_SECRET_KEY  
+          - name: REFRESH_TOKEN_EXPIRATION_TIME
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key: REFRESHTOKEN_EXPIRATION_TIME
-          - name:  REFRESHTOKEN_MAX_SIZE
+                key: REFRESH_TOKEN_EXPIRATION_TIME
+          - name:  REFRESH_TOKEN_MAX_LIMIT
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key:  REFRESHTOKEN_MAX_SIZE
-          - name:  SENDEREMAIL
+                key:  REFRESH_TOKEN_MAX_LIMIT
+          - name:  SENDER_EMAIL
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key:  SENDEREMAIL
-          - name:  SENDERPASSWORD
+                key:  SENDER_EMAIL
+          - name:  SENDER_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: sparrow-api-secret
-                key:  SENDERPASSWORD
+                key:  SENDER_PASSWORD
           - name:  LOGIN_REDIRECT_URL
             valueFrom:
               secretKeyRef:

@@ -23,11 +23,11 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  WEBTOKEN_SECRET_KEY: number;
+  JWT_SECRET_KEY: number;
 
   @Type(() => Number)
   @IsNumber()
-  WEBTOKEN_EXPIRATION_TIME: number;
+  JWT_EXPIRATION_TIME: number;
 
   @IsString()
   @IsNotEmpty()
@@ -38,43 +38,38 @@ export class EnvironmentVariables {
   GOOGLE_CLIENT_ID: string;
 
   @IsString()
-  @IsNotEmpty()
   GOOGLE_CLIENT_SECRET: string;
 
   @IsString()
-  @IsNotEmpty()
   GOOGLE_APP_URL: string;
 
   @IsString()
-  @IsNotEmpty()
-  REFRESHTOKEN_SECRET_KEY: string;
-
-  @Type(() => Number)
-  @IsNumber()
-  REFRESHTOKEN_EXPIRATION_TIME: number;
-
-  @Type(() => Number)
-  @IsNumber()
-  REFRESHTOKEN_MAX_SIZE: number;
-
-  @IsString()
-  SENDEREMAIL: string;
-
-  @IsString()
-  SENDERPASSWORD: string;
-
-  @IsString()
   LOGIN_REDIRECT_URL: string;
-  @IsNotEmpty()
-  AZURE_CONNECTION_STRING: string;
+
   @IsString()
-  @IsNotEmpty()
   GOOGLE_ACCESS_TYPE: string;
 
+  @IsString()
+  @IsNotEmpty()
+  REFRESH_TOKEN_SECRET_KEY: string;
+
   @Type(() => Number)
   @IsNumber()
-  @IsNotEmpty()
-  VALIDATION_CODE_EXPIRATION_TIME: number;
+  REFRESH_TOKEN_EXPIRATION_TIME: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  REFRESH_TOKEN_MAX_LIMIT: number;
+
+  @IsString()
+  SENDER_EMAIL: string;
+
+  @IsString()
+  SENDER_PASSWORD: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  EMAIL_VALIDATION_CODE_EXPIRY_TIME: number;
 
   @IsString()
   @IsNotEmpty()

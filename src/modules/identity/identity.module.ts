@@ -23,13 +23,11 @@ import { RefreshTokenStrategy } from "./strategies/refresh-token.strategy";
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         return {
-          secret: configService.get("app.webtokenSecretKey"),
+          secret: configService.get("app.jwtSecretKey"),
           signOptions: {
-            ...(configService.get("app.webtokenExpirationTime")
+            ...(configService.get("app.jwtExpirationTime")
               ? {
-                  expiresIn: Number(
-                    configService.get("app.webtokenExpirationTime"),
-                  ),
+                  expiresIn: Number(configService.get("app.jwtExpirationTime")),
                 }
               : {}),
           },

@@ -5,21 +5,20 @@ export default () => ({
     port: parseInt(process.env.PORT) || 3000,
     env: process.env.APP_ENV || Env.DEV,
     url: process.env.APP_URL,
-    webtokenSecretKey: process.env.WEBTOKEN_SECRET_KEY,
-    webtokenExpirationTime:
-      parseInt(process.env.WEBTOKEN_EXPIRATION_TIME) || 1800,
+    jwtSecretKey: process.env.JWT_SECRET_KEY,
+    jwtExpirationTime: parseInt(process.env.JWT_EXPIRATION_TIME) || 1800,
     defaultWorkspaceName: "My Workspace",
     userBlacklistPrefix: "BL_",
-    refreshTokenSecretKey: process.env.REFRESHTOKEN_SECRET_KEY,
-    validationCodeExpirationTime: parseInt(
-      process.env.VALIDATION_CODE_EXPIRATION_TIME,
+    refreshTokenSecretKey: process.env.REFRESH_TOKEN_SECRET_KEY,
+    emailValidationCodeExpirationTime: parseInt(
+      process.env.EMAIL_VALIDATION_CODE_EXPIRY_TIME,
     ),
     refreshTokenExpirationTime: parseInt(
-      process.env.REFRESHTOKEN_EXPIRATION_TIME,
+      process.env.REFRESH_TOKEN_EXPIRATION_TIME,
     ),
-    refreshTokenMaxSize: parseInt(process.env.REFRESHTOKEN_MAX_SIZE),
-    email: process.env.SENDEREMAIL,
-    password: process.env.SENDERPASSWORD,
+    refreshTokenMaxLimit: parseInt(process.env.REFRESH_TOKEN_MAX_LIMIT),
+    senderEmail: process.env.SENDER_EMAIL,
+    senderPassword: process.env.SENDER_PASSWORD,
   },
   db: {
     url: process.env.DB_URL,
@@ -28,9 +27,6 @@ export default () => ({
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
     db: process.env.REDIS_DB,
-  },
-  azure: {
-    connectionString: process.env.AZURE_CONNECTION_STRING,
   },
   oauth: {
     google: {
