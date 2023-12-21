@@ -11,6 +11,16 @@ export class ResetPasswordPayload {
   email: string;
 }
 
+export class EarlyAccessPayload {
+  @ApiProperty({
+    required: true,
+    example: "user@email.com",
+  })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}
+
 export class VerifyEmailPayload {
   @ApiProperty({
     example: "user@email.com",

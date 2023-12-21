@@ -24,6 +24,7 @@ import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 import {
+  EarlyAccessPayload,
   ResetPasswordPayload,
   UpdatePasswordPayload,
   VerifyEmailPayload,
@@ -120,6 +121,23 @@ export class UserController {
     @Res() res: FastifyReply,
   ) {
     await this.userService.sendVerificationEmail(resetPasswordDto);
+    const responseData = new ApiResponseService(
+      "Email Sent Successfully",
+      HttpStatusCode.OK,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+  @Post("send-welcome-email")
+  @ApiOperation({
+    summary: "Send Welcome Email",
+    description:
+      "Sending a Welcome Email containing welcome to the user who want to get early access",
+  })
+  async sendWelcomeEmail(
+    @Body() earlyAccessDto: EarlyAccessPayload,
+    @Res() res: FastifyReply,
+  ) {
+    await this.userService.sendWelcomeEmail(earlyAccessDto);
     const responseData = new ApiResponseService(
       "Email Sent Successfully",
       HttpStatusCode.OK,

@@ -34,6 +34,7 @@ export class EnvironmentVariables {
   DB_URL: string;
 
   @IsString()
+  @IsNotEmpty()
   GOOGLE_CLIENT_ID: string;
 
   @IsString()

@@ -5,6 +5,7 @@ import { createHmac } from "crypto";
 import { RegisterPayload } from "../payloads/register.payload";
 import { UpdateUserDto, UserDto } from "../payloads/user.payload";
 import {
+  EarlyAccessEmail,
   EmailServiceProvider,
   User,
 } from "@src/modules/common/models/user.model";
@@ -203,7 +204,15 @@ export class UserRepository {
     };
     return await this.db.collection<User>(Collections.USER).insertOne(user);
   }
-
+  async saveEarlyAccessEmail(email: string): Promise<void> {
+    await this.db
+      .collection<EarlyAccessEmail>(Collections.EARLYACCESS)
+      .insertOne({
+        email,
+        createdAt: new Date(Date.now()),
+        updatedAt: new Date(Date.now()),
+      });
+  }
   async updateVerificationCode(
     email: string,
     verificationCode: string,
