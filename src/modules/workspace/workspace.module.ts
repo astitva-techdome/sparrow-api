@@ -11,7 +11,7 @@ import { PermissionHandler } from "./handlers/permission.handler";
 import { OwnerPermissionHandler } from "./handlers/ownerPermisson.handler";
 import { RemovePermissionHandler } from "./handlers/removePermission.handler";
 import { CollectionService } from "./services/collection.service";
-import { collectionRepository } from "./repositories/collection.repository";
+import { CollectionRepository } from "./repositories/collection.repository";
 import { collectionController } from "./controllers/collection.controller";
 import { CollectionRequestService } from "./services/collection-request.service";
 import { EnvironmentService } from "./services/environment.service";
@@ -28,7 +28,7 @@ import { EnvironmentController } from "./controllers/environment.controller";
     PermissionHandler,
     OwnerPermissionHandler,
     RemovePermissionHandler,
-    collectionRepository,
+    CollectionRepository,
     CollectionService,
     CollectionRequestService,
     EnvironmentService,
@@ -36,7 +36,7 @@ import { EnvironmentController } from "./controllers/environment.controller";
   ],
   exports: [
     CollectionService,
-    collectionRepository,
+    CollectionRepository,
     WorkspaceRepository,
     EnvironmentService,
     EnvironmentRepository,

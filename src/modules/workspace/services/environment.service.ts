@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   UnauthorizedException,
-  // UnauthorizedException,
 } from "@nestjs/common";
 import { InsertOneResult, ObjectId, WithId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
@@ -28,7 +27,7 @@ export class EnvironmentService {
     type: EnvironmentType,
   ): Promise<InsertOneResult> {
     try {
-      const user = await this.contextService.get("user");
+      const user = this.contextService.get("user");
 
       if (type === EnvironmentType.LOCAL) {
         await this.checkPermission(createEnvironmentDto.workspaceId, user._id);

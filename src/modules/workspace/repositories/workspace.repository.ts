@@ -154,7 +154,7 @@ export class WorkspaceRepository {
       { _id },
       {
         $push: {
-          environment: {
+          environments: {
             id: environment.id,
             name: environment.name,
             type: environment.type,

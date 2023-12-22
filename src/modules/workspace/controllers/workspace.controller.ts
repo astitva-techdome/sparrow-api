@@ -42,7 +42,6 @@ import {
 } from "../payloads/collection.payload";
 import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 import { ObjectId } from "mongodb";
-import { EnvironmentService } from "../services/environment.service";
 
 /**
  * Workspace Controller
@@ -57,7 +56,6 @@ export class WorkSpaceController {
     private readonly permissionService: PermissionService,
     private readonly parserService: ParserService,
     private readonly collectionService: CollectionService,
-    private readonly environmentService: EnvironmentService,
   ) {}
 
   @Post()

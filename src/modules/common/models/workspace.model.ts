@@ -52,7 +52,7 @@ export class Workspace {
   @Type(() => EnvironmentDto)
   @ValidateNested({ each: true })
   @IsOptional()
-  environment?: EnvironmentDto[];
+  environments?: EnvironmentDto[];
 
   @IsArray()
   @IsOptional()

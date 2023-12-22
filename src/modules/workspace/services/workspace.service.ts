@@ -168,7 +168,7 @@ export class WorkspaceService {
         workspaceData.type === WorkspaceType.PERSONAL
           ? permissionForUser
           : permissionDataForTeam,
-      environment: [
+      environments: [
         {
           id: environmentDto.id,
           name: environmentDto.name,
@@ -281,7 +281,7 @@ export class WorkspaceService {
   ): Promise<void> {
     const data = await this.get(workspaceId);
     if (!data) {
-      throw new NotFoundException("Workspace with this id does't exist");
+      throw new NotFoundException("Workspace with this id doesn't exist");
     }
     await this.workspaceRepository.addEnvironmentInWorkspace(
       workspaceId,
