@@ -130,7 +130,7 @@ export class WorkspaceService {
         {
           key: "",
           value: "",
-          checked: false,
+          checked: true,
         },
       ],
     };
