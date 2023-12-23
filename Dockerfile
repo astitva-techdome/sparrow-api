@@ -18,9 +18,6 @@ COPY pnpm-lock.yaml .
 RUN pnpm install
 
 # Copy the rest of the application code
-COPY .env.example .env
-
-# Copy the rest of the application code
 COPY . .
 
 
