@@ -15,6 +15,7 @@ import {
 } from "../payloads/workspace.payload";
 import { ContextService } from "../../common/services/context.service";
 import { CollectionDto } from "@src/modules/common/models/collection.model";
+import { EnvironmentDto } from "@src/modules/common/models/environment.model";
 /**
  * Models a typical response for a crud operation
  */
@@ -142,5 +143,24 @@ export class WorkspaceRepository {
     return this.db
       .collection(Collections.WORKSPACE)
       .updateOne({ _id }, { $set: { collection: collectionsArray } });
+  }
+
+  async addEnvironmentInWorkspace(
+    workspaceId: string,
+    environment: EnvironmentDto,
+  ): Promise<UpdateResult> {
+    const _id = new ObjectId(workspaceId);
+    return await this.db.collection(Collections.WORKSPACE).updateOne(
+      { _id },
+      {
+        $push: {
+          environments: {
+            id: environment.id,
+            name: environment.name,
+            type: environment.type,
+          },
+        },
+      },
+    );
   }
 }

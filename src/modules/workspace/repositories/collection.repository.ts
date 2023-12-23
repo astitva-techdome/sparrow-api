@@ -22,7 +22,7 @@ import {
 } from "../payloads/collectionRequest.payload";
 import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 @Injectable()
-export class collectionRepository {
+export class CollectionRepository {
   constructor(
     @Inject("DATABASE_CONNECTION") private db: Db,
     private readonly contextService: ContextService,
