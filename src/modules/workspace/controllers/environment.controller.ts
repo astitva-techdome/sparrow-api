@@ -107,7 +107,7 @@ export class EnvironmentController {
     description: "Fetch Environment Request Received",
   })
   @ApiResponse({ status: 400, description: "Fetch Environment Request Failed" })
-  async getCollection(
+  async getEnvironment(
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
   ) {
