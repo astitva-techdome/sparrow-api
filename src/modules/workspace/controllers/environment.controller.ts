@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   Res,
@@ -90,6 +91,31 @@ export class EnvironmentController {
     );
     const responseData = new ApiResponseService(
       "Environment Removed",
+      HttpStatusCode.OK,
+      environment,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Get(":workspaceId")
+  @ApiOperation({
+    summary: "Get All Environments",
+    description: "This will get all environments of a workspace",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Fetch Environment Request Received",
+  })
+  @ApiResponse({ status: 400, description: "Fetch Environment Request Failed" })
+  async getCollection(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+  ) {
+    const environment = await this.environmentService.getAllEnvironments(
+      workspaceId,
+    );
+    const responseData = new ApiResponseService(
+      "Success",
       HttpStatusCode.OK,
       environment,
     );

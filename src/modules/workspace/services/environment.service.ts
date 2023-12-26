@@ -74,4 +74,19 @@ export class EnvironmentService {
     const data = await this.environmentRepository.delete(id);
     return data;
   }
+
+  async getAllEnvironments(id: string): Promise<WithId<Environment>[]> {
+    const user = this.contextService.get("user");
+    await this.checkPermission(id, user._id);
+
+    const workspace = await this.workspaceReposistory.get(id);
+    const environments = [];
+    for (let i = 0; i < workspace.environments?.length; i++) {
+      const environment = await this.environmentRepository.get(
+        workspace.environments[i].id.toString(),
+      );
+      environments.push(environment);
+    }
+    return environments;
+  }
 }
