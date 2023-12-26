@@ -163,4 +163,14 @@ export class WorkspaceRepository {
       },
     );
   }
+
+  async deleteEnvironmentinWorkspace(
+    workspaceId: string,
+    environmentsArray: EnvironmentDto[],
+  ): Promise<UpdateResult> {
+    const _id = new ObjectId(workspaceId);
+    return this.db
+      .collection(Collections.WORKSPACE)
+      .updateOne({ _id }, { $set: { environments: environmentsArray } });
+  }
 }

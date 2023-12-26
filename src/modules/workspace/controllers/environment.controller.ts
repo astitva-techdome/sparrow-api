@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Res, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -54,6 +62,35 @@ export class EnvironmentController {
     const responseData = new ApiResponseService(
       "Environment Created",
       HttpStatusCode.CREATED,
+      environment,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Delete(":environmentId/workspace/:workspaceId")
+  @ApiOperation({
+    summary: "Delete a Environment",
+    description: "This will delete a environment",
+  })
+  @ApiResponse({ status: 201, description: "Removed Environment Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to remove Environment" })
+  async deleteEnvironment(
+    @Param("environmentId") environmentId: string,
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+  ) {
+    const environment = await this.environmentService.deleteEnvironment(
+      environmentId,
+      workspaceId,
+    );
+
+    await this.workspaceService.deleteEnvironmentInWorkSpace(
+      workspaceId.toString(),
+      environmentId,
+    );
+    const responseData = new ApiResponseService(
+      "Environment Removed",
+      HttpStatusCode.OK,
       environment,
     );
     res.status(responseData.httpStatusCode).send(responseData);
