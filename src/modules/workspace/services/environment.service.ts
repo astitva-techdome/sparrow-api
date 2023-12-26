@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { InsertOneResult, ObjectId, WithId } from "mongodb";
+import { DeleteResult, InsertOneResult, ObjectId, WithId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { CreateEnvironmentDto } from "../payloads/environment.payload";
 import {
@@ -63,5 +63,15 @@ export class EnvironmentService {
     if (!hasPermission) {
       throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
+  }
+
+  async deleteEnvironment(
+    id: string,
+    workspaceId: string,
+  ): Promise<DeleteResult> {
+    const user = this.contextService.get("user");
+    await this.checkPermission(workspaceId, user._id);
+    const data = await this.environmentRepository.delete(id);
+    return data;
   }
 }

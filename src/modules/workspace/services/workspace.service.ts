@@ -289,4 +289,22 @@ export class WorkspaceService {
     );
     return;
   }
+
+  async deleteEnvironmentInWorkSpace(
+    workspaceId: string,
+    environmentId: string,
+  ): Promise<void> {
+    const data = await this.get(workspaceId);
+    if (!data) {
+      throw new NotFoundException("Workspace with this id doesn't exist");
+    }
+
+    const filteredEnvironments = data.environments.filter((env) => {
+      return env.id.toString() !== environmentId;
+    });
+    await this.workspaceRepository.deleteEnvironmentinWorkspace(
+      workspaceId,
+      filteredEnvironments,
+    );
+  }
 }
