@@ -113,12 +113,3 @@ export class ImportCollectionDto {
   @IsNotEmpty()
   url: string;
 }
-
-export class ImportJsonObjCollectionDto {
-  @ApiProperty({
-    required: true,
-  })
-  @IsString()
-  @IsNotEmpty()
-  jsonObj: string;
-}

@@ -36,10 +36,7 @@ import * as yml from "js-yaml";
 import { ParserService } from "@src/modules/common/services/parser.service";
 import { CollectionService } from "../services/collection.service";
 import axios from "axios";
-import {
-  ImportCollectionDto,
-  ImportJsonObjCollectionDto,
-} from "../payloads/collection.payload";
+import { ImportCollectionDto } from "../payloads/collection.payload";
 import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 import { ObjectId } from "mongodb";
 
@@ -328,16 +325,16 @@ export class WorkSpaceController {
   async importJsonCollection(
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
-    @Body() jsonObjDto: ImportJsonObjCollectionDto,
+    @Body() jsonObj: string,
   ) {
-    const collectionObj = await this.parserService.parse(jsonObjDto.jsonObj);
+    const collectionObj = await this.parserService.parse(jsonObj);
     await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
       id: new ObjectId(collectionObj.id),
       name: collectionObj.name,
     });
 
     const collection = await this.collectionService.getCollection(
-      collectionObj.insertedId,
+      collectionObj.id,
     );
     const responseData = new ApiResponseService(
       "Collection Imported",
