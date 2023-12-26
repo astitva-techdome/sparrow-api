@@ -4,4 +4,5 @@ export enum Collections {
   TEAM = "team",
   COLLECTION = "collection",
   EARLYACCESS = "earlyaccess",
+  ENVIRONMENT = "environment",
 }

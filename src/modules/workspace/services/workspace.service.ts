@@ -30,6 +30,13 @@ import { CollectionDto } from "@src/modules/common/models/collection.model";
 
 import { Logger } from "nestjs-pino";
 import { UserRepository } from "@src/modules/identity/repositories/user.repository";
+import {
+  DefaultEnvironment,
+  EnvironmentDto,
+  EnvironmentType,
+} from "@src/modules/common/models/environment.model";
+import { CreateEnvironmentDto } from "../payloads/environment.payload";
+import { EnvironmentService } from "./environment.service";
 /**
  * Workspace Service
  */
@@ -40,6 +47,7 @@ export class WorkspaceService {
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
     private readonly permissionService: PermissionService,
+    private readonly environmentService: EnvironmentService,
     private readonly userRepository: UserRepository,
     private readonly logger: Logger,
   ) {}
@@ -115,6 +123,27 @@ export class WorkspaceService {
         teamData as unknown as Team,
       );
     }
+
+    const createEnvironmentDto: CreateEnvironmentDto = {
+      name: DefaultEnvironment.GLOBAL,
+      variable: [
+        {
+          key: "",
+          value: "",
+          checked: true,
+        },
+      ],
+    };
+    const envData = await this.environmentService.createEnvironment(
+      createEnvironmentDto,
+      EnvironmentType.GLOBAL,
+    );
+    const environment = await this.environmentService.getEnvironment(
+      envData.insertedId.toString(),
+    );
+    const { _id: id, name, type } = environment;
+    const environmentDto: EnvironmentDto = { id, name, type };
+
     const ownerInfo: OwnerInformationDto = {
       id:
         workspaceData.type === WorkspaceType.PERSONAL
@@ -139,6 +168,13 @@ export class WorkspaceService {
         workspaceData.type === WorkspaceType.PERSONAL
           ? permissionForUser
           : permissionDataForTeam,
+      environments: [
+        {
+          id: environmentDto.id,
+          name: environmentDto.name,
+          type: environmentDto.type,
+        },
+      ],
       createdAt: new Date(),
       createdBy: userId,
     };
@@ -236,6 +272,39 @@ export class WorkspaceService {
     await this.workspaceRepository.deleteCollectioninWorkspace(
       workspaceId,
       filteredCollections,
+    );
+  }
+
+  async addEnvironmentInWorkSpace(
+    workspaceId: string,
+    environment: EnvironmentDto,
+  ): Promise<void> {
+    const data = await this.get(workspaceId);
+    if (!data) {
+      throw new NotFoundException("Workspace with this id doesn't exist");
+    }
+    await this.workspaceRepository.addEnvironmentInWorkspace(
+      workspaceId,
+      environment,
+    );
+    return;
+  }
+
+  async deleteEnvironmentInWorkSpace(
+    workspaceId: string,
+    environmentId: string,
+  ): Promise<void> {
+    const data = await this.get(workspaceId);
+    if (!data) {
+      throw new NotFoundException("Workspace with this id doesn't exist");
+    }
+
+    const filteredEnvironments = data.environments.filter((env) => {
+      return env.id.toString() !== environmentId;
+    });
+    await this.workspaceRepository.deleteEnvironmentinWorkspace(
+      workspaceId,
+      filteredEnvironments,
     );
   }
 }

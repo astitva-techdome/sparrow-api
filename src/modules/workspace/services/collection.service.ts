@@ -8,7 +8,7 @@ import {
   CreateCollectionDto,
   UpdateCollectionDto,
 } from "../payloads/collection.payload";
-import { collectionRepository } from "../repositories/collection.repository";
+import { CollectionRepository } from "../repositories/collection.repository";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
 import {
   DeleteResult,
@@ -24,7 +24,7 @@ import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 @Injectable()
 export class CollectionService {
   constructor(
-    private readonly collectionReposistory: collectionRepository,
+    private readonly collectionReposistory: CollectionRepository,
     private readonly workspaceReposistory: WorkspaceRepository,
     private readonly contextService: ContextService,
   ) {}

@@ -45,7 +45,7 @@ export class AuthService {
    */
   private readonly expiration: number;
   private readonly refreshTokenExpirationTime: number;
-  private readonly refreshTokenMaxSize: number;
+  private readonly refreshTokenMaxLimit: number;
 
   /**
    * Constructor
@@ -61,12 +61,12 @@ export class AuthService {
     private contextService: ContextService,
     private readonly logger: Logger,
   ) {
-    this.expiration = this.configService.get("app.webtokenExpirationTime");
+    this.expiration = this.configService.get("app.jwtExpirationTime");
     this.refreshTokenExpirationTime = this.configService.get(
       "app.refreshTokenExpirationTime",
     );
-    this.refreshTokenMaxSize = this.configService.get(
-      "app.refreshTokenMaxSize",
+    this.refreshTokenMaxLimit = this.configService.get(
+      "app.refreshTokenMaxLimit",
     );
   }
 
@@ -90,7 +90,7 @@ export class AuthService {
           personalWorkspaces: user.personalWorkspaces,
           exp: Date.now() / 1000 + this.expiration,
         },
-        { secret: this.configService.get("app.webtokenSecretKey") },
+        { secret: this.configService.get("app.jwtSecretKey") },
       ),
     };
   }
@@ -199,7 +199,7 @@ export class AuthService {
   }
 
   async checkRefreshTokenSize(user: User): Promise<void> {
-    if (user.refresh_tokens.length === this.refreshTokenMaxSize) {
+    if (user.refresh_tokens.length === this.refreshTokenMaxLimit) {
       throw new BadRequestException("Maximum request limit reached");
     }
   }

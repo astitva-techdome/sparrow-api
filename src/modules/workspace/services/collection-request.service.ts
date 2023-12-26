@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { collectionRepository } from "../repositories/collection.repository";
+import { CollectionRepository } from "../repositories/collection.repository";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
 import { ObjectId, UpdateResult } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
@@ -24,7 +24,7 @@ import { CollectionService } from "./collection.service";
 @Injectable()
 export class CollectionRequestService {
   constructor(
-    private readonly collectionReposistory: collectionRepository,
+    private readonly collectionReposistory: CollectionRepository,
     private readonly workspaceReposistory: WorkspaceRepository,
     private readonly contextService: ContextService,
     private readonly collectionService: CollectionService,

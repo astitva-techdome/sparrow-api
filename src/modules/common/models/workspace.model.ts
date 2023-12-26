@@ -12,6 +12,7 @@ import {
 import { CollectionDto } from "./collection.model";
 import { ObjectId } from "mongodb";
 import { PermissionDto } from "./user.model";
+import { EnvironmentDto } from "./environment.model";
 
 export enum WorkspaceType {
   PERSONAL = "PERSONAL",
@@ -46,6 +47,12 @@ export class Workspace {
   @ValidateNested({ each: true })
   @IsOptional()
   collection?: CollectionDto[];
+
+  @IsArray()
+  @Type(() => EnvironmentDto)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  environments?: EnvironmentDto[];
 
   @IsArray()
   @IsOptional()
