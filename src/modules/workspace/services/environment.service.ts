@@ -3,9 +3,18 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { DeleteResult, InsertOneResult, ObjectId, WithId } from "mongodb";
+import {
+  DeleteResult,
+  InsertOneResult,
+  ObjectId,
+  UpdateResult,
+  WithId,
+} from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
-import { CreateEnvironmentDto } from "../payloads/environment.payload";
+import {
+  CreateEnvironmentDto,
+  UpdateEnvironmentDto,
+} from "../payloads/environment.payload";
 import {
   Environment,
   EnvironmentType,
@@ -88,5 +97,19 @@ export class EnvironmentService {
       environments.push(environment);
     }
     return environments;
+  }
+
+  async updateEnvironment(
+    environmentId: string,
+    updateEnvironmentDto: UpdateEnvironmentDto,
+    workspaceId: string,
+  ): Promise<UpdateResult> {
+    const user = this.contextService.get("user");
+    await this.checkPermission(workspaceId, user._id);
+    const data = await this.environmentRepository.update(
+      environmentId,
+      updateEnvironmentDto,
+    );
+    return data;
   }
 }

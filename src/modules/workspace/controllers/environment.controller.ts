@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Res,
   UseGuards,
 } from "@nestjs/common";
@@ -14,7 +15,10 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { CreateEnvironmentDto } from "../payloads/environment.payload";
+import {
+  CreateEnvironmentDto,
+  UpdateEnvironmentDto,
+} from "../payloads/environment.payload";
 import { FastifyReply } from "fastify";
 import { EnvironmentService } from "../services/environment.service";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
@@ -113,6 +117,41 @@ export class EnvironmentController {
   ) {
     const environment = await this.environmentService.getAllEnvironments(
       workspaceId,
+    );
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      environment,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Put(":environmentId/workspace/:workspaceId")
+  @ApiOperation({
+    summary: "Update An Environment",
+    description: "This will update an environment",
+  })
+  @ApiResponse({ status: 200, description: "Environment Updated Successfully" })
+  @ApiResponse({ status: 400, description: "Update Environment Failed" })
+  async updateCollection(
+    @Param("environmentId") environmentId: string,
+    @Param("workspaceId") workspaceId: string,
+    @Body() updateEnvironmentDto: UpdateEnvironmentDto,
+    @Res() res: FastifyReply,
+  ) {
+    await this.environmentService.updateEnvironment(
+      environmentId,
+      updateEnvironmentDto,
+      workspaceId,
+    );
+
+    const environment = await this.environmentService.getEnvironment(
+      environmentId,
+    );
+    await this.workspaceService.updateEnvironmentInWorkSpace(
+      workspaceId,
+      environmentId,
+      updateEnvironmentDto.name,
     );
     const responseData = new ApiResponseService(
       "Success",

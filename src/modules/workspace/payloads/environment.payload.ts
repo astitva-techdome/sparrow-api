@@ -37,3 +37,25 @@ export class CreateEnvironmentDto {
   @ValidateNested({ each: true })
   variable: VariableDto[];
 }
+
+export class UpdateEnvironmentDto {
+  @IsString()
+  @ApiProperty({ required: true, example: "New environment name" })
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({
+    required: true,
+    example: [
+      {
+        key: "key",
+        value: "value",
+        checked: true,
+      },
+    ],
+  })
+  @IsArray()
+  @Type(() => VariableDto)
+  @ValidateNested({ each: true })
+  variable: VariableDto[];
+}

@@ -307,4 +307,21 @@ export class WorkspaceService {
       filteredEnvironments,
     );
   }
+
+  async updateEnvironmentInWorkSpace(
+    workspaceId: string,
+    environmentId: string,
+    name: string,
+  ): Promise<void> {
+    const data = await this.get(workspaceId);
+    if (!data) {
+      throw new NotFoundException("Workspace with this id does't exist");
+    }
+    await this.workspaceRepository.updateEnvironmentinWorkspace(
+      workspaceId,
+      environmentId,
+      name,
+    );
+    return;
+  }
 }
