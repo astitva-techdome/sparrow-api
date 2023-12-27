@@ -31,7 +31,7 @@ import { WorkspaceService } from "../services/workspace.service";
 
 @ApiBearerAuth()
 @ApiTags("environment")
-@Controller("api/environment")
+@Controller("api/workspace")
 @UseGuards(JwtAuthGuard, BlacklistGuard)
 export class EnvironmentController {
   constructor(
@@ -39,7 +39,7 @@ export class EnvironmentController {
     private readonly environmentService: EnvironmentService,
   ) {}
 
-  @Post()
+  @Post("environment")
   @ApiOperation({
     summary: "Create A Environment",
     description:
@@ -72,7 +72,7 @@ export class EnvironmentController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Delete(":environmentId/workspace/:workspaceId")
+  @Delete(":workspaceId/environment/:environmentId")
   @ApiOperation({
     summary: "Delete a Environment",
     description: "This will delete a environment",
@@ -80,8 +80,8 @@ export class EnvironmentController {
   @ApiResponse({ status: 201, description: "Removed Environment Successfully" })
   @ApiResponse({ status: 400, description: "Failed to remove Environment" })
   async deleteEnvironment(
-    @Param("environmentId") environmentId: string,
     @Param("workspaceId") workspaceId: string,
+    @Param("environmentId") environmentId: string,
     @Res() res: FastifyReply,
   ) {
     const environment = await this.environmentService.deleteEnvironment(
@@ -101,7 +101,7 @@ export class EnvironmentController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Get(":workspaceId")
+  @Get(":workspaceId/environments")
   @ApiOperation({
     summary: "Get All Environments",
     description: "This will get all environments of a workspace",
@@ -126,7 +126,7 @@ export class EnvironmentController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Put(":environmentId/workspace/:workspaceId")
+  @Put(":workspaceId/environments/:environmentId")
   @ApiOperation({
     summary: "Update An Environment",
     description: "This will update an environment",
@@ -134,8 +134,8 @@ export class EnvironmentController {
   @ApiResponse({ status: 200, description: "Environment Updated Successfully" })
   @ApiResponse({ status: 400, description: "Update Environment Failed" })
   async updateEnvironment(
-    @Param("environmentId") environmentId: string,
     @Param("workspaceId") workspaceId: string,
+    @Param("environmentId") environmentId: string,
     @Body() updateEnvironmentDto: UpdateEnvironmentDto,
     @Res() res: FastifyReply,
   ) {
