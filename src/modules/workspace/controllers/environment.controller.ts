@@ -133,7 +133,7 @@ export class EnvironmentController {
   })
   @ApiResponse({ status: 200, description: "Environment Updated Successfully" })
   @ApiResponse({ status: 400, description: "Update Environment Failed" })
-  async updateCollection(
+  async updateEnvironment(
     @Param("environmentId") environmentId: string,
     @Param("workspaceId") workspaceId: string,
     @Body() updateEnvironmentDto: UpdateEnvironmentDto,
