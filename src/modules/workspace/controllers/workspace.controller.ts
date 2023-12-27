@@ -301,9 +301,7 @@ export class WorkSpaceController {
     const data = response.data;
     const responseType = response.headers["content-type"];
     const dataObj =
-      responseType === BodyModeEnum["application/javascript"]
-        ? data
-        : yml.load(data);
+      responseType === BodyModeEnum["application/json"] ? data : yml.load(data);
 
     const collectionObj = await this.parserService.parse(dataObj);
     await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
