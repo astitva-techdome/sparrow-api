@@ -57,5 +57,6 @@ export class UpdateEnvironmentDto {
   @IsArray()
   @Type(() => VariableDto)
   @ValidateNested({ each: true })
-  variable: VariableDto[];
+  @IsOptional()
+  variable?: VariableDto[];
 }
