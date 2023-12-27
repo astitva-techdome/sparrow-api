@@ -147,7 +147,7 @@ export class EnvironmentService {
   }
 
   /**
-   * Fetches all the environment corresponding to a workspace.
+   * Fetches individual environment.
    * @param workspaceId - Workspace id to which environment belongs to.
    * @param environmentId - Environment id to get that environment object.
    */
