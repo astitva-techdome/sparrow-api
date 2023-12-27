@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   Res,
   UseGuards,
   UseInterceptors,
@@ -39,6 +40,8 @@ import axios from "axios";
 import { ImportCollectionDto } from "../payloads/collection.payload";
 import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 import { ObjectId } from "mongodb";
+import { FastifyRequest } from "fastify/types/request";
+import { BodyModeEnum } from "@src/modules/common/models/collection.model";
 
 /**
  * Workspace Controller
@@ -263,7 +266,7 @@ export class WorkSpaceController {
     const dataBuffer = file.buffer;
     const dataString = dataBuffer.toString("utf8");
     const dataObj =
-      file.mimetype === "application/json"
+      file.mimetype === BodyModeEnum["application/json"]
         ? JSON.parse(dataString)
         : yml.load(dataString);
     const collectionObj = await this.parserService.parse(dataObj);
@@ -297,7 +300,10 @@ export class WorkSpaceController {
     const response = await axios.get(importCollectionDto.url);
     const data = response.data;
     const responseType = response.headers["content-type"];
-    const dataObj = responseType === "application/json" ? data : yml.load(data);
+    const dataObj =
+      responseType === BodyModeEnum["application/javascript"]
+        ? data
+        : yml.load(data);
 
     const collectionObj = await this.parserService.parse(dataObj);
     await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
@@ -323,11 +329,17 @@ export class WorkSpaceController {
   })
   @ApiResponse({ status: 400, description: "Failed to Import  Collection" })
   async importJsonCollection(
+    @Req() request: FastifyRequest,
     @Param("workspaceId") workspaceId: string,
     @Res() res: FastifyReply,
     @Body() jsonObj: string,
   ) {
-    const collectionObj = await this.parserService.parse(jsonObj);
+    const responseType = request.headers["content-type"];
+    const dataObj =
+      responseType === BodyModeEnum["application/json"]
+        ? jsonObj
+        : (yml.load(jsonObj) as string);
+    const collectionObj = await this.parserService.parse(dataObj);
     await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
       id: new ObjectId(collectionObj.id),
       name: collectionObj.name,
