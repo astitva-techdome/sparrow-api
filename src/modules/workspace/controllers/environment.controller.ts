@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Res,
   UseGuards,
 } from "@nestjs/common";
@@ -14,7 +15,10 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { CreateEnvironmentDto } from "../payloads/environment.payload";
+import {
+  CreateEnvironmentDto,
+  UpdateEnvironmentDto,
+} from "../payloads/environment.payload";
 import { FastifyReply } from "fastify";
 import { EnvironmentService } from "../services/environment.service";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
@@ -27,7 +31,7 @@ import { WorkspaceService } from "../services/workspace.service";
 
 @ApiBearerAuth()
 @ApiTags("environment")
-@Controller("api/environment")
+@Controller("api/workspace")
 @UseGuards(JwtAuthGuard, BlacklistGuard)
 export class EnvironmentController {
   constructor(
@@ -35,7 +39,7 @@ export class EnvironmentController {
     private readonly environmentService: EnvironmentService,
   ) {}
 
-  @Post()
+  @Post("environment")
   @ApiOperation({
     summary: "Create A Environment",
     description:
@@ -68,7 +72,7 @@ export class EnvironmentController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Delete(":environmentId/workspace/:workspaceId")
+  @Delete(":workspaceId/environment/:environmentId")
   @ApiOperation({
     summary: "Delete a Environment",
     description: "This will delete a environment",
@@ -76,8 +80,8 @@ export class EnvironmentController {
   @ApiResponse({ status: 201, description: "Removed Environment Successfully" })
   @ApiResponse({ status: 400, description: "Failed to remove Environment" })
   async deleteEnvironment(
-    @Param("environmentId") environmentId: string,
     @Param("workspaceId") workspaceId: string,
+    @Param("environmentId") environmentId: string,
     @Res() res: FastifyReply,
   ) {
     const environment = await this.environmentService.deleteEnvironment(
@@ -97,7 +101,7 @@ export class EnvironmentController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Get(":workspaceId")
+  @Get(":workspaceId/environment")
   @ApiOperation({
     summary: "Get All Environments",
     description: "This will get all environments of a workspace",
@@ -113,6 +117,41 @@ export class EnvironmentController {
   ) {
     const environment = await this.environmentService.getAllEnvironments(
       workspaceId,
+    );
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      environment,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Put(":workspaceId/environment/:environmentId")
+  @ApiOperation({
+    summary: "Update An Environment",
+    description: "This will update an environment",
+  })
+  @ApiResponse({ status: 200, description: "Environment Updated Successfully" })
+  @ApiResponse({ status: 400, description: "Update Environment Failed" })
+  async updateEnvironment(
+    @Param("workspaceId") workspaceId: string,
+    @Param("environmentId") environmentId: string,
+    @Body() updateEnvironmentDto: UpdateEnvironmentDto,
+    @Res() res: FastifyReply,
+  ) {
+    await this.environmentService.updateEnvironment(
+      environmentId,
+      updateEnvironmentDto,
+      workspaceId,
+    );
+
+    const environment = await this.environmentService.getEnvironment(
+      environmentId,
+    );
+    await this.workspaceService.updateEnvironmentInWorkSpace(
+      workspaceId,
+      environmentId,
+      updateEnvironmentDto.name,
     );
     const responseData = new ApiResponseService(
       "Success",

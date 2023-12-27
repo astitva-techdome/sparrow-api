@@ -173,4 +173,19 @@ export class WorkspaceRepository {
       .collection(Collections.WORKSPACE)
       .updateOne({ _id }, { $set: { environments: environmentsArray } });
   }
+
+  async updateEnvironmentinWorkspace(
+    workspaceId: string,
+    environmentId: string,
+    name: string,
+  ): Promise<UpdateResult> {
+    const _id = new ObjectId(workspaceId);
+    const environment_id = new ObjectId(environmentId);
+    return this.db
+      .collection(Collections.WORKSPACE)
+      .updateOne(
+        { _id, "environments.id": environment_id },
+        { $set: { "environments.$.name": name } },
+      );
+  }
 }
