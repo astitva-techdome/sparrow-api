@@ -25,6 +25,9 @@ export enum BodyModeEnum {
   "application/xml" = "application/xml",
   "application/x-www-form-urlencoded" = "application/x-www-form-urlencoded",
   "multipart/form-data" = "multipart/form-data",
+  "application/javascript" = "application/javascript",
+  "text/plain" = "text/plain",
+  "text/html" = "text/html",
 }
 
 export enum SourceTypeEnum {
@@ -99,6 +102,22 @@ export class RequestMetaData {
   @ValidateNested({ each: true })
   @IsOptional()
   body?: RequestBody[];
+
+  @ApiProperty({
+    enum: [
+      "application/json",
+      "application/xml",
+      "application/x-www-form-urlencoded",
+      "multipart/form-data",
+      "application/javascript",
+      "text/plain",
+      "text/html",
+    ],
+  })
+  @IsEnum({ BodyModeEnum })
+  @IsString()
+  @IsNotEmpty()
+  selectedRequestBodyType?: BodyModeEnum;
 
   @ApiProperty({
     example: {
