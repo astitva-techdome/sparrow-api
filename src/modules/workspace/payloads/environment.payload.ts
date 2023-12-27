@@ -45,7 +45,6 @@ export class UpdateEnvironmentDto {
   name: string;
 
   @ApiProperty({
-    required: true,
     example: [
       {
         key: "key",
