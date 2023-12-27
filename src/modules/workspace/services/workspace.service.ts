@@ -275,6 +275,11 @@ export class WorkspaceService {
     );
   }
 
+  /**
+   * Adds a new environment to a workspace
+   * @param workspaceId - Id of workspace you want to insert into it.
+   * @param environment - new environment object to be inserted in workspace
+   */
   async addEnvironmentInWorkSpace(
     workspaceId: string,
     environment: EnvironmentDto,
@@ -290,6 +295,11 @@ export class WorkspaceService {
     return;
   }
 
+  /**
+   * deletes an existing environment from a workspace
+   * @param workspaceId - Id of workspace you want to delete from it.
+   * @param environmentId - Id of environment you want to delete.
+   */
   async deleteEnvironmentInWorkSpace(
     workspaceId: string,
     environmentId: string,
@@ -308,6 +318,12 @@ export class WorkspaceService {
     );
   }
 
+  /**
+   * updates an existing environment from a workspace
+   * @param workspaceId - Id of workspace you want to update into it.
+   * @param environmentId - Id of environment you want to update.
+   * @param name - updated name of the environment .
+   */
   async updateEnvironmentInWorkSpace(
     workspaceId: string,
     environmentId: string,

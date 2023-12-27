@@ -23,6 +23,10 @@ import { EnvironmentRepository } from "../repositories/environment.repository";
 import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 import { WorkspaceRepository } from "../repositories/workspace.repository";
 
+/**
+ * Environment Service
+ */
+
 @Injectable()
 export class EnvironmentService {
   constructor(
@@ -31,6 +35,11 @@ export class EnvironmentService {
     private readonly contextService: ContextService,
   ) {}
 
+  /**
+   * Creates new environment.
+   * @param createEnvironmentDto - Environment object to be inserted.
+   * @param type - Can be GLOBAL or LOCAL
+   */
   async createEnvironment(
     createEnvironmentDto: CreateEnvironmentDto,
     type: EnvironmentType,
@@ -60,10 +69,19 @@ export class EnvironmentService {
     }
   }
 
+  /**
+   * Fetches single environment.
+   * @param id - Environment id you want to fetch.
+   */
   async getEnvironment(id: string): Promise<WithId<Environment>> {
     return await this.environmentRepository.get(id);
   }
 
+  /**
+   * Checks permissions to user with their workspace.
+   * @param workspaceId - Workspace id.
+   * @param userid - User id to match with workspace.
+   */
   async checkPermission(workspaceId: string, userid: ObjectId): Promise<void> {
     const workspace = await this.workspaceReposistory.get(workspaceId);
     const hasPermission = workspace.permissions.some((user) => {
@@ -74,6 +92,11 @@ export class EnvironmentService {
     }
   }
 
+  /**
+   * Deletes an existing environment.
+   * @param id - Environment id you want to delete.
+   * @param workspaceId - Workspace id you want to delete from it.
+   */
   async deleteEnvironment(
     id: string,
     workspaceId: string,
@@ -84,6 +107,10 @@ export class EnvironmentService {
     return data;
   }
 
+  /**
+   * Fetches all the environment corresponding to a workspace.
+   * @param id - Workspace id you want to get their environments.
+   */
   async getAllEnvironments(id: string): Promise<WithId<Environment>[]> {
     const user = this.contextService.get("user");
     await this.checkPermission(id, user._id);
@@ -99,6 +126,12 @@ export class EnvironmentService {
     return environments;
   }
 
+  /**
+   * Updates an existing environment.
+   * @param environmentId - Environment id you want to update.
+   * @param updateEnvironmentDto - Updated environment object.
+   * @param workspaceId - Workspace id you want to update into it.
+   */
   async updateEnvironment(
     environmentId: string,
     updateEnvironmentDto: UpdateEnvironmentDto,
