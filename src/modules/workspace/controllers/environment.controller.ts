@@ -101,7 +101,7 @@ export class EnvironmentController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Get(":workspaceId/environments")
+  @Get(":workspaceId/environment")
   @ApiOperation({
     summary: "Get All Environments",
     description: "This will get all environments of a workspace",
@@ -126,7 +126,7 @@ export class EnvironmentController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Put(":workspaceId/environments/:environmentId")
+  @Put(":workspaceId/environment/:environmentId")
   @ApiOperation({
     summary: "Update An Environment",
     description: "This will update an environment",
