@@ -161,7 +161,7 @@ export class EnvironmentController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Get(":environmentId/workspace/:workspaceId")
+  @Get(":workspaceId/environment/:environmentId")
   @ApiOperation({
     summary: "Get Individual Environments",
     description: "This will get individual environment of a workspace",
@@ -172,8 +172,8 @@ export class EnvironmentController {
   })
   @ApiResponse({ status: 400, description: "Fetch Environment Request Failed" })
   async getIndividualEnvironment(
-    @Param("environmentId") environmentId: string,
     @Param("workspaceId") workspaceId: string,
+    @Param("environmentId") environmentId: string,
     @Res() res: FastifyReply,
   ) {
     const environment = await this.environmentService.getIndividualEnvironment(
