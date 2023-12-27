@@ -145,4 +145,19 @@ export class EnvironmentService {
     );
     return data;
   }
+
+  /**
+   * Fetches individual environment.
+   * @param workspaceId - Workspace id to which environment belongs to.
+   * @param environmentId - Environment id to get that environment object.
+   */
+  async getIndividualEnvironment(
+    workspaceId: string,
+    environmentId: string,
+  ): Promise<WithId<Environment>> {
+    const user = this.contextService.get("user");
+    await this.checkPermission(workspaceId, user._id);
+    const environment = await this.getEnvironment(environmentId);
+    return environment;
+  }
 }
