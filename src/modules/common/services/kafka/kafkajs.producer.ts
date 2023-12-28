@@ -1,7 +1,6 @@
 import { Logger } from "@nestjs/common";
 import { Kafka, Message, Producer } from "kafkajs";
 import { IProducer } from "./producer.interface";
-import sleep from "../../util/sleep.util";
 
 export class KafkajsProducer implements IProducer {
   private readonly kafka: Kafka;
@@ -28,7 +27,6 @@ export class KafkajsProducer implements IProducer {
       await this.producer.connect();
     } catch (err) {
       this.logger.error("Failed to connect to Kafka.", err);
-      await sleep(5000);
       await this.connect();
     }
   }
