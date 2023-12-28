@@ -8,6 +8,11 @@ services:
       - "6379:6379"
     networks:
       - localnet
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
 
   # MongoDB
   mongo:
@@ -26,9 +31,8 @@ services:
     hostname: kafka
     ports:
       - "9092:9092"
-      - "9094:9094"
     volumes:
-      - "kafka_data12:/bitnami"
+      - "kafka_data:/bitnami"
     environment:
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
@@ -41,14 +45,18 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_NODE_ID=1
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
-      - BITNAMI_DEBUG=yes
       - KAFKA_CFG_NUM_PARTITIONS=2
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
       - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
       - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
 volumes:
-  kafka_data12:
+  kafka_data:
     driver: local
 
 networks:
