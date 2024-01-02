@@ -13,7 +13,7 @@ import {
 import { ObjectId } from "mongodb";
 
 export enum DefaultEnvironment {
-  GLOBAL = "Global Environment",
+  GLOBAL = "Global Variables",
 }
 
 export enum EnvironmentType {
@@ -23,11 +23,9 @@ export enum EnvironmentType {
 
 export class VariableDto {
   @IsString()
-  @IsNotEmpty()
   key: string;
 
   @IsString()
-  @IsNotEmpty()
   value: string;
 
   @IsBoolean()
