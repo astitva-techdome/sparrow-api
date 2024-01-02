@@ -17,13 +17,6 @@ export class WorkspaceDto {
   @IsOptional()
   id?: string;
 
-  @ApiProperty({
-    example: "workspace 1",
-  })
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
   @IsArray()
   @IsOptional()
   owners?: string[];
@@ -47,6 +40,13 @@ export class WorkspaceDto {
 
 export class CreateWorkspaceDto extends WorkspaceDto {
   @ApiProperty({
+    example: "workspace 1",
+  })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({
     example: WorkspaceType.TEAM,
   })
   @IsEnum(WorkspaceType)
@@ -54,7 +54,22 @@ export class CreateWorkspaceDto extends WorkspaceDto {
   type: WorkspaceType;
 }
 
-export class UpdateWorkspaceDto extends WorkspaceDto {}
+export class UpdateWorkspaceDto extends WorkspaceDto {
+  @ApiProperty({
+    example: "workspace 1",
+  })
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @ApiProperty({
+    example: "Description of Workspace",
+  })
+  @IsString()
+  @IsOptional()
+  description?: string;
+}
+
 export class WorkspaceDtoForIdDocument {
   @IsMongoId()
   @IsOptional()
