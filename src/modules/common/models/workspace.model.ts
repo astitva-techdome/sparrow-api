@@ -38,6 +38,10 @@ export class Workspace {
   @IsNotEmpty()
   name: string;
 
+  @IsString()
+  @IsOptional()
+  description?: string;
+
   @Type(() => OwnerInformationDto)
   @IsNotEmpty()
   owner: OwnerInformationDto;
