@@ -271,11 +271,11 @@ export class WorkSpaceController {
         : yml.load(dataString);
     const collectionObj = await this.parserService.parse(dataObj);
     await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-      id: new ObjectId(collectionObj.insertedId),
+      id: new ObjectId(collectionObj.id),
       name: collectionObj.name,
     });
     const collection = await this.collectionService.getCollection(
-      collectionObj.insertedId,
+      collectionObj.id,
     );
     const responseData = new ApiResponseService(
       "Collection Imported",
@@ -305,7 +305,7 @@ export class WorkSpaceController {
 
     const collectionObj = await this.parserService.parse(dataObj);
     await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-      id: new ObjectId(collectionObj.insertedId),
+      id: new ObjectId(collectionObj.id),
       name: collectionObj.name,
     });
     const responseData = new ApiResponseService(
