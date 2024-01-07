@@ -15,6 +15,8 @@ export interface OpenAPI303 {
       url?: string;
     };
   };
+  host?: string;
+  basePath?: string;
   servers?: ServerObject[];
   paths: {
     [path: string]: PathItemObject;
