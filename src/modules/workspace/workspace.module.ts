@@ -17,6 +17,7 @@ import { CollectionRequestService } from "./services/collection-request.service"
 import { EnvironmentService } from "./services/environment.service";
 import { EnvironmentRepository } from "./repositories/environment.repository";
 import { EnvironmentController } from "./controllers/environment.controller";
+import { AdminPermissionHandler } from "./handlers/adminPermission.handlers";
 @Module({
   imports: [IdentityModule],
   providers: [
@@ -28,6 +29,7 @@ import { EnvironmentController } from "./controllers/environment.controller";
     PermissionHandler,
     OwnerPermissionHandler,
     RemovePermissionHandler,
+    AdminPermissionHandler,
     CollectionRepository,
     CollectionService,
     CollectionRequestService,

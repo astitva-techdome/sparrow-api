@@ -22,7 +22,6 @@ import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
 } from "../payloads/workspace.payload";
-import { BlacklistGuard } from "../../common/guards/blacklist.guard";
 import { PermissionService } from "../services/permission.service";
 import { AddWorkspaceUserDto } from "../payloads/workspaceUser.payload";
 import { FastifyReply } from "fastify";
@@ -49,7 +48,7 @@ import { BodyModeEnum } from "@src/modules/common/models/collection.model";
 @ApiBearerAuth()
 @ApiTags("workspace")
 @Controller("api/workspace")
-@UseGuards(JwtAuthGuard, BlacklistGuard)
+@UseGuards(JwtAuthGuard)
 export class WorkSpaceController {
   constructor(
     private readonly workspaceService: WorkspaceService,
@@ -128,16 +127,16 @@ export class WorkSpaceController {
   }
   @Get("team/:teamId")
   @ApiOperation({
-    summary: "Retreive all Team's Workspaces",
-    description: "This will retrieve all Team's Workspaces",
+    summary: "Retreive Team's all Workspaces",
+    description: "This will retrieve Team's all Workspaces",
   })
   @ApiResponse({
     status: 200,
-    description: "All Workspace Of Team Received Successfully",
+    description: "All Workspaces Of a Team Received Successfully",
   })
   @ApiResponse({
     status: 400,
-    description: "Fetching All Team Workspaces Request Failed",
+    description: "Failed to receive all workspaces of a team",
   })
   async getTeamWorkspaces(
     @Param("teamId") teamId: string,
@@ -151,6 +150,7 @@ export class WorkSpaceController {
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
+
   @Put(":workspaceId")
   @ApiOperation({
     summary: "Update a Workspace",

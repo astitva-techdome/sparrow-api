@@ -1,5 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from "class-validator";
 import { Type } from "class-transformer";
 import { WorkspaceDto } from "@src/modules/common/models/workspace.model";
 import { UserDto } from "@src/modules/common/models/user.model";
@@ -10,6 +16,10 @@ export class CreateOrUpdateTeamDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsBoolean()
+  @IsOptional()
+  firstTeam?: boolean;
 }
 
 export class TeamDto {
@@ -29,5 +39,9 @@ export class TeamDto {
 
   @IsArray()
   @IsOptional()
-  owners?: string[];
+  owner?: string;
+
+  @IsArray()
+  @IsOptional()
+  admins?: string[];
 }

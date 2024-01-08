@@ -26,11 +26,15 @@ export class Team {
   @IsArray()
   @Type(() => UserDto)
   @ValidateNested({ each: true })
-  @IsOptional()
-  users?: UserDto[];
+  users: UserDto[];
 
   @IsArray()
-  owners: string[];
+  @IsNotEmpty()
+  owner: string;
+
+  @IsArray()
+  @IsOptional()
+  admins?: string[];
 
   @IsDateString()
   createdAt: Date;
@@ -55,4 +59,8 @@ export class TeamDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  role: string;
 }

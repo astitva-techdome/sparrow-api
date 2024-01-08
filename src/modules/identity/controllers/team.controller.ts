@@ -16,19 +16,19 @@ import {
 } from "@nestjs/swagger";
 import { TeamService } from "../services/team.service";
 import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
-import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 import { TeamUserService } from "../services/team-user.service";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
+import { AddTeamUserDto } from "../payloads/teamUser.payload";
 /**
  * Team Controller
  */
 @ApiBearerAuth()
 @ApiTags("team")
 @Controller("api/team")
-@UseGuards(JwtAuthGuard, BlacklistGuard)
+@UseGuards(JwtAuthGuard)
 export class TeamController {
   constructor(
     private readonly teamService: TeamService,
@@ -91,6 +91,26 @@ export class TeamController {
     return res.status(responseData.httpStatusCode).send(responseData);
   }
 
+  @Get("user/:userId")
+  @ApiOperation({
+    summary: "Retreive User's all Teams",
+    description: "This will retreive all teams of a User",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "All Team Details fetched Succesfully",
+  })
+  @ApiResponse({ status: 400, description: "Failed to fetch all team details" })
+  async getAllTeams(@Param("userId") userId: string, @Res() res: FastifyReply) {
+    const data = await this.teamService.getAllTeams(userId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
   @Post(":teamId/user/:userId")
   @ApiOperation({
     summary: "Add A User in Team",
@@ -101,9 +121,14 @@ export class TeamController {
   async addUserInTeam(
     @Param("teamId") teamId: string,
     @Param("userId") userId: string,
+    @Body() addTeamUserDto: AddTeamUserDto,
     @Res() res: FastifyReply,
   ) {
-    await this.teamUserService.addUser({ teamId, userId });
+    await this.teamUserService.addUser({
+      teamId,
+      userId,
+      ...addTeamUserDto,
+    });
     const team = await this.teamService.get(teamId);
     const responseData = new ApiResponseService(
       "User Added in Team",
@@ -125,31 +150,31 @@ export class TeamController {
     @Param("userId") userId: string,
     @Res() res: FastifyReply,
   ) {
-    const data = await this.teamUserService.removeUser({ teamId, userId });
+    // const data = await this.teamUserService.removeUser({ teamId, userId });
     const responseData = new ApiResponseService(
       "User Removed",
       HttpStatusCode.OK,
-      data,
+      // data,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Post(":teamId/owner/:userId")
+  @Post(":teamId/admin/:userId")
   @ApiOperation({
-    summary: "Add Another Owner For a Team",
-    description: "This will add another owner for a team",
+    summary: "Add Another Admin For a Team",
+    description: "This will add another admin for a team",
   })
-  @ApiResponse({ status: 201, description: "Team Owner Added Successfully" })
-  @ApiResponse({ status: 400, description: "Failed to add team owner" })
+  @ApiResponse({ status: 201, description: "Team Admin Added Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to add team admin" })
   async addTeamOwner(
     @Param("teamId") teamId: string,
     @Param("userId") userId: string,
     @Res() res: FastifyReply,
   ) {
-    await this.teamUserService.addOwner({ teamId, userId });
+    await this.teamUserService.addAdmin({ teamId, userId });
     const team = await this.teamService.get(teamId);
     const responseData = new ApiResponseService(
-      "Owner added",
+      "Admin added",
       HttpStatusCode.OK,
       team,
     );

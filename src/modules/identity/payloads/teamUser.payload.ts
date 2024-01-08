@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsArray,
   IsDateString,
+  ValidateNested,
 } from "class-validator";
 
 export class CreateOrUpdateTeamUserDto {
@@ -67,4 +68,43 @@ export class CreateOrUpdateTeamUserResponseDto {
   @IsDateString()
   @IsOptional()
   updatedAt?: Date;
+}
+
+export class SelectedWorkspaces {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ example: "64f03af32e420f7f68055b92" })
+  id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ example: "admin" })
+  role: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ example: "MY Workspace" })
+  name: string;
+}
+
+export class AddTeamUserDto {
+  @IsMongoId()
+  @IsOptional()
+  teamId?: string;
+
+  @IsMongoId()
+  @IsOptional()
+  userId?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ example: "admin" })
+  role?: string;
+
+  @IsArray()
+  @IsOptional()
+  @Type(() => SelectedWorkspaces)
+  @ApiProperty({ type: [SelectedWorkspaces] })
+  @ValidateNested({ each: true })
+  workspaces?: SelectedWorkspaces[];
 }

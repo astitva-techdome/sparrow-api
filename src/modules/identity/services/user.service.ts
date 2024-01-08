@@ -7,9 +7,9 @@ import { UpdateUserDto } from "../payloads/user.payload";
 import { UserRepository } from "../repositories/user.repository";
 import { RegisterPayload } from "../payloads/register.payload";
 import { ConfigService } from "@nestjs/config";
-import { WorkspaceType } from "@src/modules/common/models/workspace.model";
+// import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
-import { TOPIC } from "@src/modules/common/enum/topic.enum";
+// import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import {
   EmailServiceProvider,
   User,
@@ -25,6 +25,8 @@ import { ErrorMessages } from "@src/modules/common/enum/error-messages.enum";
 import hbs = require("nodemailer-express-handlebars");
 import path from "path";
 import { ProducerService } from "@src/modules/common/services/kafka/producer.service";
+import { TeamService } from "./team.service";
+import { ContextService } from "@src/modules/common/services/context.service";
 export interface IGenericMessageBody {
   message: string;
 }
@@ -38,6 +40,8 @@ export class UserService {
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
     private readonly producerService: ProducerService,
+    private readonly teamService: TeamService,
+    private readonly contextService: ContextService,
   ) {}
 
   /**
@@ -95,13 +99,12 @@ export class UserService {
       accessToken,
       refreshToken,
     };
-    const workspaceObj = {
-      name: this.configService.get("app.defaultWorkspaceName"),
-      type: WorkspaceType.PERSONAL,
+    const firstName = await this.getFirstName(payload.name);
+    const teamName = {
+      name: firstName + this.configService.get("app.defaultTeamNameSuffix"),
+      firstTeam: true,
     };
-    await this.producerService.produce(TOPIC.CREATE_USER_TOPIC, {
-      value: JSON.stringify(workspaceObj),
-    });
+    await this.teamService.create(teamName);
     return data;
   }
 
@@ -215,24 +218,30 @@ export class UserService {
     await this.userRepository.deleteRefreshToken(userId, hashrefreshToken[0]);
     return;
   }
+
   async createGoogleAuthUser(
     oauthId: string,
     name: string,
     email: string,
   ): Promise<InsertOneResult> {
-    const user = await this.userRepository.createGoogleAuthUser(
+    const createdUser = await this.userRepository.createGoogleAuthUser(
       oauthId,
       name,
       email,
     );
-    const workspaceObj = {
-      name: this.configService.get("app.defaultWorkspaceName"),
-      type: WorkspaceType.PERSONAL,
+    const user = {
+      _id: createdUser.insertedId,
+      name: name,
+      email: email,
     };
-    await this.producerService.produce(TOPIC.CREATE_USER_TOPIC, {
-      value: JSON.stringify(workspaceObj),
-    });
-    return user;
+    this.contextService.set("user", user);
+    const firstName = await this.getFirstName(name);
+    const teamName = {
+      name: firstName + this.configService.get("app.defaultTeamNameSuffix"),
+      firstTeam: true,
+    };
+    await this.teamService.create(teamName);
+    return createdUser;
   }
 
   async verifyVerificationCode(
@@ -265,5 +274,10 @@ export class UserService {
   }
   generateEmailVerificationCode(): string {
     return (Math.random() + 1).toString(36).substring(2, 8);
+  }
+
+  async getFirstName(name: string): Promise<string> {
+    const nameArray = name.split(" ");
+    return nameArray[0];
   }
 }

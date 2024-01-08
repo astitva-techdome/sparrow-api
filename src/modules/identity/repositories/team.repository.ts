@@ -13,6 +13,7 @@ import { Collections } from "@src/modules/common/enum/database.collection.enum";
 import { User } from "@src/modules/common/models/user.model";
 import { Team } from "@src/modules/common/models/team.model";
 import { WorkspaceDto } from "@src/modules/common/models/workspace.model";
+import { TeamRole } from "@src/modules/common/enum/roles.enum";
 
 /**
  * Team Service
@@ -44,10 +45,12 @@ export class TeamRepository {
           id: user._id,
           email: user.email,
           name: user.name,
+          role: TeamRole.OWNER,
         },
       ],
       workspaces: [] as WorkspaceDto[],
-      owners: [user._id],
+      owner: user._id.toString(),
+      admins: [] as string[],
       createdBy: user._id,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -64,7 +67,13 @@ export class TeamRepository {
       { _id: user._id },
       {
         $set: {
-          teams: [{ id: createdTeam.insertedId, name: teamData.name }],
+          teams: [
+            {
+              id: createdTeam.insertedId,
+              name: teamData.name,
+              role: TeamRole.OWNER,
+            },
+          ],
         },
       },
     );

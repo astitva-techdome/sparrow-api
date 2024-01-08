@@ -4,12 +4,11 @@ import {
   CreatePermissionDto,
   PermissionDto,
 } from "../payloads/permission.payload";
-import { ObjectId, WithId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { RemovePermissionDto } from "../payloads/removePermission.payload";
-import { Role } from "@src/modules/common/enum/roles.enum";
+import { Role, WorkspaceRole } from "@src/modules/common/enum/roles.enum";
 import { ConfigService } from "@nestjs/config";
 import { ContextService } from "@src/modules/common/services/context.service";
-import { RedisService } from "@src/modules/common/services/redis.service";
 import {
   Workspace,
   WorkspaceDto,
@@ -25,7 +24,8 @@ import {
 import { UserDto } from "@src/modules/common/models/user.model";
 import { TeamDto } from "@src/modules/identity/payloads/team.payload";
 import { isString } from "class-validator";
-import { Team } from "@src/modules/common/models/team.model";
+// import { Team } from "@src/modules/common/models/team.model";
+import { SelectedWorkspaces } from "@src/modules/identity/payloads/teamUser.payload";
 /**
  * Permission Service
  */
@@ -37,7 +37,6 @@ export class PermissionService {
     private readonly contextService: ContextService,
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
-    private readonly redisService: RedisService,
     private readonly teamRepository: TeamRepository,
     private readonly workspaceRepository: WorkspaceRepository,
   ) {
@@ -113,6 +112,7 @@ export class PermissionService {
     userData.teams.push({
       id: workspaceData.owner.id,
       name: workspaceData.owner.name,
+      role: "",
     });
     await this.userRepository.updateUserById(
       new ObjectId(permissionData.userId),
@@ -125,20 +125,19 @@ export class PermissionService {
       id: userData._id.toString(),
       email: userData.email,
       name: userData.name,
+      role: "",
     });
     await this.teamRepository.updateTeamById(
       new ObjectId(workspaceData.owner.id),
       teamData as unknown as TeamDto,
     );
-    await this.redisService.set(
-      this.userBlacklistPrefix + permissionData.userId.toString(),
-    );
     return updatedWOrkspaceData;
   }
 
   async addPermissionInWorkspace(
-    workspaceArray: WorkspaceDto[],
+    workspaceArray: SelectedWorkspaces[],
     userId: string,
+    role: string,
   ): Promise<void> {
     const updatedIdArray = [];
     for (const item of workspaceArray) {
@@ -150,12 +149,47 @@ export class PermissionService {
     }
     const workspaceDataArray =
       await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
-    for (let index = 0; index < workspaceDataArray.length; index++) {
-      workspaceDataArray[index].permissions.push({
-        role: Role.READER,
-        id: userId,
-      });
+    if (role === WorkspaceRole.ADMIN) {
+      const user = await this.userRepository.getUserById(userId);
+      for (let index = 0; index < workspaceDataArray.length; index++) {
+        workspaceDataArray[index].users.push({
+          role: WorkspaceRole.ADMIN,
+          id: userId,
+        });
+        workspaceDataArray[index].admins.push({
+          id: userId,
+          name: user.name,
+        });
+      }
+    } else {
+      for (let index = 0; index < workspaceDataArray.length; index++) {
+        for (const item of workspaceArray) {
+          if (workspaceDataArray[index]._id.toString() === item.id.toString()) {
+            workspaceDataArray[index].users.push({
+              role: item.role,
+              id: userId,
+            });
+          }
+        }
+      }
     }
+    // for (let index = 0; index < workspaceDataArray.length; index++) {
+    //   if (role === WorkspaceRole) {
+    //     for (const item of workspaceArray) {
+    //       if (workspaceDataArray[index]._id.toString() === item.id.toString()) {
+    //         workspaceDataArray[index].users.push({
+    //           role: item.role,
+    //           id: userId,
+    //         });
+    //       }
+    //     }
+    //   } else {
+    //     workspaceDataArray[index].users.push({
+    //       role: WorkspaceRole.ADMIN,
+    //       id: userId,
+    //     });
+    //   }
+    // }
     const workspaceDataPromises = [];
     for (const item of workspaceDataArray) {
       workspaceDataPromises.push(
@@ -237,6 +271,57 @@ export class PermissionService {
     await Promise.all(workspaceDataPromises);
   }
 
+  async updatePermissionForAdmin(
+    workspaceArray: WorkspaceDto[],
+    userId: string,
+  ): Promise<void> {
+    const updatedIdArray = [];
+    for (const item of workspaceArray) {
+      if (!isString(item.id)) {
+        updatedIdArray.push(item.id);
+        continue;
+      }
+      updatedIdArray.push(new ObjectId(item.id));
+    }
+    const workspaceDataArray =
+      await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
+    for (let index = 0; index < workspaceDataArray.length; index++) {
+      const usersLength: Array<WorkspaceDto> = workspaceDataArray[index].users;
+      let count = 0;
+      for (let flag = 0; flag < usersLength.length; flag++) {
+        if (
+          workspaceDataArray[index].users[flag].id.toString() ===
+          userId.toString()
+        ) {
+          workspaceDataArray[index].users[flag].role = Role.ADMIN;
+        } else {
+          count++;
+        }
+      }
+      if (count === usersLength.length) {
+        workspaceDataArray[index].users.push({
+          id: userId,
+          role: WorkspaceRole.ADMIN,
+        });
+      }
+      const user = await this.userRepository.getUserById(userId);
+      workspaceDataArray[index].admins.push({
+        id: userId,
+        name: user.name,
+      });
+    }
+    const workspaceDataPromises = [];
+    for (const item of workspaceDataArray) {
+      workspaceDataPromises.push(
+        this.workspaceRepository.updateWorkspaceById(
+          new ObjectId(item._id),
+          item as WorkspaceDtoForIdDocument,
+        ),
+      );
+    }
+    await Promise.all(workspaceDataPromises);
+  }
+
   async updatePermissionInWorkspace(
     payload: CreatePermissionDto,
   ): Promise<Workspace> {
@@ -256,9 +341,6 @@ export class PermissionService {
     await this.workspaceRepository.updateWorkspaceById(
       new ObjectId(payload.workspaceId),
       updatedPermissionParams,
-    );
-    await this.redisService.set(
-      this.userBlacklistPrefix + payload.userId.toString(),
     );
     const workspace = await this.workspaceRepository.get(payload.workspaceId);
     return workspace;
@@ -280,9 +362,6 @@ export class PermissionService {
       new ObjectId(payload.workspaceId),
       updatedPermissionParams,
     );
-    await this.redisService.set(
-      this.userBlacklistPrefix + payload.userId.toString(),
-    );
     return data;
   }
 
@@ -290,19 +369,23 @@ export class PermissionService {
     return await this.permissionRepository.setAdminPermissionForOwner(_id);
   }
 
-  async isTeamOwner(id: ObjectId): Promise<WithId<Team>> {
-    const data = await this.teamRepository.findTeamByTeamId(id);
-    const userId = this.contextService.get("user")._id;
-    if (data) {
-      for (const item of data.owners) {
-        if (item.toString() === userId.toString()) {
-          return data;
-        }
-      }
-      throw new BadRequestException("You don't have access");
-    }
-    throw new BadRequestException("Team doesn't exist");
-  }
+  // async isTeamOwnerOrAdmin(id: ObjectId): Promise<WithId<Team>> {
+  //   const data = await this.teamRepository.findTeamByTeamId(id);
+  //   const userId = this.contextService.get("user")._id;
+  //   if (data) {
+  //     if (data.owner.toString() === userId.toString()) {
+  //       return data;
+  //     } else {
+  //       for (const item of data.admins) {
+  //         if (item.toString() === userId.toString()) {
+  //           return data;
+  //         }
+  //       }
+  //     }
+  //     throw new BadRequestException("You don't have access");
+  //   }
+  //   throw new BadRequestException("Team doesn't exist");
+  // }
 
   async isWorkspaceAdmin(id: ObjectId): Promise<boolean> {
     const currentUserId = this.contextService.get("user")._id;

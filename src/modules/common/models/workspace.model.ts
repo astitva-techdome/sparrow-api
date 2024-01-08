@@ -11,12 +11,33 @@ import {
 } from "class-validator";
 import { CollectionDto } from "./collection.model";
 import { ObjectId } from "mongodb";
-import { PermissionDto } from "./user.model";
+// import { PermissionDto } from "./user.model";
 import { EnvironmentDto } from "./environment.model";
+import { WorkspaceRole } from "../enum/roles.enum";
 
 export enum WorkspaceType {
   PERSONAL = "PERSONAL",
   TEAM = "TEAM",
+}
+
+export class UserDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
+  @IsEnum(WorkspaceRole)
+  @IsNotEmpty()
+  role: WorkspaceRole;
+}
+
+export class AdminDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 }
 
 export class OwnerInformationDto {
@@ -42,10 +63,6 @@ export class Workspace {
   @IsOptional()
   description?: string;
 
-  @Type(() => OwnerInformationDto)
-  @IsNotEmpty()
-  owner: OwnerInformationDto;
-
   @IsArray()
   @Type(() => CollectionDto)
   @ValidateNested({ each: true })
@@ -59,8 +76,16 @@ export class Workspace {
   environments?: EnvironmentDto[];
 
   @IsArray()
+  @Type(() => AdminDto)
+  @ValidateNested({ each: true })
   @IsOptional()
-  permissions?: PermissionDto[];
+  admins?: AdminDto[];
+
+  @IsArray()
+  @Type(() => UserDto)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  users?: UserDto[];
 
   @IsDate()
   @IsOptional()

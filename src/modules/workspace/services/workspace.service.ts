@@ -9,9 +9,10 @@ import {
   UpdateWorkspaceDto,
 } from "../payloads/workspace.payload";
 import {
-  OwnerInformationDto,
+  // AdminDto,
+  // OwnerInformationDto,
   Workspace,
-  WorkspaceType,
+  // WorkspaceType,
 } from "@src/modules/common/models/workspace.model";
 import { ContextService } from "@src/modules/common/services/context.service";
 import {
@@ -21,7 +22,7 @@ import {
   UpdateResult,
   WithId,
 } from "mongodb";
-import { Role } from "@src/modules/common/enum/roles.enum";
+import { Role, WorkspaceRole } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
 import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
@@ -37,6 +38,7 @@ import {
 } from "@src/modules/common/models/environment.model";
 import { CreateEnvironmentDto } from "../payloads/environment.payload";
 import { EnvironmentService } from "./environment.service";
+import { TeamService } from "@src/modules/identity/services/team.service";
 /**
  * Workspace Service
  */
@@ -49,6 +51,7 @@ export class WorkspaceService {
     private readonly permissionService: PermissionService,
     private readonly environmentService: EnvironmentService,
     private readonly userRepository: UserRepository,
+    private readonly teamService: TeamService,
     private readonly logger: Logger,
   ) {}
 
@@ -64,7 +67,7 @@ export class WorkspaceService {
       );
     }
     const workspaces: Workspace[] = [];
-    for (const { workspaceId } of user.personalWorkspaces) {
+    for (const { workspaceId } of user.workspaces) {
       const workspace = await this.get(workspaceId);
       workspaces.push(workspace);
     }
@@ -81,7 +84,7 @@ export class WorkspaceService {
   }
 
   async checkPermissions(teamData: Team): Promise<Array<PermissionForUserDto>> {
-    const teamOwners = teamData.owners;
+    const teamOwners = teamData.owner;
     const teamUsers = teamData.users;
     const permissionArray = [];
     for (const item of teamOwners) {
@@ -105,6 +108,24 @@ export class WorkspaceService {
     return permissionArray;
   }
 
+  async isWorkspaceAdminorEditor(id: string): Promise<Workspace> {
+    const workspaceData = await this.get(id);
+    const userId = this.contextService.get("user")._id;
+    if (workspaceData) {
+      for (const item of workspaceData.users) {
+        if (
+          item.id.toString() === userId.toString() &&
+          (item.role === WorkspaceRole.ADMIN ||
+            item.role === WorkspaceRole.EDITOR)
+        ) {
+          return workspaceData;
+        }
+      }
+      throw new BadRequestException("You don't have access to Edit Workspace");
+    }
+    throw new BadRequestException("Workspace doesn't exist");
+  }
+
   /**
    * Creates a new workspace in the database
    * @param {CreateOrUpdateWorkspaceDto} workspaceData
@@ -115,15 +136,7 @@ export class WorkspaceService {
   ): Promise<InsertOneResult<Document>> {
     const userId = this.contextService.get("user")._id;
     const teamId = new ObjectId(workspaceData.id);
-    let teamData;
-    let permissionDataForTeam;
-    if (workspaceData.type === WorkspaceType.TEAM) {
-      teamData = await this.permissionService.isTeamOwner(teamId);
-      permissionDataForTeam = await this.checkPermissions(
-        teamData as unknown as Team,
-      );
-    }
-
+    const teamData = await this.teamService.isTeamOwnerOrAdmin(teamId);
     const createEnvironmentDto: CreateEnvironmentDto = {
       name: DefaultEnvironment.GLOBAL,
       variable: [
@@ -144,30 +157,22 @@ export class WorkspaceService {
     const { _id: id, name, type } = environment;
     const environmentDto: EnvironmentDto = { id, name, type };
 
-    const ownerInfo: OwnerInformationDto = {
-      id:
-        workspaceData.type === WorkspaceType.PERSONAL
-          ? userId
-          : workspaceData.id,
-      name:
-        workspaceData.type === WorkspaceType.PERSONAL
-          ? this.contextService.get("user").name
-          : teamData.name,
-      type: workspaceData.type as WorkspaceType,
-    };
-    const permissionForUser = [
+    const adminInfo = [
       {
-        role: Role.ADMIN,
-        id: userId,
+        id: userId.toString(),
+        name: this.contextService.get("user").name,
+      },
+    ];
+    const usersInfo = [
+      {
+        role: WorkspaceRole.ADMIN,
+        id: userId.toString(),
       },
     ];
     const params = {
       name: workspaceData.name,
-      owner: ownerInfo,
-      permissions:
-        workspaceData.type === WorkspaceType.PERSONAL
-          ? permissionForUser
-          : permissionDataForTeam,
+      users: usersInfo,
+      admins: adminInfo,
       environments: [
         {
           id: environmentDto.id,
@@ -179,26 +184,24 @@ export class WorkspaceService {
       createdBy: userId,
     };
     const response = await this.workspaceRepository.addWorkspace(params);
-    if (workspaceData.type === WorkspaceType.TEAM) {
-      const teamWorkspaces = [...teamData.workspaces];
-      teamWorkspaces.push({
-        id: response.insertedId,
-        name: workspaceData.name,
-      });
-      const updateTeamParams = {
-        workspaces: teamWorkspaces,
-      };
-      await this.teamRepository.updateTeamById(teamId, updateTeamParams);
-    } else {
-      const userData = await this.userRepository.findUserByUserId(
-        new ObjectId(userId),
-      );
-      userData.personalWorkspaces.push({
-        workspaceId: response.insertedId.toString(),
-        name: ownerInfo.name,
-      });
-      await this.userRepository.updateUserById(new ObjectId(userId), userData);
-    }
+    const teamWorkspaces = [...teamData.workspaces];
+    teamWorkspaces.push({
+      id: response.insertedId,
+      name: workspaceData.name,
+    });
+    const updateTeamParams = {
+      workspaces: teamWorkspaces,
+    };
+    await this.teamRepository.updateTeamById(teamId, updateTeamParams);
+    const userData = await this.userRepository.findUserByUserId(
+      new ObjectId(userId),
+    );
+    userData.workspaces.push({
+      workspaceId: response.insertedId.toString(),
+      name: workspaceData.name,
+      teamId: workspaceData.id,
+    });
+    await this.userRepository.updateUserById(new ObjectId(userId), userData);
     return response;
   }
 
@@ -212,6 +215,7 @@ export class WorkspaceService {
     id: string,
     updates: UpdateWorkspaceDto,
   ): Promise<UpdateResult<Document>> {
+    await this.isWorkspaceAdminorEditor(id);
     const data = await this.workspaceRepository.update(id, updates);
     return data;
   }
@@ -222,6 +226,7 @@ export class WorkspaceService {
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
   async delete(id: string): Promise<DeleteResult> {
+    await this.isWorkspaceAdminorEditor(id);
     const data = await this.workspaceRepository.delete(id);
     return data;
   }
@@ -240,6 +245,7 @@ export class WorkspaceService {
     );
     return;
   }
+
   async updateCollectionInWorkSpace(
     workspaceId: string,
     collectionId: string,

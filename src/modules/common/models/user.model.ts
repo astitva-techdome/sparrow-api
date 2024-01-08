@@ -12,7 +12,7 @@ import {
   MaxLength,
   ValidateNested,
 } from "class-validator";
-import { Role } from "../enum/roles.enum";
+import { WorkspaceRole } from "../enum/roles.enum";
 import { TeamDto } from "./team.model";
 import { ObjectId } from "mongodb";
 
@@ -34,6 +34,7 @@ export class EarlyAccessEmail {
   @IsOptional()
   updatedAt?: Date;
 }
+
 export class User {
   @IsString()
   @IsNotEmpty()
@@ -61,7 +62,8 @@ export class User {
   @IsArray()
   @Type(() => UserWorkspaceDto)
   @ValidateNested({ each: true })
-  personalWorkspaces: UserWorkspaceDto[];
+  workspaces: UserWorkspaceDto[];
+
   @IsDate()
   @IsOptional()
   createdAt?: Date;
@@ -98,6 +100,10 @@ export class UserDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  role: string;
 }
 
 class AuthProvider {
@@ -111,14 +117,15 @@ class AuthProvider {
 }
 
 export class PermissionDto {
-  @IsEnum(Role)
+  @IsEnum(WorkspaceRole)
   @IsNotEmpty()
-  role: Role;
+  role: WorkspaceRole;
 
   @IsMongoId()
   @IsNotEmpty()
   id: ObjectId;
 }
+
 export class UserWorkspaceDto {
   @IsMongoId()
   @IsNotEmpty()
@@ -127,4 +134,8 @@ export class UserWorkspaceDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  teamId: string;
 }

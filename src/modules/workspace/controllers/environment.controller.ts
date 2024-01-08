@@ -23,8 +23,6 @@ import { FastifyReply } from "fastify";
 import { EnvironmentService } from "../services/environment.service";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
-import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
-
 import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 import { EnvironmentType } from "@src/modules/common/models/environment.model";
 import { WorkspaceService } from "../services/workspace.service";
@@ -32,7 +30,7 @@ import { WorkspaceService } from "../services/workspace.service";
 @ApiBearerAuth()
 @ApiTags("environment")
 @Controller("api/workspace")
-@UseGuards(JwtAuthGuard, BlacklistGuard)
+@UseGuards(JwtAuthGuard)
 export class EnvironmentController {
   constructor(
     private readonly workspaceService: WorkspaceService,

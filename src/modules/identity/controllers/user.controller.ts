@@ -19,7 +19,6 @@ import {
 import { UserService } from "../services/user.service";
 import { RegisterPayload } from "../payloads/register.payload";
 import { UpdateUserDto } from "../payloads/user.payload";
-import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
@@ -64,7 +63,7 @@ export class UserController {
     summary: "Retrieve  User",
     description: "This will return  information about a specific user",
   })
-  @UseGuards(JwtAuthGuard, BlacklistGuard)
+  @UseGuards(JwtAuthGuard)
   async getUser(@Param("userId") id: string, @Res() res: FastifyReply) {
     const data = await this.userService.getUserById(id);
     const responseData = new ApiResponseService(

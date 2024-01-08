@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { TeamDto } from "@src/modules/common/models/team.model";
-import { PermissionDto } from "@src/modules/common/models/user.model";
+// import { PermissionDto } from "@src/modules/common/models/user.model";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsString,
   Matches,
+  // ValidateNested,
 } from "class-validator";
 
 export class UpdateUserDto {
@@ -22,6 +23,12 @@ export class UpdateUserDto {
   @Matches(/^[a-zA-Z ]+$/)
   @IsNotEmpty()
   name: string;
+
+  // @IsArray()
+  // @Type(() => TeamDto)
+  // @ValidateNested({ each: true })
+  // @IsOptional()
+  // teams?: TeamDto[];
 }
 
 export class UserDto {
@@ -33,10 +40,10 @@ export class UserDto {
   @IsOptional()
   email?: string;
 
-  @IsArray()
-  @IsOptional()
-  @Type(() => PermissionDto)
-  permissions?: PermissionDto[];
+  // @IsArray()
+  // @IsOptional()
+  // @Type(() => PermissionDto)
+  // permissions?: PermissionDto[];
 
   @IsArray()
   @IsOptional()

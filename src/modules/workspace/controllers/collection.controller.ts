@@ -24,7 +24,6 @@ import { CollectionService } from "../services/collection.service";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 import { WorkspaceService } from "../services/workspace.service";
-import { BlacklistGuard } from "@src/modules/common/guards/blacklist.guard";
 import {
   CollectionRequestDto,
   FolderPayload,
@@ -36,7 +35,7 @@ import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 @ApiBearerAuth()
 @ApiTags("collection")
 @Controller("api/collection")
-@UseGuards(JwtAuthGuard, BlacklistGuard)
+@UseGuards(JwtAuthGuard)
 export class collectionController {
   constructor(
     private readonly collectionService: CollectionService,

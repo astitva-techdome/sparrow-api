@@ -14,12 +14,12 @@ import { PermissionDto } from "./permission.payload";
 export class WorkspaceDto {
   @ApiProperty({ example: "64f878a0293b1e4415866493" })
   @IsMongoId()
-  @IsOptional()
-  id?: string;
+  @IsNotEmpty()
+  id: string;
 
-  @IsArray()
-  @IsOptional()
-  owners?: string[];
+  // @IsArray()
+  // @IsOptional()
+  // owners?: string[];
 
   @IsOptional()
   @IsArray()
@@ -46,12 +46,12 @@ export class CreateWorkspaceDto extends WorkspaceDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({
-    example: WorkspaceType.TEAM,
-  })
-  @IsEnum(WorkspaceType)
-  @IsNotEmpty()
-  type: WorkspaceType;
+  // @ApiProperty({
+  //   example: WorkspaceType.TEAM,
+  // })
+  // @IsEnum(WorkspaceType)
+  // @IsOptional()
+  // type?: WorkspaceType;
 }
 
 export class UpdateWorkspaceDto extends WorkspaceDto {

@@ -84,7 +84,7 @@ export class EnvironmentService {
    */
   async checkPermission(workspaceId: string, userid: ObjectId): Promise<void> {
     const workspace = await this.workspaceReposistory.get(workspaceId);
-    const hasPermission = workspace.permissions.some((user) => {
+    const hasPermission = workspace.users.some((user) => {
       return user.id.toString() === userid.toString();
     });
     if (!hasPermission) {
