@@ -26,12 +26,20 @@ export class TeamUserService {
     private readonly teamService: TeamService,
   ) {}
 
-  async HasPermission(data: Array<string>): Promise<boolean> {
-    const user = this.contextService.get("user");
-    for (const item of data) {
-      if (item.toString() === user._id.toString()) {
-        return true;
-      }
+  async HasPermissionToRemove(
+    payload: CreateOrUpdateTeamUserDto,
+    teamData: Team,
+  ): Promise<TeamRole> {
+    const currentUser = this.contextService.get("user");
+    if (payload.userId === teamData.owner) {
+      throw new BadRequestException("You cannot remove Owner");
+    } else if (currentUser._id.toString() === teamData.owner) {
+      return TeamRole.OWNER;
+    } else if (
+      teamData.admins.includes(currentUser._id.toString()) &&
+      !teamData.admins.includes(payload.userId)
+    ) {
+      return TeamRole.ADMIN;
     }
     throw new BadRequestException("You don't have access");
   }
@@ -64,7 +72,7 @@ export class TeamUserService {
     const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
     const userFilter = new ObjectId(payload.userId);
     const userData = await this.userRepository.findUserByUserId(userFilter);
-    await this.HasPermission([teamData.owner]);
+    await this.teamService.isTeamOwnerOrAdmin(teamFilter);
     const teamUsers = [...teamData.users];
     const teamAdmins = [...teamData.admins];
     teamUsers.push({
@@ -128,44 +136,59 @@ export class TeamUserService {
     return updatedTeamResponse;
   }
 
-  // async removeUser(payload: CreateOrUpdateTeamUserDto): Promise<WithId<Team>> {
-  //   const teamFilter = new ObjectId(payload.teamId);
-  //   const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
-  //   const userFilter = new ObjectId(payload.userId);
-  //   const userData = await this.userRepository.findUserByUserId(userFilter);
-  //   const teamOwners = teamData.owner;
-  //   await this.HasPermission([teamOwners]);
-  //   const teamUser = [...teamData.users];
-  //   const filteredData = teamUser.filter((item) => item.id !== payload.userId);
-  //   const filteredOwner = teamOwners.filter(
-  //     (id: string) => id.toString() !== payload.userId.toString(),
-  //   );
-  //   const teamUpdatedParams = {
-  //     users: filteredData,
-  //     owners: filteredOwner,
-  //   };
-  //   const userTeams = [...userData.teams];
-  //   const userFilteredTeams = userTeams.filter(
-  //     (item) => item.id.toString() !== payload.teamId.toString(),
-  //   );
-  //   const userUpdatedParams = {
-  //     teams: userFilteredTeams,
-  //   };
-  //   await this.userRepository.updateUserById(userFilter, userUpdatedParams);
-  //   const teamWorkspaces = [...teamData.workspaces];
-  //   const message = {
-  //     teamWorkspaces: teamWorkspaces,
-  //     userId: userData._id,
-  //   };
-  //   await this.producerService.produce(TOPIC.USER_REMOVED_FROM_TEAM_TOPIC, {
-  //     value: JSON.stringify(message),
-  //   });
-  //   const data = await this.teamRepository.updateTeamById(
-  //     teamFilter,
-  //     teamUpdatedParams,
-  //   );
-  //   return data;
-  // }
+  async removeUser(payload: CreateOrUpdateTeamUserDto): Promise<WithId<Team>> {
+    const teamFilter = new ObjectId(payload.teamId);
+    const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
+    const userFilter = new ObjectId(payload.userId);
+    const userData = await this.userRepository.findUserByUserId(userFilter);
+    const teamAdmins = [...teamData.admins];
+    await this.HasPermissionToRemove(payload, teamData);
+    let userTeamRole;
+    for (const item of userData.teams) {
+      if (item.id.toString() === payload.teamId) {
+        userTeamRole = item.role;
+      }
+    }
+    const teamUser = [...teamData.users];
+    let filteredAdmin;
+    const filteredData = teamUser.filter((item) => item.id !== payload.userId);
+    if (userTeamRole === TeamRole.ADMIN) {
+      filteredAdmin = teamAdmins.filter(
+        (id: string) => id.toString() !== payload.userId.toString(),
+      );
+    }
+    const teamUpdatedParams = {
+      users: filteredData,
+      admins: userTeamRole === TeamRole.ADMIN ? filteredAdmin : teamAdmins,
+    };
+    const userTeams = [...userData.teams];
+    const userFilteredTeams = userTeams.filter(
+      (item) => item.id.toString() !== payload.teamId.toString(),
+    );
+    const userFilteredWorkspaces = userData.workspaces.filter(
+      (workspace) => workspace.teamId !== payload.teamId,
+    );
+    const userUpdatedParams = {
+      teams: userFilteredTeams,
+      workspaces: userFilteredWorkspaces,
+    };
+    await this.userRepository.updateUserById(userFilter, userUpdatedParams);
+    const teamWorkspaces = [...teamData.workspaces];
+
+    const message = {
+      teamWorkspaces: teamWorkspaces,
+      userId: userData._id,
+      role: userTeamRole,
+    };
+    await this.producerService.produce(TOPIC.USER_REMOVED_FROM_TEAM_TOPIC, {
+      value: JSON.stringify(message),
+    });
+    const data = await this.teamRepository.updateTeamById(
+      teamFilter,
+      teamUpdatedParams,
+    );
+    return data;
+  }
 
   async addAdmin(payload: CreateOrUpdateTeamUserDto): Promise<WithId<Team>> {
     const teamFilter = new ObjectId(payload.teamId);

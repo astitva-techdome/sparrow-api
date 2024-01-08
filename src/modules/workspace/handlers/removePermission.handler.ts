@@ -19,9 +19,11 @@ export class RemovePermissionHandler implements OnModuleInit {
         const data = JSON.parse(message.value.toString());
         const permissionArray = data.teamWorkspaces;
         const userId = data.userId;
+        const role = data.role;
         await this.permissionService.removePermissionInWorkspace(
           permissionArray,
           userId,
+          role,
         );
       },
       onError: async (error) => {

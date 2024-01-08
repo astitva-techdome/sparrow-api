@@ -150,11 +150,12 @@ export class TeamController {
     @Param("userId") userId: string,
     @Res() res: FastifyReply,
   ) {
-    // const data = await this.teamUserService.removeUser({ teamId, userId });
+    await this.teamUserService.removeUser({ teamId, userId });
+    const team = await this.teamService.get(teamId);
     const responseData = new ApiResponseService(
       "User Removed",
       HttpStatusCode.OK,
-      // data,
+      team,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }

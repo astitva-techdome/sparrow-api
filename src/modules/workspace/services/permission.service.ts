@@ -188,6 +188,7 @@ export class PermissionService {
   async removePermissionInWorkspace(
     workspaceArray: WorkspaceDto[],
     userId: string,
+    role: string,
   ): Promise<void> {
     const updatedIdArray = [];
     for (const item of workspaceArray) {
@@ -200,9 +201,14 @@ export class PermissionService {
     const workspaceDataArray =
       await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
     for (let index = 0; index < workspaceDataArray.length; index++) {
-      workspaceDataArray[index].permissions = workspaceDataArray[
-        index
-      ].permissions.filter((item: any) => item.id.toString() !== userId);
+      workspaceDataArray[index].users = workspaceDataArray[index].users.filter(
+        (item: any) => item.id.toString() !== userId,
+      );
+      if (role === WorkspaceRole.ADMIN) {
+        workspaceDataArray[index].admins = workspaceDataArray[
+          index
+        ].admins.filter((item: any) => item.id.toString() !== userId);
+      }
     }
     const workspaceDataPromises = [];
     for (const item of workspaceDataArray) {
