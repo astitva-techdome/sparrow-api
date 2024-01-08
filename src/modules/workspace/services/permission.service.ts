@@ -173,23 +173,6 @@ export class PermissionService {
         }
       }
     }
-    // for (let index = 0; index < workspaceDataArray.length; index++) {
-    //   if (role === WorkspaceRole) {
-    //     for (const item of workspaceArray) {
-    //       if (workspaceDataArray[index]._id.toString() === item.id.toString()) {
-    //         workspaceDataArray[index].users.push({
-    //           role: item.role,
-    //           id: userId,
-    //         });
-    //       }
-    //     }
-    //   } else {
-    //     workspaceDataArray[index].users.push({
-    //       role: WorkspaceRole.ADMIN,
-    //       id: userId,
-    //     });
-    //   }
-    // }
     const workspaceDataPromises = [];
     for (const item of workspaceDataArray) {
       workspaceDataPromises.push(

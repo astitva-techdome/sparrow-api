@@ -71,16 +71,16 @@ export class TeamUserService {
       id: payload.userId,
       email: userData.email,
       name: userData.name,
-      role: payload.role ?? TeamRole.MEMBER,
+      role: payload.role === TeamRole.ADMIN ? TeamRole.ADMIN : TeamRole.MEMBER,
     });
     const userTeams = [...userData.teams];
     const userWorkspaces = [...userData.workspaces];
     userTeams.push({
       id: new ObjectId(payload.teamId),
       name: teamData.name,
-      role: payload.role ?? TeamRole.MEMBER,
+      role: payload.role === TeamRole.ADMIN ? TeamRole.ADMIN : TeamRole.MEMBER,
     });
-    if (payload.role) {
+    if (payload.role === TeamRole.ADMIN) {
       teamAdmins.push(payload.userId);
       for (const item of teamData.workspaces) {
         userWorkspaces.push({
@@ -93,7 +93,7 @@ export class TeamUserService {
       for (const item of payload.workspaces) {
         userWorkspaces.push({
           teamId: payload.teamId,
-          workspaceId: item.id,
+          workspaceId: item.id.toString(),
           name: item.name,
         });
       }
@@ -103,9 +103,10 @@ export class TeamUserService {
       admins: teamAdmins,
     };
 
-    const teamWorkspaces = payload.role
-      ? [...teamData.workspaces]
-      : payload.workspaces;
+    const teamWorkspaces =
+      payload.role === TeamRole.ADMIN
+        ? [...teamData.workspaces]
+        : payload.workspaces;
     const message = {
       teamWorkspaces: teamWorkspaces,
       userId: userData._id,
