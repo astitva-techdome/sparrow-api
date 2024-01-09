@@ -18,18 +18,10 @@ export class CreateOrUpdateTeamUserDto {
   @IsNotEmpty()
   teamId: string;
 
-  @IsString()
-  @IsOptional()
-  role?: string;
-
   @ApiProperty({ example: "64f03af32e420f7f68055b92" })
   @IsMongoId()
   @IsNotEmpty()
   userId: string;
-
-  @IsMongoId()
-  @IsOptional()
-  workspaceId?: string;
 }
 
 export class CreateOrUpdateTeamUserResponseDto {

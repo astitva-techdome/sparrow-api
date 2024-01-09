@@ -13,14 +13,14 @@ export class OwnerPermissionHandler implements OnModuleInit {
 
   async onModuleInit() {
     await this.consumerService.consume({
-      topic: { topic: TOPIC.TEAM_OWNER_ADDED_TOPIC },
-      config: { groupId: SUBSCRIPTION.TEAM_OWNER_ADDED_SUBSCRIPTION },
+      topic: { topic: TOPIC.TEAM_OWNER_CHANGED_TOPIC },
+      config: { groupId: SUBSCRIPTION.TEAM_OWNER_CHANGED_SUBSCRIPTION },
       onMessage: async (message) => {
         const data = JSON.parse(message.value.toString());
-        const permissionArray = data.teamWorkspaces;
+        const workspaceArray = data.teamWorkspaces;
         const userId = data.userId;
-        await this.permissionService.updatePermissionForOwner(
-          permissionArray,
+        await this.permissionService.updatePermissionForAdmin(
+          workspaceArray,
           userId,
         );
       },

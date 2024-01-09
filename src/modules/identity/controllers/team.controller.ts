@@ -167,7 +167,7 @@ export class TeamController {
   })
   @ApiResponse({ status: 201, description: "Team Admin Added Successfully" })
   @ApiResponse({ status: 400, description: "Failed to add team admin" })
-  async addTeamOwner(
+  async addTeamAdmin(
     @Param("teamId") teamId: string,
     @Param("userId") userId: string,
     @Res() res: FastifyReply,
@@ -176,6 +176,28 @@ export class TeamController {
     const team = await this.teamService.get(teamId);
     const responseData = new ApiResponseService(
       "Admin added",
+      HttpStatusCode.OK,
+      team,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Post(":teamId/owner/:userId")
+  @ApiOperation({
+    summary: "Change Owner in a Team",
+    description: "This will change the owner in a team",
+  })
+  @ApiResponse({ status: 201, description: "Team Owner Change Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to change team owner" })
+  async changeOwner(
+    @Param("teamId") teamId: string,
+    @Param("userId") userId: string,
+    @Res() res: FastifyReply,
+  ) {
+    await this.teamUserService.changeOwner({ teamId, userId });
+    const team = await this.teamService.get(teamId);
+    const responseData = new ApiResponseService(
+      "Owner changed",
       HttpStatusCode.OK,
       team,
     );

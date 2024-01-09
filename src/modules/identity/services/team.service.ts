@@ -121,4 +121,15 @@ export class TeamService {
     }
     throw new BadRequestException("Team doesn't exist");
   }
+
+  async isTeamMember(userId: string, userArray: Array<any>): Promise<boolean> {
+    for (const item of userArray) {
+      if (item.id.toString() === userId) {
+        return true;
+      }
+    }
+    throw new BadRequestException(
+      "User is not part of team, first add user in Team",
+    );
+  }
 }

@@ -248,4 +248,130 @@ export class TeamUserService {
     });
     return response;
   }
+
+  async isTeamAdmin(payload: CreateOrUpdateTeamUserDto): Promise<boolean> {
+    const teamDetails = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(payload.teamId),
+    );
+    if (teamDetails.admins.includes(payload.userId)) {
+      return true;
+    } else if (teamDetails.owner === payload.userId) {
+      throw new BadRequestException(
+        "You cannot transfer ownership to yourself",
+      );
+    }
+    return false;
+  }
+
+  async isTeamOwner(id: string): Promise<boolean> {
+    const user = await this.contextService.get("user");
+    const teamDetails = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(id),
+    );
+    if (teamDetails.owner !== user._id.toString()) {
+      throw new BadRequestException("You don't have access");
+    }
+    return true;
+  }
+
+  async changeOwner(payload: CreateOrUpdateTeamUserDto) {
+    const user = await this.contextService.get("user");
+    await this.isTeamOwner(payload.teamId);
+    const currentUserAdmin = await this.isTeamAdmin(payload);
+    const teamDetails = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(payload.teamId),
+    );
+    await this.teamService.isTeamMember(payload.userId, teamDetails.users);
+    const teamUsers = [...teamDetails.users];
+    for (let index = 0; index < teamUsers.length; index++) {
+      if (teamUsers[index].id.toString() === user._id.toString()) {
+        teamUsers[index].role = TeamRole.ADMIN;
+      } else if (teamUsers[index].id.toString() === payload.userId) {
+        teamUsers[index].role = TeamRole.OWNER;
+      }
+    }
+    const teamAdmins = [...teamDetails.admins];
+    let filteredAdmin;
+    if (currentUserAdmin) {
+      filteredAdmin = teamAdmins.filter(
+        (adminId) => adminId !== payload.userId,
+      );
+      filteredAdmin.push(user._id.toString());
+    } else {
+      teamAdmins.push(user._id.toString());
+    }
+    const updatedTeamParams = {
+      users: teamUsers,
+      admins: currentUserAdmin ? filteredAdmin : teamAdmins,
+      owner: payload.userId,
+    };
+    const response = await this.teamRepository.updateTeamById(
+      new ObjectId(payload.teamId),
+      updatedTeamParams,
+    );
+    const prevOwnerUserDetails = await this.userRepository.getUserById(
+      user._id.toString(),
+    );
+    const currentOwnerUserDetails = await this.userRepository.getUserById(
+      payload.userId,
+    );
+    const prevOwnerUserTeams = [...prevOwnerUserDetails.teams];
+    for (let index = 0; index < prevOwnerUserTeams.length; index++) {
+      if (prevOwnerUserTeams[index].id.toString() === payload.teamId) {
+        prevOwnerUserTeams[index].role = TeamRole.ADMIN;
+      }
+    }
+    const currentOwnerUserTeams = [...currentOwnerUserDetails.teams];
+    for (let index = 0; index < currentOwnerUserTeams.length; index++) {
+      if (currentOwnerUserTeams[index].id.toString() === payload.teamId) {
+        currentOwnerUserTeams[index].role = TeamRole.OWNER;
+      }
+    }
+    const currentOwnerUserWorkspaces = [...currentOwnerUserDetails.workspaces];
+    if (!currentUserAdmin) {
+      for (let index = 0; index < teamDetails.workspaces.length; index++) {
+        let count = 0;
+        for (let flag = 0; flag < currentOwnerUserWorkspaces.length; flag++) {
+          if (
+            teamDetails.workspaces[index].id.toString() !==
+            currentOwnerUserWorkspaces[flag].workspaceId
+          ) {
+            count++;
+          }
+        }
+        if (count === currentOwnerUserWorkspaces.length) {
+          currentOwnerUserWorkspaces.push({
+            workspaceId: teamDetails.workspaces[index].id.toString(),
+            teamId: teamDetails._id.toString(),
+            name: teamDetails.workspaces[index].name,
+          });
+        }
+      }
+    }
+    const prevOwnerUpdatedParams = {
+      teams: prevOwnerUserTeams,
+    };
+    await this.userRepository.updateUserById(
+      new ObjectId(user._id),
+      prevOwnerUpdatedParams,
+    );
+    const currentOwnerUpdatedParams = {
+      teams: currentOwnerUserTeams,
+      workspaces: currentOwnerUserWorkspaces,
+    };
+    await this.userRepository.updateUserById(
+      new ObjectId(payload.userId),
+      currentOwnerUpdatedParams,
+    );
+    if (!currentUserAdmin) {
+      const message = {
+        userId: payload.userId,
+        teamWorkspaces: teamDetails.workspaces,
+      };
+      await this.producerService.produce(TOPIC.TEAM_OWNER_CHANGED_TOPIC, {
+        value: JSON.stringify(message),
+      });
+    }
+    return response;
+  }
 }
