@@ -358,24 +358,6 @@ export class PermissionService {
     return await this.permissionRepository.setAdminPermissionForOwner(_id);
   }
 
-  // async isTeamOwnerOrAdmin(id: ObjectId): Promise<WithId<Team>> {
-  //   const data = await this.teamRepository.findTeamByTeamId(id);
-  //   const userId = this.contextService.get("user")._id;
-  //   if (data) {
-  //     if (data.owner.toString() === userId.toString()) {
-  //       return data;
-  //     } else {
-  //       for (const item of data.admins) {
-  //         if (item.toString() === userId.toString()) {
-  //           return data;
-  //         }
-  //       }
-  //     }
-  //     throw new BadRequestException("You don't have access");
-  //   }
-  //   throw new BadRequestException("Team doesn't exist");
-  // }
-
   async isWorkspaceAdmin(id: ObjectId): Promise<boolean> {
     const currentUserId = this.contextService.get("user")._id;
     const workspaceData = await this.workspaceRepository.findWorkspaceById(id);

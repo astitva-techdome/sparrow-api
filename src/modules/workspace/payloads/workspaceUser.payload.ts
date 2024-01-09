@@ -1,11 +1,44 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Role } from "@src/modules/common/enum/roles.enum";
-import { IsString } from "class-validator";
+import { IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class AddWorkspaceUserDto {
   @ApiProperty({
-    example: Role.ADMIN,
+    example: "editor",
   })
   @IsString()
+  @IsNotEmpty()
   role: string;
+
+  @ApiProperty({
+    example: "64f878a0293b1e4415866493",
+  })
+  @IsMongoId()
+  @IsNotEmpty()
+  teamId: string;
+}
+
+export class AddUserInWorkspcaeDto {
+  @ApiProperty({
+    example: "editor",
+  })
+  @IsString()
+  @IsNotEmpty()
+  role: string;
+
+  @ApiProperty()
+  @IsMongoId()
+  @IsOptional()
+  userId?: string;
+
+  @ApiProperty({
+    example: "64f878a0293b1e4415866493",
+  })
+  @IsMongoId()
+  @IsNotEmpty()
+  teamId: string;
+
+  @ApiProperty()
+  @IsMongoId()
+  @IsOptional()
+  workspaceId?: string;
 }

@@ -8,12 +8,7 @@ import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
 } from "../payloads/workspace.payload";
-import {
-  // AdminDto,
-  // OwnerInformationDto,
-  Workspace,
-  // WorkspaceType,
-} from "@src/modules/common/models/workspace.model";
+import { Workspace } from "@src/modules/common/models/workspace.model";
 import { ContextService } from "@src/modules/common/services/context.service";
 import {
   DeleteResult,
@@ -24,7 +19,6 @@ import {
 } from "mongodb";
 import { Role, WorkspaceRole } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
-import { PermissionService } from "@src/modules/workspace/services/permission.service";
 import { Team } from "@src/modules/common/models/team.model";
 import { PermissionForUserDto } from "../payloads/permission.payload";
 import { CollectionDto } from "@src/modules/common/models/collection.model";
@@ -39,6 +33,7 @@ import {
 import { CreateEnvironmentDto } from "../payloads/environment.payload";
 import { EnvironmentService } from "./environment.service";
 import { TeamService } from "@src/modules/identity/services/team.service";
+// import { AddUserInWorkspcaeDto } from "../payloads/workspaceUser.payload";
 /**
  * Workspace Service
  */
@@ -48,7 +43,6 @@ export class WorkspaceService {
     private readonly workspaceRepository: WorkspaceRepository,
     private readonly contextService: ContextService,
     private readonly teamRepository: TeamRepository,
-    private readonly permissionService: PermissionService,
     private readonly environmentService: EnvironmentService,
     private readonly userRepository: UserRepository,
     private readonly teamService: TeamService,
@@ -121,10 +115,24 @@ export class WorkspaceService {
           return workspaceData;
         }
       }
-      throw new BadRequestException("You don't have access to Edit Workspace");
+      throw new BadRequestException("You don't have access for this Workspace");
     }
-    throw new BadRequestException("Workspace doesn't exist");
+    throw new NotFoundException("Workspace doesn't exist");
   }
+
+  async isTeamMember(teamId: string, userId: string): Promise<boolean> {
+    const teamData = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(teamId),
+    );
+    const isMemeberExists = teamData.users.some((user) => {
+      return user.id === userId;
+    });
+    return isMemeberExists;
+  }
+
+  // async isWorkspaceAdmin() {
+
+  // }
 
   /**
    * Creates a new workspace in the database
@@ -171,6 +179,7 @@ export class WorkspaceService {
     ];
     const params = {
       name: workspaceData.name,
+      teamId: workspaceData.id,
       users: usersInfo,
       admins: adminInfo,
       environments: [
@@ -182,6 +191,8 @@ export class WorkspaceService {
       ],
       createdAt: new Date(),
       createdBy: userId,
+      updatedAt: new Date(),
+      updatedBy: userId,
     };
     const response = await this.workspaceRepository.addWorkspace(params);
     const teamWorkspaces = [...teamData.workspaces];
@@ -235,10 +246,7 @@ export class WorkspaceService {
     workspaceId: string,
     collection: CollectionDto,
   ): Promise<void> {
-    const data = await this.get(workspaceId);
-    if (!data) {
-      throw new NotFoundException("Workspace with this id does't exist");
-    }
+    await this.isWorkspaceAdminorEditor(workspaceId);
     await this.workspaceRepository.addCollectionInWorkspace(
       workspaceId,
       collection,
@@ -251,10 +259,7 @@ export class WorkspaceService {
     collectionId: string,
     name: string,
   ): Promise<void> {
-    const data = await this.get(workspaceId);
-    if (!data) {
-      throw new NotFoundException("Workspace with this id does't exist");
-    }
+    await this.isWorkspaceAdminorEditor(workspaceId);
     await this.workspaceRepository.updateCollectioninWorkspace(
       workspaceId,
       collectionId,
@@ -267,10 +272,8 @@ export class WorkspaceService {
     workspaceId: string,
     collectionId: string,
   ): Promise<void> {
+    await this.isWorkspaceAdminorEditor(workspaceId);
     const data = await this.get(workspaceId);
-    if (!data) {
-      throw new NotFoundException("Workspace with this id does't exist");
-    }
 
     const filteredCollections = data.collection.filter((collection) => {
       return collection.id.toString() !== collectionId;
@@ -290,10 +293,7 @@ export class WorkspaceService {
     workspaceId: string,
     environment: EnvironmentDto,
   ): Promise<void> {
-    const data = await this.get(workspaceId);
-    if (!data) {
-      throw new NotFoundException("Workspace with this id doesn't exist");
-    }
+    await this.isWorkspaceAdminorEditor(workspaceId);
     await this.workspaceRepository.addEnvironmentInWorkspace(
       workspaceId,
       environment,
@@ -310,10 +310,8 @@ export class WorkspaceService {
     workspaceId: string,
     environmentId: string,
   ): Promise<void> {
+    await this.isWorkspaceAdminorEditor(workspaceId);
     const data = await this.get(workspaceId);
-    if (!data) {
-      throw new NotFoundException("Workspace with this id doesn't exist");
-    }
 
     const filteredEnvironments = data.environments.filter((env) => {
       return env.id.toString() !== environmentId;
@@ -335,10 +333,7 @@ export class WorkspaceService {
     environmentId: string,
     name: string,
   ): Promise<void> {
-    const data = await this.get(workspaceId);
-    if (!data) {
-      throw new NotFoundException("Workspace with this id does't exist");
-    }
+    await this.isWorkspaceAdminorEditor(workspaceId);
     await this.workspaceRepository.updateEnvironmentinWorkspace(
       workspaceId,
       environmentId,
@@ -346,4 +341,9 @@ export class WorkspaceService {
     );
     return;
   }
+
+  // async addUserInWorkspace(payload: AddUserInWorkspcaeDto) {
+  //   await this.isTeamMember(payload.teamId, payload.userId);
+  //   const user = await this.contextService.get("user");
+  // }
 }

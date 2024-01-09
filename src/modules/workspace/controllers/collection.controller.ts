@@ -256,6 +256,9 @@ export class collectionController {
     const collectionId = requestDto.collectionId;
     const workspaceId = requestDto.workspaceId;
     const user = await this.contextService.get("user");
+    await this.workSpaceService.isWorkspaceAdminorEditor(
+      requestDto.workspaceId,
+    );
     await this.collectionRequestService.checkPermission(workspaceId, user._id);
     const noOfRequests = await this.collectionRequestService.getNoOfRequest(
       collectionId,
@@ -290,6 +293,9 @@ export class collectionController {
   ) {
     const collectionId = requestDto.collectionId;
     const workspaceId = requestDto.workspaceId;
+    await this.workSpaceService.isWorkspaceAdminorEditor(
+      requestDto.workspaceId,
+    );
     const user = await this.contextService.get("user");
     await this.collectionRequestService.checkPermission(workspaceId, user._id);
     const request = await this.collectionRequestService.updateRequest(
@@ -321,6 +327,9 @@ export class collectionController {
   ) {
     const collectionId = requestDto.collectionId;
     const workspaceId = requestDto.workspaceId;
+    await this.workSpaceService.isWorkspaceAdminorEditor(
+      requestDto.workspaceId,
+    );
     const user = await this.contextService.get("user");
     await this.collectionRequestService.checkPermission(workspaceId, user._id);
     const noOfRequests = await this.collectionRequestService.getNoOfRequest(

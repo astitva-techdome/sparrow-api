@@ -100,6 +100,7 @@ export class WorkSpaceController {
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
+
   @Get("user/:userId")
   @ApiOperation({
     summary: "Retreive all User's Workspaces",
@@ -125,6 +126,7 @@ export class WorkSpaceController {
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
+
   @Get("team/:teamId")
   @ApiOperation({
     summary: "Retreive Team's all Workspaces",

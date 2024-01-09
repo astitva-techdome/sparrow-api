@@ -59,6 +59,10 @@ export class Workspace {
   @IsNotEmpty()
   name: string;
 
+  @IsMongoId()
+  @IsNotEmpty()
+  teamId: string;
+
   @IsString()
   @IsOptional()
   description?: string;
