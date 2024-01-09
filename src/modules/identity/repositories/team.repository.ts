@@ -54,6 +54,7 @@ export class TeamRepository {
       createdBy: user._id,
       createdAt: new Date(),
       updatedAt: new Date(),
+      updatedBy: user._id,
     };
 
     const createdTeam = await this.db
