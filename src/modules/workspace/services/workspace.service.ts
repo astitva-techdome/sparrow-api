@@ -33,7 +33,7 @@ import {
 import { CreateEnvironmentDto } from "../payloads/environment.payload";
 import { EnvironmentService } from "./environment.service";
 import { TeamService } from "@src/modules/identity/services/team.service";
-// import { AddUserInWorkspcaeDto } from "../payloads/workspaceUser.payload";
+import { AddUserInWorkspcaeDto } from "../payloads/workspaceUser.payload";
 /**
  * Workspace Service
  */
@@ -124,15 +124,20 @@ export class WorkspaceService {
     const teamData = await this.teamRepository.findTeamByTeamId(
       new ObjectId(teamId),
     );
-    const isMemeberExists = teamData.users.some((user) => {
-      return user.id === userId;
-    });
-    return isMemeberExists;
+    for (const user of teamData.users) {
+      if (user.id === userId) return true;
+    }
+    throw new NotFoundException("User is not Part of Team");
   }
 
-  // async isWorkspaceAdmin() {
-
-  // }
+  async isWorkspaceAdmin(workspaceId: string): Promise<boolean> {
+    const workspaceData = await this.workspaceRepository.get(workspaceId);
+    const user = await this.contextService.get("user");
+    if (workspaceData.admins.includes(user._id.toString())) {
+      return true;
+    }
+    throw new BadRequestException("You don't have access");
+  }
 
   /**
    * Creates a new workspace in the database
@@ -179,7 +184,10 @@ export class WorkspaceService {
     ];
     const params = {
       name: workspaceData.name,
-      teamId: workspaceData.id,
+      team: {
+        id: teamData._id.toString(),
+        name: teamData.name,
+      },
       users: usersInfo,
       admins: adminInfo,
       environments: [
@@ -342,8 +350,9 @@ export class WorkspaceService {
     return;
   }
 
-  // async addUserInWorkspace(payload: AddUserInWorkspcaeDto) {
-  //   await this.isTeamMember(payload.teamId, payload.userId);
-  //   const user = await this.contextService.get("user");
-  // }
+  async addUserInWorkspace(payload: AddUserInWorkspcaeDto) {
+    await this.isTeamMember(payload.teamId, payload.userId);
+    // const user = await this.contextService.get("user");
+    await this.isWorkspaceAdmin(payload.workspaceId);
+  }
 }

@@ -5,13 +5,13 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
 import { CollectionDto } from "./collection.model";
 import { ObjectId } from "mongodb";
-// import { PermissionDto } from "./user.model";
 import { EnvironmentDto } from "./environment.model";
 import { WorkspaceRole } from "../enum/roles.enum";
 
@@ -54,14 +54,24 @@ export class OwnerInformationDto {
   type: WorkspaceType;
 }
 
+export class TeamInfoDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+}
+
 export class Workspace {
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @IsMongoId()
   @IsNotEmpty()
-  teamId: string;
+  @IsObject()
+  team: TeamInfoDto;
 
   @IsString()
   @IsOptional()
