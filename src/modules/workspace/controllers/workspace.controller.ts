@@ -297,30 +297,23 @@ export class WorkSpaceController {
     @Res() res: FastifyReply,
     @Body() importCollectionDto: ImportCollectionDto,
   ) {
-    try {
-      const response = await axios.get(importCollectionDto.url);
-      const data = response.data;
-      const responseType = response.headers["content-type"];
-      const dataObj =
-        responseType === BodyModeEnum["application/json"]
-          ? data
-          : yml.load(data);
+    const response = await axios.get(importCollectionDto.url);
+    const data = response.data;
+    const responseType = response.headers["content-type"];
+    const dataObj =
+      responseType === BodyModeEnum["application/json"] ? data : yml.load(data);
 
-      const collectionObj = await this.parserService.parse(dataObj);
-      console.log("AFTER PARSE WORKING FINE");
-      await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-        id: new ObjectId(collectionObj.id),
-        name: collectionObj.name,
-      });
-      const responseData = new ApiResponseService(
-        "Collection Imported",
-        HttpStatusCode.OK,
-        collectionObj,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      console.log("ERROR in WORKSPACE URL Controller", error);
-    }
+    const collectionObj = await this.parserService.parse(dataObj);
+    await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
+      id: new ObjectId(collectionObj.id),
+      name: collectionObj.name,
+    });
+    const responseData = new ApiResponseService(
+      "Collection Imported",
+      HttpStatusCode.OK,
+      collectionObj,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/importJson/collection")
@@ -339,31 +332,25 @@ export class WorkSpaceController {
     @Res() res: FastifyReply,
     @Body() jsonObj: string,
   ) {
-    try {
-      const responseType = request.headers["content-type"];
-      const dataObj =
-        responseType === BodyModeEnum["application/json"]
-          ? jsonObj
-          : (yml.load(jsonObj) as string);
-      const collectionObj = await this.parserService.parse(dataObj);
+    const responseType = request.headers["content-type"];
+    const dataObj =
+      responseType === BodyModeEnum["application/json"]
+        ? jsonObj
+        : (yml.load(jsonObj) as string);
+    const collectionObj = await this.parserService.parse(dataObj);
+    await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
+      id: new ObjectId(collectionObj.id),
+      name: collectionObj.name,
+    });
 
-      console.log("AFTER PARSE WORKING FINE");
-      await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-        id: new ObjectId(collectionObj.id),
-        name: collectionObj.name,
-      });
-
-      const collection = await this.collectionService.getCollection(
-        collectionObj.id,
-      );
-      const responseData = new ApiResponseService(
-        "Collection Imported",
-        HttpStatusCode.OK,
-        collection,
-      );
-      res.status(responseData.httpStatusCode).send(responseData);
-    } catch (error) {
-      console.log("JSON ERROR", error);
-    }
+    const collection = await this.collectionService.getCollection(
+      collectionObj.id,
+    );
+    const responseData = new ApiResponseService(
+      "Collection Imported",
+      HttpStatusCode.OK,
+      collection,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
   }
 }
