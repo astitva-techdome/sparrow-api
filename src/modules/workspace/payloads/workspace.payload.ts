@@ -94,10 +94,6 @@ export class WorkspaceDtoForIdDocument {
   @IsOptional()
   users?: UserDto[];
 
-  @IsOptional()
-  @IsArray()
-  permissions?: PermissionDto[];
-
   @IsDateString()
   @IsOptional()
   createdAt?: Date;

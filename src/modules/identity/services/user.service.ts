@@ -7,9 +7,7 @@ import { UpdateUserDto } from "../payloads/user.payload";
 import { UserRepository } from "../repositories/user.repository";
 import { RegisterPayload } from "../payloads/register.payload";
 import { ConfigService } from "@nestjs/config";
-// import { WorkspaceType } from "@src/modules/common/models/workspace.model";
 import { AuthService } from "./auth.service";
-// import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import {
   EmailServiceProvider,
   User,

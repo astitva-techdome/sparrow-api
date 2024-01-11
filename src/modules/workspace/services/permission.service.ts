@@ -154,44 +154,6 @@ export class PermissionService {
     await Promise.all(workspaceDataPromises);
   }
 
-  async updatePermissionForOwner(
-    workspaceArray: WorkspaceDto[],
-    userId: string,
-  ): Promise<void> {
-    const updatedIdArray = [];
-    for (const item of workspaceArray) {
-      if (!isString(item.id)) {
-        updatedIdArray.push(item.id);
-        continue;
-      }
-      updatedIdArray.push(new ObjectId(item.id));
-    }
-    const workspaceDataArray =
-      await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
-    for (let index = 0; index < workspaceDataArray.length; index++) {
-      const permissionLength: Array<WorkspaceDto> =
-        workspaceDataArray[index].permissions;
-      for (let flag = 0; flag < permissionLength.length; flag++) {
-        if (
-          workspaceDataArray[index].permissions[flag].id.toString() ===
-          userId.toString()
-        ) {
-          workspaceDataArray[index].permissions[flag].role = Role.ADMIN;
-        }
-      }
-    }
-    const workspaceDataPromises = [];
-    for (const item of workspaceDataArray) {
-      workspaceDataPromises.push(
-        this.workspaceRepository.updateWorkspaceById(
-          new ObjectId(item._id),
-          item as WorkspaceDtoForIdDocument,
-        ),
-      );
-    }
-    await Promise.all(workspaceDataPromises);
-  }
-
   async updatePermissionForAdmin(
     workspaceArray: WorkspaceDto[],
     userId: string,
@@ -285,23 +247,5 @@ export class PermissionService {
 
   async setAdminPermissionForOwner(_id: ObjectId) {
     return await this.permissionRepository.setAdminPermissionForOwner(_id);
-  }
-
-  async isWorkspaceAdmin(id: ObjectId): Promise<boolean> {
-    const currentUserId = this.contextService.get("user")._id;
-    const workspaceData = await this.workspaceRepository.findWorkspaceById(id);
-    if (workspaceData) {
-      const workspacePermissions = [...workspaceData.permissions];
-      for (const item of workspacePermissions) {
-        if (
-          item.id.toString() === currentUserId.toString() &&
-          item.role === Role.ADMIN
-        ) {
-          return true;
-        }
-      }
-      throw new BadRequestException("You don't have access");
-    }
-    throw new BadRequestException("Workspace dosen't exist");
   }
 }

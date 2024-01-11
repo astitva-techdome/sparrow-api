@@ -5,7 +5,6 @@ import {
   DeleteResult,
   InsertOneResult,
   ObjectId,
-  // ObjectId,
   UpdateResult,
   WithId,
 } from "mongodb";
@@ -17,8 +16,6 @@ import { UserRepository } from "../repositories/user.repository";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { MemoryStorageFile } from "@blazity/nest-file-fastify";
 import { TeamRole } from "@src/modules/common/enum/roles.enum";
-
-// import { ContextService } from "@src/modules/common/services/context.service";
 
 /**
  * Team Service

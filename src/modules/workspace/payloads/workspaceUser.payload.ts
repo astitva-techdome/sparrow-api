@@ -1,9 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { WorkspaceRole } from "@src/modules/common/enum/roles.enum";
 import { IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class AddWorkspaceUserDto {
   @ApiProperty({
-    example: "editor",
+    example: WorkspaceRole.EDITOR,
   })
   @IsString()
   @IsNotEmpty()
@@ -12,7 +13,7 @@ export class AddWorkspaceUserDto {
 
 export class AddUserInWorkspaceDto {
   @ApiProperty({
-    example: "editor",
+    example: WorkspaceRole.EDITOR,
   })
   @IsString()
   @IsNotEmpty()
