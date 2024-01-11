@@ -13,7 +13,6 @@ import {
 import { CollectionDto } from "./collection.model";
 import { ObjectId } from "mongodb";
 import { EnvironmentDto } from "./environment.model";
-import { WorkspaceRole } from "../enum/roles.enum";
 
 export enum WorkspaceType {
   PERSONAL = "PERSONAL",
@@ -25,9 +24,9 @@ export class UserDto {
   @IsNotEmpty()
   id: string;
 
-  @IsEnum(WorkspaceRole)
   @IsNotEmpty()
-  role: WorkspaceRole;
+  @IsString()
+  role: string;
 }
 
 export class AdminDto {

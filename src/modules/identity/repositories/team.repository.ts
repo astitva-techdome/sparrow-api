@@ -63,21 +63,6 @@ export class TeamRepository {
         ...teamData,
         ...params,
       });
-
-    await this.db.collection<User>(Collections.USER).updateOne(
-      { _id: user._id },
-      {
-        $set: {
-          teams: [
-            {
-              id: createdTeam.insertedId,
-              name: teamData.name,
-              role: TeamRole.OWNER,
-            },
-          ],
-        },
-      },
-    );
     return createdTeam;
   }
 

@@ -33,7 +33,12 @@ import {
 import { CreateEnvironmentDto } from "../payloads/environment.payload";
 import { EnvironmentService } from "./environment.service";
 import { TeamService } from "@src/modules/identity/services/team.service";
-import { AddUserInWorkspcaeDto } from "../payloads/workspaceUser.payload";
+import {
+  AddUserInWorkspaceDto,
+  removeUserFromWorkspaceDto,
+} from "../payloads/workspaceUser.payload";
+import { User } from "@src/modules/common/models/user.model";
+import { isString } from "class-validator";
 /**
  * Workspace Service
  */
@@ -130,13 +135,72 @@ export class WorkspaceService {
     throw new NotFoundException("User is not Part of Team");
   }
 
-  async isWorkspaceAdmin(workspaceId: string): Promise<boolean> {
+  async isWorkspaceAdmin(
+    workspaceId: string,
+    userId: string,
+  ): Promise<boolean> {
     const workspaceData = await this.workspaceRepository.get(workspaceId);
     const user = await this.contextService.get("user");
-    if (workspaceData.admins.includes(user._id.toString())) {
-      return true;
+    for (const admin of workspaceData.admins) {
+      if (admin.id === userId) {
+        throw new BadRequestException(
+          "You cannot add, remove or update a Admin",
+        );
+      }
     }
-    throw new BadRequestException("You don't have access");
+    for (const admin of workspaceData.admins) {
+      if (admin.id === user._id.toString()) {
+        return true;
+      }
+    }
+    throw new BadRequestException("You don't have access of this Workspace");
+  }
+
+  async isWorkspaceMember(
+    workspaceId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const workspaceData = await this.workspaceRepository.get(workspaceId);
+    for (const user of workspaceData.users) {
+      if (user.id === userId) {
+        throw new BadRequestException("User is already part of workspace");
+      }
+    }
+    return true;
+  }
+
+  async isLastTeamWorkspace(
+    workspaceId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const userData = await this.userRepository.getUserById(userId);
+    const workspaceData = await this.workspaceRepository.get(workspaceId);
+    let count = 0;
+    for (const workspace of userData.workspaces) {
+      if (workspace.teamId === workspaceData.team.id) {
+        count++;
+      }
+    }
+    if (count > 1) return false;
+    return true;
+  }
+
+  async roleCheck(role: string): Promise<boolean> {
+    if (role === WorkspaceRole.ADMIN) {
+      throw new BadRequestException("You cannot add or switch as Admin's role");
+    }
+    return true;
+  }
+
+  async checkAdminRole(workspaceId: string) {
+    const user = await this.contextService.get("user");
+    const workspace = await this.workspaceRepository.get(workspaceId);
+    for (const item of workspace.admins) {
+      if (item.id === user._id.toString()) {
+        return true;
+      }
+    }
+    throw new BadRequestException("You don't have access of this Workspace");
   }
 
   /**
@@ -234,8 +298,61 @@ export class WorkspaceService {
     id: string,
     updates: UpdateWorkspaceDto,
   ): Promise<UpdateResult<Document>> {
-    await this.isWorkspaceAdminorEditor(id);
+    const workspace = await this.isWorkspaceAdminorEditor(id);
     const data = await this.workspaceRepository.update(id, updates);
+    const team = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(workspace.team.id),
+    );
+    if (updates.name) {
+      const teamWorkspaces = [...team.workspaces];
+      for (let index = 0; index < teamWorkspaces.length; index++) {
+        if (teamWorkspaces[index].id.toString() === id) {
+          teamWorkspaces[index].name = updates.name;
+        }
+      }
+      const updatedTeamParams = {
+        workspaces: teamWorkspaces,
+      };
+      await this.teamRepository.updateTeamById(
+        new ObjectId(workspace.team.id),
+        updatedTeamParams,
+      );
+      const workspaceUsers = [...workspace.users];
+      const updatedIdArray = [];
+      for (const item of workspaceUsers) {
+        if (!isString(item.id)) {
+          updatedIdArray.push(item.id);
+          continue;
+        }
+        updatedIdArray.push(new ObjectId(item.id));
+      }
+      const userDataArray = await this.userRepository.findUsersByIdArray(
+        updatedIdArray,
+      );
+      for (let index = 0; index < userDataArray.length; index++) {
+        for (
+          let flag = 0;
+          flag < userDataArray[index].workspaces.length;
+          flag++
+        ) {
+          if (
+            userDataArray[index].workspaces[flag].workspaceId.toString() === id
+          ) {
+            userDataArray[index].workspaces[flag].name = updates.name;
+          }
+        }
+      }
+      const userDataPromises = [];
+      for (const item of userDataArray) {
+        userDataPromises.push(
+          this.userRepository.updateUserById(
+            new ObjectId(item._id),
+            item as unknown as User,
+          ),
+        );
+      }
+      await Promise.all(userDataPromises);
+    }
     return data;
   }
 
@@ -245,7 +362,49 @@ export class WorkspaceService {
    * @returns {Promise<DeleteWriteOpResultObject>} result of the delete operation
    */
   async delete(id: string): Promise<DeleteResult> {
-    await this.isWorkspaceAdminorEditor(id);
+    await this.checkAdminRole(id);
+    const workspace = await this.workspaceRepository.get(id);
+    const teamData = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(workspace.team.id),
+    );
+    const teamWorkspaces = [...teamData.workspaces];
+    const updatedTeamWorkspaces = teamWorkspaces.filter(
+      (workspace) => workspace.id.toString() !== id,
+    );
+    const updatedTeamParams = {
+      workspaces: updatedTeamWorkspaces,
+    };
+    await this.teamRepository.updateTeamById(
+      new ObjectId(workspace.team.id),
+      updatedTeamParams,
+    );
+    const workspaceUsers = [...workspace.users];
+    const updatedIdArray = [];
+    for (const item of workspaceUsers) {
+      if (!isString(item.id)) {
+        updatedIdArray.push(item.id);
+        continue;
+      }
+      updatedIdArray.push(new ObjectId(item.id));
+    }
+    const userDataArray = await this.userRepository.findUsersByIdArray(
+      updatedIdArray,
+    );
+    for (let index = 0; index < userDataArray.length; index++) {
+      userDataArray[index].workspaces = userDataArray[index].workspaces.filter(
+        (item: any) => item.workspaceId.toString() !== id,
+      );
+    }
+    const userDataPromises = [];
+    for (const item of userDataArray) {
+      userDataPromises.push(
+        this.userRepository.updateUserById(
+          new ObjectId(item._id),
+          item as unknown as User,
+        ),
+      );
+    }
+    await Promise.all(userDataPromises);
     const data = await this.workspaceRepository.delete(id);
     return data;
   }
@@ -350,9 +509,128 @@ export class WorkspaceService {
     return;
   }
 
-  async addUserInWorkspace(payload: AddUserInWorkspcaeDto) {
-    await this.isTeamMember(payload.teamId, payload.userId);
-    // const user = await this.contextService.get("user");
-    await this.isWorkspaceAdmin(payload.workspaceId);
+  async addUserInWorkspace(
+    payload: AddUserInWorkspaceDto,
+  ): Promise<WithId<User>> {
+    const workspaceData = await this.workspaceRepository.get(
+      payload.workspaceId,
+    );
+    await this.isTeamMember(workspaceData.team.id, payload.userId);
+    await this.isWorkspaceMember(payload.workspaceId, payload.userId);
+    await this.isWorkspaceAdmin(payload.workspaceId, payload.userId);
+    await this.roleCheck(payload.role);
+    const workspaceUsers = [...workspaceData.users];
+    workspaceUsers.push({
+      role: payload.role,
+      id: payload.userId,
+    });
+    const updatedWorkspaceParams = {
+      users: workspaceUsers,
+    };
+    await this.workspaceRepository.updateWorkspaceById(
+      new ObjectId(payload.workspaceId),
+      updatedWorkspaceParams,
+    );
+    const userData = await this.userRepository.findUserByUserId(
+      new ObjectId(payload.userId),
+    );
+    const userWorkspaces = [...userData.workspaces];
+    userWorkspaces.push({
+      workspaceId: workspaceData._id.toString(),
+      teamId: workspaceData.team.id,
+      name: workspaceData.name,
+    });
+    const updatedUserParams = {
+      workspaces: userWorkspaces,
+    };
+    const response = await this.userRepository.updateUserById(
+      new ObjectId(payload.userId),
+      updatedUserParams,
+    );
+    return response;
+  }
+
+  async removeUserFromWorkspace(
+    payload: removeUserFromWorkspaceDto,
+  ): Promise<WithId<User>> {
+    await this.isWorkspaceAdmin(payload.workspaceId, payload.userId);
+    const lastWorkspaceofTeam = await this.isLastTeamWorkspace(
+      payload.workspaceId,
+      payload.userId,
+    );
+    const workspaceData = await this.workspaceRepository.get(
+      payload.workspaceId,
+    );
+    const workspaceUsers = [...workspaceData.users];
+    const updatedWorkspaceUsers = workspaceUsers.filter(
+      (user) => user.id !== payload.userId,
+    );
+    const updatedWorkspaceParams = {
+      users: updatedWorkspaceUsers,
+    };
+    await this.workspaceRepository.updateWorkspaceById(
+      new ObjectId(payload.workspaceId),
+      updatedWorkspaceParams,
+    );
+    const userData = await this.userRepository.findUserByUserId(
+      new ObjectId(payload.userId),
+    );
+    const userWorkspaces = [...userData.workspaces];
+    const updatedUserWorkspaces = userWorkspaces.filter(
+      (workspace) => workspace.workspaceId !== payload.workspaceId,
+    );
+    const userTeams = [...userData.teams];
+    let updatedUserTeams;
+    if (lastWorkspaceofTeam) {
+      updatedUserTeams = userTeams.filter(
+        (team) => team.id.toString() !== workspaceData.team.id,
+      );
+      const teamData = await this.teamRepository.findTeamByTeamId(
+        new ObjectId(workspaceData.team.id),
+      );
+      const teamUsers = [...teamData.users];
+      const updatedTeamUsers = teamUsers.filter(
+        (user) => user.id !== payload.userId,
+      );
+      const updatedTeamParams = {
+        users: updatedTeamUsers,
+      };
+      await this.teamRepository.updateTeamById(
+        new ObjectId(workspaceData.team.id),
+        updatedTeamParams,
+      );
+    }
+    const updatedUserParams = {
+      workspaces: updatedUserWorkspaces,
+      teams: lastWorkspaceofTeam ? updatedUserTeams : userTeams,
+    };
+    const response = await this.userRepository.updateUserById(
+      new ObjectId(payload.userId),
+      updatedUserParams,
+    );
+
+    return response;
+  }
+
+  async changeUserRole(payload: AddUserInWorkspaceDto) {
+    await this.isWorkspaceAdmin(payload.workspaceId, payload.userId);
+    await this.roleCheck(payload.role);
+    const workspaceData = await this.workspaceRepository.get(
+      payload.workspaceId,
+    );
+    const workspaceUsers = [...workspaceData.users];
+    for (let index = 0; index < workspaceUsers.length; index++) {
+      if (workspaceUsers[index].id === payload.userId) {
+        workspaceUsers[index].role = payload.role;
+      }
+    }
+    const updatedWorkspaceParams = {
+      users: workspaceUsers,
+    };
+    const response = await this.workspaceRepository.updateWorkspaceById(
+      new ObjectId(payload.workspaceId),
+      updatedWorkspaceParams,
+    );
+    return response;
   }
 }

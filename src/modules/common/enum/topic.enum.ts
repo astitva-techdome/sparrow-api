@@ -5,4 +5,5 @@ export enum TOPIC {
   CREATE_USER_TOPIC = "create_user_topic",
   TEAM_ADMIN_ADDED_TOPIC = "team_admin_added_topic",
   TEAM_OWNER_CHANGED_TOPIC = "team_owner_changed_topic",
+  TEAM_ADMIN_DEMOTED_TOPIC = "team_admin_demoted_topic",
 }

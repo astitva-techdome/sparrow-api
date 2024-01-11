@@ -214,10 +214,39 @@ export class WorkSpaceController {
       workspaceId: workspaceId,
       role: data.role,
     };
-    await this.permissionService.create(params);
+    await this.workspaceService.addUserInWorkspace(params);
     const workspace = await this.workspaceService.get(workspaceId);
     const responseData = new ApiResponseService(
       "User Added",
+      HttpStatusCode.OK,
+      workspace,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Put(":workspaceId/user/:userId")
+  @ApiOperation({
+    summary: "Change Role of User",
+    description:
+      "You can change role of user in your Workspace from editor to viewer or vice-versa",
+  })
+  @ApiResponse({ status: 201, description: "User Role Change Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to Change Role" })
+  async changeUserRoleInWorkspace(
+    @Param("workspaceId") workspaceId: string,
+    @Param("userId") userId: string,
+    @Body() data: AddWorkspaceUserDto,
+    @Res() res: FastifyReply,
+  ) {
+    const params = {
+      userId: userId,
+      workspaceId: workspaceId,
+      role: data.role,
+    };
+    await this.workspaceService.changeUserRole(params);
+    const workspace = await this.workspaceService.get(workspaceId);
+    const responseData = new ApiResponseService(
+      "Role Changed",
       HttpStatusCode.OK,
       workspace,
     );
@@ -240,13 +269,12 @@ export class WorkSpaceController {
       userId: userId,
       workspaceId: workspaceId,
     };
-    const data = await this.permissionService.removeSinglePermissionInWorkspace(
-      params,
-    );
+    await this.workspaceService.removeUserFromWorkspace(params);
+    const workspace = await this.workspaceService.get(workspaceId);
     const responseData = new ApiResponseService(
       "User Removed",
       HttpStatusCode.OK,
-      data,
+      workspace,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }

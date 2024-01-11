@@ -239,4 +239,12 @@ export class UserRepository {
     );
     return;
   }
+
+  async findUsersByIdArray(IdArray: Array<ObjectId>) {
+    const response = await this.db
+      .collection(Collections.USER)
+      .find({ _id: { $in: IdArray } })
+      .toArray();
+    return response;
+  }
 }

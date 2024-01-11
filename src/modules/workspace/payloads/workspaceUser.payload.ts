@@ -8,16 +8,9 @@ export class AddWorkspaceUserDto {
   @IsString()
   @IsNotEmpty()
   role: string;
-
-  @ApiProperty({
-    example: "64f878a0293b1e4415866493",
-  })
-  @IsMongoId()
-  @IsNotEmpty()
-  teamId: string;
 }
 
-export class AddUserInWorkspcaeDto {
+export class AddUserInWorkspaceDto {
   @ApiProperty({
     example: "editor",
   })
@@ -30,15 +23,20 @@ export class AddUserInWorkspcaeDto {
   @IsOptional()
   userId?: string;
 
-  @ApiProperty({
-    example: "64f878a0293b1e4415866493",
-  })
-  @IsMongoId()
-  @IsNotEmpty()
-  teamId: string;
-
   @ApiProperty()
   @IsMongoId()
   @IsOptional()
   workspaceId?: string;
+}
+
+export class removeUserFromWorkspaceDto {
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  userId: string;
+
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  workspaceId: string;
 }

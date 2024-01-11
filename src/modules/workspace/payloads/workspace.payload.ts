@@ -8,19 +8,12 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  ValidateNested,
 } from "class-validator";
 import { PermissionDto } from "./permission.payload";
+import { Type } from "class-transformer";
 
 export class WorkspaceDto {
-  @ApiProperty({ example: "64f878a0293b1e4415866493" })
-  @IsMongoId()
-  @IsNotEmpty()
-  id: string;
-
-  // @IsArray()
-  // @IsOptional()
-  // owners?: string[];
-
   @IsOptional()
   @IsArray()
   users?: string[];
@@ -39,19 +32,17 @@ export class WorkspaceDto {
 }
 
 export class CreateWorkspaceDto extends WorkspaceDto {
+  @ApiProperty({ example: "64f878a0293b1e4415866493" })
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
   @ApiProperty({
     example: "workspace 1",
   })
   @IsString()
   @IsNotEmpty()
   name: string;
-
-  // @ApiProperty({
-  //   example: WorkspaceType.TEAM,
-  // })
-  // @IsEnum(WorkspaceType)
-  // @IsOptional()
-  // type?: WorkspaceType;
 }
 
 export class UpdateWorkspaceDto extends WorkspaceDto {
@@ -68,6 +59,16 @@ export class UpdateWorkspaceDto extends WorkspaceDto {
   @IsString()
   @IsOptional()
   description?: string;
+}
+
+export class UserDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  role: string;
 }
 
 export class WorkspaceDtoForIdDocument {
@@ -87,9 +88,11 @@ export class WorkspaceDtoForIdDocument {
   @IsOptional()
   owners?: string[];
 
-  @IsOptional()
   @IsArray()
-  users?: string[];
+  @Type(() => UserDto)
+  @ValidateNested({ each: true })
+  @IsOptional()
+  users?: UserDto[];
 
   @IsOptional()
   @IsArray()

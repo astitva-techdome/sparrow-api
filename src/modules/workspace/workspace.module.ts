@@ -5,7 +5,6 @@ import { WorkspaceRepository } from "./repositories/workspace.repository";
 import { IdentityModule } from "../identity/identity.module";
 import { PermissionService } from "./services/permission.service";
 import { PermissionRepository } from "./repositories/permission.repository";
-import { PermissionController } from "./controllers/permission.controller";
 import { WorkspaceHandler } from "./handlers/workspace.handler";
 import { PermissionHandler } from "./handlers/permission.handler";
 import { OwnerPermissionHandler } from "./handlers/ownerPermisson.handler";
@@ -18,6 +17,7 @@ import { EnvironmentService } from "./services/environment.service";
 import { EnvironmentRepository } from "./repositories/environment.repository";
 import { EnvironmentController } from "./controllers/environment.controller";
 import { AdminPermissionHandler } from "./handlers/adminPermission.handlers";
+import { DemoteAdminPermissionHandler } from "./handlers/demoteAdminPermission.handlers";
 @Module({
   imports: [IdentityModule],
   providers: [
@@ -30,6 +30,7 @@ import { AdminPermissionHandler } from "./handlers/adminPermission.handlers";
     OwnerPermissionHandler,
     RemovePermissionHandler,
     AdminPermissionHandler,
+    DemoteAdminPermissionHandler,
     CollectionRepository,
     CollectionService,
     CollectionRequestService,
@@ -45,7 +46,6 @@ import { AdminPermissionHandler } from "./handlers/adminPermission.handlers";
   ],
   controllers: [
     WorkSpaceController,
-    PermissionController,
     collectionController,
     EnvironmentController,
   ],

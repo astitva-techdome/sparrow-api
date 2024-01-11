@@ -249,6 +249,54 @@ export class TeamUserService {
     return response;
   }
 
+  async demoteTeamAdmin(
+    payload: CreateOrUpdateTeamUserDto,
+  ): Promise<WithId<Team>> {
+    const teamData = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(payload.teamId),
+    );
+    await this.isTeamOwner(payload.teamId);
+    const updatedTeamAdmins = teamData.admins.filter(
+      (id) => id !== payload.userId,
+    );
+    const teamUsers = [...teamData.users];
+    for (let index = 0; index < teamUsers.length; index++) {
+      if (teamUsers[index].id === payload.userId) {
+        teamUsers[index].role = TeamRole.MEMBER;
+      }
+    }
+    const updatedTeamParams = {
+      admins: updatedTeamAdmins,
+      users: teamUsers,
+    };
+    const userData = await this.userRepository.getUserById(payload.userId);
+    const userTeams = [...userData.teams];
+    for (let index = 0; index < userTeams.length; index++) {
+      if (userTeams[index].id.toString() === payload.teamId) {
+        userTeams[index].role = TeamRole.MEMBER;
+      }
+    }
+    const updatedUserParams = {
+      teams: userTeams,
+    };
+    await this.userRepository.updateUserById(
+      new ObjectId(payload.userId),
+      updatedUserParams,
+    );
+    const response = await this.teamRepository.updateTeamById(
+      new ObjectId(payload.teamId),
+      updatedTeamParams,
+    );
+    const message = {
+      userId: payload.userId,
+      teamWorkspaces: teamData.workspaces,
+    };
+    await this.producerService.produce(TOPIC.TEAM_ADMIN_DEMOTED_TOPIC, {
+      value: JSON.stringify(message),
+    });
+    return response;
+  }
+
   async isTeamAdmin(payload: CreateOrUpdateTeamUserDto): Promise<boolean> {
     const teamDetails = await this.teamRepository.findTeamByTeamId(
       new ObjectId(payload.teamId),

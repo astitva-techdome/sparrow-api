@@ -7,6 +7,8 @@ import {
   UseGuards,
   Param,
   Res,
+  Put,
+  UseInterceptors,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -22,6 +24,11 @@ import { ApiResponseService } from "@src/modules/common/services/api-response.se
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
 import { JwtAuthGuard } from "@src/modules/common/guards/jwt-auth.guard";
 import { AddTeamUserDto } from "../payloads/teamUser.payload";
+import {
+  FileInterceptor,
+  MemoryStorageFile,
+  UploadedFile,
+} from "@blazity/nest-file-fastify";
 /**
  * Team Controller
  */
@@ -40,13 +47,16 @@ export class TeamController {
     summary: "Create a new  Team",
     description: "This will Create a  new Team",
   })
+  @UseInterceptors(FileInterceptor("image"))
   @ApiResponse({ status: 201, description: "Team Created Successfully" })
   @ApiResponse({ status: 400, description: "Create Team Failed" })
   async createTeam(
     @Body() createTeamDto: CreateOrUpdateTeamDto,
     @Res() res: FastifyReply,
+    @UploadedFile()
+    image: MemoryStorageFile,
   ) {
-    const data = await this.teamService.create(createTeamDto);
+    const data = await this.teamService.create(createTeamDto, image);
     const team = await this.teamService.get(data.insertedId.toString());
     const responseData = new ApiResponseService(
       "Team Created",
@@ -176,6 +186,28 @@ export class TeamController {
     const team = await this.teamService.get(teamId);
     const responseData = new ApiResponseService(
       "Admin added",
+      HttpStatusCode.OK,
+      team,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Put(":teamId/admin/:userId")
+  @ApiOperation({
+    summary: "Demote a Admin in Team",
+    description: "This will demote admin in a team",
+  })
+  @ApiResponse({ status: 201, description: "Team Admin demoted Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to demote team admin" })
+  async demoteTeamAdmin(
+    @Param("teamId") teamId: string,
+    @Param("userId") userId: string,
+    @Res() res: FastifyReply,
+  ) {
+    await this.teamUserService.demoteTeamAdmin({ teamId, userId });
+    const team = await this.teamService.get(teamId);
+    const responseData = new ApiResponseService(
+      "Admin Demoted",
       HttpStatusCode.OK,
       team,
     );

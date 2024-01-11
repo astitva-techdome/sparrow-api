@@ -5,7 +5,7 @@ import { PermissionService } from "../services/permission.service";
 import { ConsumerService } from "@src/modules/common/services/kafka/consumer.service";
 
 @Injectable()
-export class AdminPermissionHandler implements OnModuleInit {
+export class DemoteAdminPermissionHandler implements OnModuleInit {
   constructor(
     private readonly permissionService: PermissionService,
     private readonly consumerService: ConsumerService,
@@ -13,13 +13,13 @@ export class AdminPermissionHandler implements OnModuleInit {
 
   async onModuleInit() {
     await this.consumerService.consume({
-      topic: { topic: TOPIC.TEAM_ADMIN_ADDED_TOPIC },
-      config: { groupId: SUBSCRIPTION.TEAM_ADMIN_ADDED_SUBSCRIPTION },
+      topic: { topic: TOPIC.TEAM_ADMIN_DEMOTED_TOPIC },
+      config: { groupId: SUBSCRIPTION.TEAM_ADMIN_DEMOTED_SUBSCRIPTION },
       onMessage: async (message) => {
         const data = JSON.parse(message.value.toString());
         const workspaceArray = data.teamWorkspaces;
         const userId = data.userId;
-        await this.permissionService.updatePermissionForAdmin(
+        await this.permissionService.demotePermissionForAdmin(
           workspaceArray,
           userId,
         );

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
+import { CreateOrUpdateTeamDto, TeamResponse } from "../payloads/team.payload";
 import { TeamRepository } from "../repositories/team.repository";
 import {
   DeleteResult,
@@ -15,6 +15,8 @@ import { TOPIC } from "@src/modules/common/enum/topic.enum";
 import { ConfigService } from "@nestjs/config";
 import { UserRepository } from "../repositories/user.repository";
 import { ContextService } from "@src/modules/common/services/context.service";
+import { MemoryStorageFile } from "@blazity/nest-file-fastify";
+import { TeamRole } from "@src/modules/common/enum/roles.enum";
 
 // import { ContextService } from "@src/modules/common/services/context.service";
 
@@ -38,12 +40,47 @@ export class TeamService {
    */
   async create(
     teamData: CreateOrUpdateTeamDto,
+    image?: MemoryStorageFile,
   ): Promise<InsertOneResult<Team>> {
-    const teamName = {
+    let team;
+    if (image) {
+      const dataBuffer = image.buffer;
+      const dataString = dataBuffer.toString("base64");
+      const logo = {
+        bufferString: dataString,
+        encoding: image.encoding,
+        mimetype: image.mimetype,
+        size: image.size,
+      };
+      team = {
+        name: teamData.name,
+        description: teamData.description ?? "",
+        logo: logo,
+      };
+    } else {
+      team = {
+        name: teamData.name,
+        description: teamData.description ?? "",
+      };
+    }
+    const createdTeam = await this.teamRepository.create(team);
+    const user = await this.contextService.get("user");
+    const userData = await this.userRespository.findUserByUserId(
+      new ObjectId(user._id),
+    );
+    const updatedUserTeams = [...userData.teams];
+    updatedUserTeams.push({
+      id: createdTeam.insertedId,
       name: teamData.name,
+      role: TeamRole.OWNER,
+    });
+    const updatedUserParams = {
+      teams: updatedUserTeams,
     };
-    const createdTeam = await this.teamRepository.create(teamName);
-
+    await this.userRespository.updateUserById(
+      new ObjectId(userData._id),
+      updatedUserParams,
+    );
     if (teamData?.firstTeam) {
       const workspaceObj = {
         name: this.configService.get("app.defaultWorkspaceName"),
@@ -61,9 +98,31 @@ export class TeamService {
    * @param {string} id
    * @returns {Promise<Team>} queried team data
    */
-  async get(id: string): Promise<WithId<Team>> {
+  async get(id: string): Promise<WithId<TeamResponse> | WithId<Team>> {
     const data = await this.teamRepository.get(id);
-    return data;
+    let updatedData: TeamResponse;
+    if (data.logo) {
+      updatedData = {
+        _id: data._id,
+        name: data.name,
+        description: data.description,
+        logo: {
+          buffer: Buffer.from(data?.logo?.bufferString, "base64"),
+          encoding: data?.logo?.encoding,
+          mimetype: data?.logo?.mimetype,
+          size: data?.logo?.size,
+        },
+        workspaces: data.workspaces,
+        users: data.users,
+        owner: data.owner,
+        admins: data?.admins,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        createdBy: data.createdBy,
+        updatedBy: data.updatedBy,
+      };
+    }
+    return data.logo ? updatedData : data;
   }
 
   /**
@@ -89,14 +148,14 @@ export class TeamService {
     return data;
   }
 
-  async getAllTeams(userId: string): Promise<Team[]> {
+  async getAllTeams(userId: string): Promise<WithId<TeamResponse>[]> {
     const user = await this.userRespository.getUserById(userId);
     if (!user) {
       throw new BadRequestException(
         "The user with this id does not exist in the system",
       );
     }
-    const teams: Team[] = [];
+    const teams: WithId<TeamResponse>[] = [];
     for (const { id } of user.teams) {
       const teamData = await this.get(id.toString());
       teams.push(teamData);
