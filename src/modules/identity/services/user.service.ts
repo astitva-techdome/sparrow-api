@@ -142,7 +142,7 @@ export class UserService {
         pass: this.configService.get("app.senderPassword"),
       },
     });
-    const verificationCode = this.generateEmailVerificationCode();
+    const verificationCode = this.generateEmailVerificationCode().toUpperCase();
     const handlebarOptions = {
       //view engine contains default and partial templates
       viewEngine: {
@@ -240,7 +240,7 @@ export class UserService {
     verificationCode: string,
   ): Promise<void> {
     const user = await this.getUserByEmail(email);
-    if (user.verificationCode !== verificationCode) {
+    if (user?.verificationCode !== verificationCode.toUpperCase()) {
       throw new UnauthorizedException(ErrorMessages.Unauthorized);
     }
     const expireTime = this.configService.get(
