@@ -211,7 +211,7 @@ export class UserController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Post("application-details")
+  @Get("application-details")
   @ApiOperation({
     summary: "Application Details",
     description: "Application Details",
