@@ -249,11 +249,6 @@ export class UserController {
         },
       },
     };
-    const responseData = new ApiResponseService(
-      "Application Details Updated",
-      HttpStatusCode.OK,
-      data,
-    );
-    res.status(responseData.httpStatusCode).send(responseData);
+    res.status(HttpStatusCode.OK).send(data);
   }
 }
