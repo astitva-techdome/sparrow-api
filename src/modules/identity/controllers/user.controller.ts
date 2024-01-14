@@ -223,15 +223,10 @@ export class UserController {
   @ApiResponse({ status: 400, description: "Bad Request" })
   async getApplicationDetails(@Res() res: FastifyReply) {
     const data = {
-      version: "0.1.8",
+      version: "0.1.1",
       notes: "See the assets to download this version and install.",
       pub_date: "2023-06-13T05:12:10.282Z",
       platforms: {
-        "linux-x86_64": {
-          signature:
-            "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRQlFBRHprQnQ1Qm1GZUpQcFBxTGJtbER3cWlmKzVPbUNMQlFNSXQ0TVQ2V0RSMVkzY1JNc0YvWGh5Y0FpZXlQY25TRXNrU0ErV0xCUjMyTmloUVR2dXZCMzBZK0hBTWdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNjg2NjMyMDk3CWZpbGU6ZXotdXBfMC4xLjhfYW1kNjQuQXBwSW1hZ2UudGFyLmd6CnZ6ZHBkall4TnZhUlpieXUyMUZZTFBqRGJhVXpGVzFFUGFwcDByS3VQb0xrUE9uNWEzWEY0RGppRGQ4c3lpWlZvL3R6MHVGYkZjNjJmbnVmb3VWZ0RRPT0K",
-          url: "https://github.com/HuakunShen/EzUp/releases/download/v0.1.8/ez-up_0.1.8_amd64.AppImage.tar.gz",
-        },
         "windows-x86_64": {
           signature:
             "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRWDRzdDZJNWdOdGtNSXJUa1VYUVZiT1BHdExQS2JDRFRuWnQyWWhVZzlTVkNvK0lYY3lscVdJSTd3blMyMUQ3VGIxM0FISXAycDdkYWRQRjNWbURCcDJ0Mk1NWlJybkFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzA1MDQ0MDc2CWZpbGU6c3BhcnJvdy1hcHBfMC4wLjBfeDY0LXNldHVwLm5zaXMuemlwCnJMVzN1VUNaM256amlEdzdXdUhjMEFXdk8xd28veEtqYWNFUDJIV2wvM091Z0RTU1ZKK2dCMTk4S3ZNcXlzWDNabmhuVVdNbG42ckF2elRQbVZXckNBPT0K",
@@ -239,13 +234,13 @@ export class UserController {
         },
         "darwin-aarch64": {
           signature:
-            "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRQlFBRHprQnQ1Qm9LOE5oRXJxd1FEYmZFK3h3QkJlT095N2ErQXhUU2Y4VzJ4elJmeDBBSklhWGpEVkZ1SFdYdk1Kak55NWt6Wm91VXRMNWkxdUJEOUcyOHRDSHArS3dBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNjg2NjMzMTI2CWZpbGU6RXpVcC5hcHAudGFyLmd6CkpaTm5kdzArRHVrbUNCQ3huK3MrWTY0Tmo3cHd6UW9Mc2FycE9vUXB2OWE1Z25RWW94Y2ZWOWg5Rityak11US9BS2JRbCtyVFMzeGErUTg1cFFOeEJRPT0K",
-          url: "https://github.com/HuakunShen/EzUp/releases/download/v0.1.8/EzUp_universal.app.tar.gz",
+            "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRSE1HWmJrS1Q4SzFzdFEwSjFhb0trQ29jZ3F3akZTMWlCMUF2enRBajRqZFo5SWFWNnV4R0o2UTFWR2dJV2RJK1lhTkFLV0ZHekJKWThESk4vTWxrSTRFb3l0VDRQc1FjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzA1MTc3MzA0CWZpbGU6c3BhcnJvdy1hcHAuYXBwLnRhci5negpMM2V0TnllTXlFWjBtVFBsZVc0SnI0MDZPdmpwbzFxd0JFOHVCMXozTm44ZE5zTmlNOENsbzlQSk1RLytLenRzRFdoQXR0LzhlR1I2d0tlQTlYS09DZz09Cg==",
+          url: "https://github.com/LordNayan/FindServer/blob/main/src/sparrow-app.app.tar.gz",
         },
         "darwin-x86_64": {
           signature:
-            "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRQlFBRHprQnQ1Qm9LOE5oRXJxd1FEYmZFK3h3QkJlT095N2ErQXhUU2Y4VzJ4elJmeDBBSklhWGpEVkZ1SFdYdk1Kak55NWt6Wm91VXRMNWkxdUJEOUcyOHRDSHArS3dBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNjg2NjMzMTI2CWZpbGU6RXpVcC5hcHAudGFyLmd6CkpaTm5kdzArRHVrbUNCQ3huK3MrWTY0Tmo3cHd6UW9Mc2FycE9vUXB2OWE1Z25RWW94Y2ZWOWg5Rityak11US9BS2JRbCtyVFMzeGErUTg1cFFOeEJRPT0K",
-          url: "https://github.com/HuakunShen/EzUp/releases/download/v0.1.8/EzUp_universal.app.tar.gz",
+            "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRSE1HWmJrS1Q4SzFzdFEwSjFhb0trQ29jZ3F3akZTMWlCMUF2enRBajRqZFo5SWFWNnV4R0o2UTFWR2dJV2RJK1lhTkFLV0ZHekJKWThESk4vTWxrSTRFb3l0VDRQc1FjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzA1MTc3MzA0CWZpbGU6c3BhcnJvdy1hcHAuYXBwLnRhci5negpMM2V0TnllTXlFWjBtVFBsZVc0SnI0MDZPdmpwbzFxd0JFOHVCMXozTm44ZE5zTmlNOENsbzlQSk1RLytLenRzRFdoQXR0LzhlR1I2d0tlQTlYS09DZz09Cg==",
+          url: "https://github.com/LordNayan/FindServer/blob/main/src/sparrow-app.app.tar.gz",
         },
       },
     };
