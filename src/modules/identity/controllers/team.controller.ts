@@ -54,7 +54,7 @@ export class TeamController {
       team,
     );
 
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":teamId")
@@ -110,7 +110,7 @@ export class TeamController {
       HttpStatusCode.OK,
       team,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":teamId/user/:userId")
@@ -131,7 +131,7 @@ export class TeamController {
       HttpStatusCode.OK,
       data,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":teamId/owner/:userId")
@@ -153,6 +153,6 @@ export class TeamController {
       HttpStatusCode.OK,
       team,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 }

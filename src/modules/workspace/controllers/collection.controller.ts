@@ -73,7 +73,7 @@ export class collectionController {
       HttpStatusCode.CREATED,
       collection,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":workspaceId")
@@ -98,7 +98,7 @@ export class collectionController {
       HttpStatusCode.OK,
       collection,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put(":collectionId/workspace/:workspaceId")
@@ -131,7 +131,7 @@ export class collectionController {
       HttpStatusCode.OK,
       collection,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
   @Delete(":collectionId/workspace/:workspaceId")
   @ApiOperation({
@@ -159,7 +159,7 @@ export class collectionController {
       HttpStatusCode.OK,
       collection,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":collectionId/workspace/:workspaceId/folder")
@@ -185,7 +185,7 @@ export class collectionController {
       HttpStatusCode.CREATED,
       newFolder,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put(":collectionId/workspace/:workspaceId/folder/:folderId")
@@ -213,7 +213,7 @@ export class collectionController {
       HttpStatusCode.OK,
       updatedfolder,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":collectionId/workspace/:workspaceId/folder/:folderId")
@@ -239,7 +239,7 @@ export class collectionController {
       HttpStatusCode.OK,
       response,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post("request")
@@ -273,7 +273,7 @@ export class collectionController {
       HttpStatusCode.OK,
       requestObj,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put("request/:requestId")
@@ -304,7 +304,7 @@ export class collectionController {
       HttpStatusCode.OK,
       request,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete("request/:requestId")
@@ -340,6 +340,6 @@ export class collectionController {
       HttpStatusCode.OK,
       collection,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 }
