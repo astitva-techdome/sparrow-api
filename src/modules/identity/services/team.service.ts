@@ -42,7 +42,7 @@ export class TeamService {
     let team;
     if (image) {
       const dataBuffer = image.buffer;
-      const dataString = dataBuffer.toString("base64");
+      const dataString = Buffer.from(dataBuffer).toString("base64");
       const logo = {
         bufferString: dataString,
         encoding: image.encoding,
@@ -104,7 +104,7 @@ export class TeamService {
         name: data.name,
         description: data.description,
         logo: {
-          buffer: Buffer.from(data?.logo?.bufferString, "base64"),
+          buffer: data?.logo?.bufferString,
           encoding: data?.logo?.encoding,
           mimetype: data?.logo?.mimetype,
           size: data?.logo?.size,
