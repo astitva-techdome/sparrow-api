@@ -56,7 +56,7 @@ export class UserController {
       HttpStatusCode.CREATED,
       data,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":userId")
@@ -72,7 +72,7 @@ export class UserController {
       HttpStatusCode.OK,
       data,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put(":userId")
@@ -92,7 +92,7 @@ export class UserController {
       HttpStatusCode.OK,
       user,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":userId")
@@ -108,7 +108,7 @@ export class UserController {
       HttpStatusCode.OK,
       data,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
   @Post("send-verification-email")
   @ApiOperation({
@@ -125,7 +125,7 @@ export class UserController {
       "Email Sent Successfully",
       HttpStatusCode.OK,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
   @Post("send-welcome-email")
   @ApiOperation({
@@ -142,7 +142,7 @@ export class UserController {
       "Email Sent Successfully",
       HttpStatusCode.OK,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
   @Get("logout")
   @ApiOperation({
@@ -164,7 +164,7 @@ export class UserController {
       "User Logout",
       HttpStatusCode.OK,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post("verify-email")
@@ -187,7 +187,7 @@ export class UserController {
       "Email Verified Successfully",
       HttpStatusCode.OK,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
   @Post("change-password")
   @ApiOperation({
@@ -208,7 +208,7 @@ export class UserController {
       "Password Updated",
       HttpStatusCode.OK,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get("application-details")
@@ -244,6 +244,6 @@ export class UserController {
         },
       },
     };
-    res.status(HttpStatusCode.OK).send(data);
+    return res.status(HttpStatusCode.OK).send(data);
   }
 }

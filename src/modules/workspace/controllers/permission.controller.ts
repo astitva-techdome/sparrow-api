@@ -45,6 +45,6 @@ export class PermissionController {
       HttpStatusCode.OK,
       workspace,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 }
