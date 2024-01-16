@@ -23,7 +23,10 @@ import {
   UpdateWorkspaceDto,
 } from "../payloads/workspace.payload";
 import { PermissionService } from "../services/permission.service";
-import { AddWorkspaceUserDto } from "../payloads/workspaceUser.payload";
+import {
+  AddWorkspaceUserDto,
+  UserWorkspaceRoleDto,
+} from "../payloads/workspaceUser.payload";
 import { FastifyReply } from "fastify";
 import { ApiResponseService } from "@src/modules/common/services/api-response.service";
 import { HttpStatusCode } from "@src/modules/common/enum/httpStatusCode.enum";
@@ -198,28 +201,31 @@ export class WorkSpaceController {
 
   @Post(":workspaceId/user/:userId")
   @ApiOperation({
-    summary: "Add a User in  Workspace",
-    description: "You can add another user to your Workspace",
+    summary: "Add Users in  Workspace",
+    description: "You can add multiple users to your Workspace",
   })
-  @ApiResponse({ status: 201, description: "User Added Successfully" })
-  @ApiResponse({ status: 400, description: "Failed to Add User" })
+  @ApiResponse({ status: 201, description: "Users Added Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to Add Users" })
   async addUserWorkspace(
     @Param("workspaceId") workspaceId: string,
-    @Param("userId") userId: string,
-    @Body() data: AddWorkspaceUserDto,
+    @Body() payload: AddWorkspaceUserDto,
     @Res() res: FastifyReply,
   ) {
     const params = {
-      userId: userId,
+      users: payload.users,
       workspaceId: workspaceId,
-      role: data.role,
+      role: payload.role,
     };
-    await this.workspaceService.addUserInWorkspace(params);
+    const response = await this.workspaceService.addUserInWorkspace(params);
     const workspace = await this.workspaceService.get(workspaceId);
+    const data = {
+      ...workspace,
+      ...response,
+    };
     const responseData = new ApiResponseService(
       "User Added",
       HttpStatusCode.OK,
-      workspace,
+      data,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
@@ -235,7 +241,7 @@ export class WorkSpaceController {
   async changeUserRoleInWorkspace(
     @Param("workspaceId") workspaceId: string,
     @Param("userId") userId: string,
-    @Body() data: AddWorkspaceUserDto,
+    @Body() data: UserWorkspaceRoleDto,
     @Res() res: FastifyReply,
   ) {
     const params = {
