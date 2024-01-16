@@ -123,27 +123,29 @@ export class TeamController {
 
   @Post(":teamId/user/:userId")
   @ApiOperation({
-    summary: "Add A User in Team",
-    description: "This will add a user in your Team",
+    summary: "Add Users in Team",
+    description: "This will add multiple users in your Team",
   })
-  @ApiResponse({ status: 201, description: "User Added Successfully" })
-  @ApiResponse({ status: 400, description: "Failed to add user" })
+  @ApiResponse({ status: 201, description: "Users Added Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to add users" })
   async addUserInTeam(
     @Param("teamId") teamId: string,
-    @Param("userId") userId: string,
     @Body() addTeamUserDto: AddTeamUserDto,
     @Res() res: FastifyReply,
   ) {
-    await this.teamUserService.addUser({
+    const data = await this.teamUserService.addUser({
       teamId,
-      userId,
       ...addTeamUserDto,
     });
     const team = await this.teamService.get(teamId);
+    const response = {
+      ...team,
+      nonExistingUsers: data,
+    };
     const responseData = new ApiResponseService(
       "User Added in Team",
       HttpStatusCode.OK,
-      team,
+      response,
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }

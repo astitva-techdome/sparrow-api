@@ -67,73 +67,82 @@ export class TeamUserService {
    * @param {CreateOrUpdateTeamUserDto} payload
    * @returns {Promise<InsertOneWriteOpResult<Team>>} result of the insert operation
    */
-  async addUser(payload: AddTeamUserDto): Promise<WithId<Team>> {
+  async addUser(payload: AddTeamUserDto): Promise<string[]> {
     const teamFilter = new ObjectId(payload.teamId);
     const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
-    const userFilter = new ObjectId(payload.userId);
-    const userData = await this.userRepository.findUserByUserId(userFilter);
+    const usersExist = [];
+    const usersNotExist = [];
+    for (const emailId of payload.users) {
+      const user = await this.userRepository.getUserByEmail(emailId);
+      if (user) {
+        usersExist.push(user);
+      } else {
+        usersNotExist.push(emailId);
+      }
+    }
     await this.teamService.isTeamOwnerOrAdmin(teamFilter);
     const teamUsers = [...teamData.users];
     const teamAdmins = [...teamData.admins];
-    teamUsers.push({
-      id: payload.userId,
-      email: userData.email,
-      name: userData.name,
-      role: payload.role === TeamRole.ADMIN ? TeamRole.ADMIN : TeamRole.MEMBER,
-    });
-    const userTeams = [...userData.teams];
-    const userWorkspaces = [...userData.workspaces];
-    userTeams.push({
-      id: new ObjectId(payload.teamId),
-      name: teamData.name,
-      role: payload.role === TeamRole.ADMIN ? TeamRole.ADMIN : TeamRole.MEMBER,
-    });
-    if (payload.role === TeamRole.ADMIN) {
-      teamAdmins.push(payload.userId);
-      for (const item of teamData.workspaces) {
-        userWorkspaces.push({
-          teamId: payload.teamId,
-          workspaceId: item.id.toString(),
-          name: item.name,
-        });
+    for (const userData of usersExist) {
+      teamUsers.push({
+        id: userData._id.toString(),
+        email: userData.email,
+        name: userData.name,
+        role:
+          payload.role === TeamRole.ADMIN ? TeamRole.ADMIN : TeamRole.MEMBER,
+      });
+      const userTeams = [...userData.teams];
+      const userWorkspaces = [...userData.workspaces];
+      userTeams.push({
+        id: new ObjectId(payload.teamId),
+        name: teamData.name,
+        role:
+          payload.role === TeamRole.ADMIN ? TeamRole.ADMIN : TeamRole.MEMBER,
+      });
+      if (payload.role === TeamRole.ADMIN) {
+        teamAdmins.push(userData._id.toString());
+        for (const item of teamData.workspaces) {
+          userWorkspaces.push({
+            teamId: payload.teamId,
+            workspaceId: item.id.toString(),
+            name: item.name,
+          });
+        }
+      } else {
+        for (const item of payload.workspaces) {
+          userWorkspaces.push({
+            teamId: payload.teamId,
+            workspaceId: item.id.toString(),
+            name: item.name,
+          });
+        }
       }
-    } else {
-      for (const item of payload.workspaces) {
-        userWorkspaces.push({
-          teamId: payload.teamId,
-          workspaceId: item.id.toString(),
-          name: item.name,
-        });
-      }
+      const updatedTeamParams = {
+        users: teamUsers,
+        admins: teamAdmins,
+      };
+
+      const teamWorkspaces =
+        payload.role === TeamRole.ADMIN
+          ? [...teamData.workspaces]
+          : payload.workspaces;
+      const message = {
+        teamWorkspaces: teamWorkspaces,
+        userId: userData._id,
+        role: payload.role,
+      };
+      await this.producerService.produce(TOPIC.USER_ADDED_TO_TEAM_TOPIC, {
+        value: JSON.stringify(message),
+      });
+      const updateUserParams = {
+        teams: userTeams,
+        workspaces: userWorkspaces,
+      };
+      await this.userRepository.updateUserById(userData._id, updateUserParams);
+
+      await this.teamRepository.updateTeamById(teamFilter, updatedTeamParams);
     }
-    const updatedTeamParams = {
-      users: teamUsers,
-      admins: teamAdmins,
-    };
-
-    const teamWorkspaces =
-      payload.role === TeamRole.ADMIN
-        ? [...teamData.workspaces]
-        : payload.workspaces;
-    const message = {
-      teamWorkspaces: teamWorkspaces,
-      userId: userData._id,
-      role: payload.role,
-    };
-    await this.producerService.produce(TOPIC.USER_ADDED_TO_TEAM_TOPIC, {
-      value: JSON.stringify(message),
-    });
-    const updateUserParams = {
-      teams: userTeams,
-      workspaces: userWorkspaces,
-    };
-    await this.userRepository.updateUserById(userFilter, updateUserParams);
-
-    const updatedTeamResponse = await this.teamRepository.updateTeamById(
-      teamFilter,
-      updatedTeamParams,
-    );
-    return updatedTeamResponse;
+    return usersNotExist;
   }
 
   async removeUser(payload: CreateOrUpdateTeamUserDto): Promise<WithId<Team>> {
