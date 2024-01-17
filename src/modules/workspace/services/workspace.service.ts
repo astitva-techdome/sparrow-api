@@ -17,10 +17,8 @@ import {
   UpdateResult,
   WithId,
 } from "mongodb";
-import { Role, WorkspaceRole } from "@src/modules/common/enum/roles.enum";
+import { WorkspaceRole } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
-import { Team } from "@src/modules/common/models/team.model";
-import { PermissionForUserDto } from "../payloads/permission.payload";
 import { CollectionDto } from "@src/modules/common/models/collection.model";
 
 import { Logger } from "nestjs-pino";
@@ -81,31 +79,6 @@ export class WorkspaceService {
       workspaces.push(workspace);
     }
     return workspaces;
-  }
-
-  async checkPermissions(teamData: Team): Promise<Array<PermissionForUserDto>> {
-    const teamOwners = teamData.owner;
-    const teamUsers = teamData.users;
-    const permissionArray = [];
-    for (const item of teamOwners) {
-      for (const user of teamUsers) {
-        let permissionObject;
-        if (user.id.toString() === item.toString()) {
-          permissionObject = {
-            role: Role.ADMIN,
-            id: user.id,
-          };
-          permissionArray.push(permissionObject);
-        } else {
-          permissionObject = {
-            role: Role.READER,
-            id: user.id,
-          };
-          permissionArray.push(permissionObject);
-        }
-      }
-    }
-    return permissionArray;
   }
 
   async isWorkspaceAdminorEditor(id: string): Promise<Workspace> {
@@ -349,10 +322,7 @@ export class WorkspaceService {
       const userDataPromises = [];
       for (const item of userDataArray) {
         userDataPromises.push(
-          this.userRepository.updateUserById(
-            new ObjectId(item._id),
-            item as unknown as User,
-          ),
+          this.userRepository.updateUserById(new ObjectId(item._id), item),
         );
       }
       await Promise.all(userDataPromises);
@@ -402,10 +372,7 @@ export class WorkspaceService {
     const userDataPromises = [];
     for (const item of userDataArray) {
       userDataPromises.push(
-        this.userRepository.updateUserById(
-          new ObjectId(item._id),
-          item as unknown as User,
-        ),
+        this.userRepository.updateUserById(new ObjectId(item._id), item),
       );
     }
     await Promise.all(userDataPromises);

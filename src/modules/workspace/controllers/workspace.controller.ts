@@ -22,7 +22,6 @@ import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
 } from "../payloads/workspace.payload";
-import { PermissionService } from "../services/permission.service";
 import {
   AddWorkspaceUserDto,
   UserWorkspaceRoleDto,
@@ -55,7 +54,6 @@ import { BodyModeEnum } from "@src/modules/common/models/collection.model";
 export class WorkSpaceController {
   constructor(
     private readonly workspaceService: WorkspaceService,
-    private readonly permissionService: PermissionService,
     private readonly parserService: ParserService,
     private readonly collectionService: CollectionService,
   ) {}
@@ -199,7 +197,7 @@ export class WorkSpaceController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Post(":workspaceId/user/:userId")
+  @Post(":workspaceId/user")
   @ApiOperation({
     summary: "Add Users in  Workspace",
     description: "You can add multiple users to your Workspace",

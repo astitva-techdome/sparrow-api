@@ -123,16 +123,6 @@ export class TeamRepository {
     return deletedTeam;
   }
 
-  async HasPermission(data: Array<string>): Promise<boolean> {
-    const user = this.contextService.get("user");
-    for (const item of data) {
-      if (item.toString() === user._id.toString()) {
-        return true;
-      }
-    }
-    throw new BadRequestException("You don't have access");
-  }
-
   async findTeamByTeamId(id: ObjectId): Promise<WithId<Team>> {
     const teamData = await this.db
       .collection<Team>(Collections.TEAM)

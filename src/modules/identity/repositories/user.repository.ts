@@ -240,9 +240,9 @@ export class UserRepository {
     return;
   }
 
-  async findUsersByIdArray(IdArray: Array<ObjectId>) {
+  async findUsersByIdArray(IdArray: Array<ObjectId>): Promise<WithId<User>[]> {
     const response = await this.db
-      .collection(Collections.USER)
+      .collection<User>(Collections.USER)
       .find({ _id: { $in: IdArray } })
       .toArray();
     return response;

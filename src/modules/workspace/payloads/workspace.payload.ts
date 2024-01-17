@@ -1,26 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { WorkspaceType } from "@src/modules/common/models/workspace.model";
+import { AdminDto } from "@src/modules/common/models/workspace.model";
 import {
   IsArray,
   IsDateString,
-  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
-import { PermissionDto } from "./permission.payload";
 import { Type } from "class-transformer";
 
 export class WorkspaceDto {
   @IsOptional()
   @IsArray()
   users?: string[];
-
-  @IsOptional()
-  @IsArray()
-  permissions?: PermissionDto[];
 
   @IsDateString()
   @IsOptional()
@@ -80,13 +74,11 @@ export class WorkspaceDtoForIdDocument {
   @IsNotEmpty()
   name?: string;
 
-  @IsEnum(WorkspaceType)
-  @IsNotEmpty()
-  type?: WorkspaceType;
-
   @IsArray()
+  @Type(() => AdminDto)
+  @ValidateNested({ each: true })
   @IsOptional()
-  owners?: string[];
+  admins?: AdminDto[];
 
   @IsArray()
   @Type(() => UserDto)

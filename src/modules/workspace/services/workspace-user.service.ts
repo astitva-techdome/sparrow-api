@@ -1,30 +1,23 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { PermissionRepository } from "../repositories/permission.repository";
-import { PermissionDto } from "../payloads/permission.payload";
+import { Injectable } from "@nestjs/common";
 import { ObjectId } from "mongodb";
-import { RemovePermissionDto } from "../payloads/removePermission.payload";
-import { Role, WorkspaceRole } from "@src/modules/common/enum/roles.enum";
+import { WorkspaceRole } from "@src/modules/common/enum/roles.enum";
 import { ConfigService } from "@nestjs/config";
 import { ContextService } from "@src/modules/common/services/context.service";
 import { WorkspaceDto } from "@src/modules/common/models/workspace.model";
 import { UserRepository } from "../../identity/repositories/user.repository";
 import { WorkspaceRepository } from "@src/modules/workspace/repositories/workspace.repository";
-import { TeamRepository } from "../../identity/repositories/team.repository";
-import { WorkspaceDtoForIdDocument } from "../payloads/workspace.payload";
 import { isString } from "class-validator";
 import { SelectedWorkspaces } from "@src/modules/identity/payloads/teamUser.payload";
 /**
- * Permission Service
+ * Workspace User Service
  */
 @Injectable()
-export class PermissionService {
+export class WorkspaceUserService {
   userBlacklistPrefix: string;
   constructor(
-    private readonly permissionRepository: PermissionRepository,
     private readonly contextService: ContextService,
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
-    private readonly teamRepository: TeamRepository,
     private readonly workspaceRepository: WorkspaceRepository,
   ) {
     this.userBlacklistPrefix = this.configService.get(
@@ -32,41 +25,7 @@ export class PermissionService {
     );
   }
 
-  async userHasPermission(
-    permissionArray: [PermissionDto],
-    userId: ObjectId,
-  ): Promise<boolean> {
-    for (const item of permissionArray) {
-      if (
-        item.userId.toString() === userId.toString() &&
-        item.role === Role.ADMIN
-      ) {
-        return true;
-      }
-    }
-    throw new BadRequestException(
-      "You don't have access to update Permissions for this workspace",
-    );
-  }
-
-  async hasPermissionToRemove(
-    permissionArray: [PermissionDto],
-    permissionData: RemovePermissionDto,
-  ): Promise<boolean> {
-    for (const item of permissionArray) {
-      if (
-        item.userId.toString() === permissionData.workspaceId.toString() &&
-        item.role === Role.ADMIN
-      ) {
-        return true;
-      }
-    }
-    throw new BadRequestException(
-      "You don't have access to update Permissions for this workspace",
-    );
-  }
-
-  async addPermissionInWorkspace(
+  async addUserInWorkspace(
     workspaceArray: SelectedWorkspaces[],
     userId: string,
     role: string,
@@ -110,14 +69,14 @@ export class PermissionService {
       workspaceDataPromises.push(
         this.workspaceRepository.updateWorkspaceById(
           new ObjectId(item._id),
-          item as WorkspaceDtoForIdDocument,
+          item,
         ),
       );
     }
     await Promise.all(workspaceDataPromises);
   }
 
-  async removePermissionInWorkspace(
+  async removeUserFromWorkspace(
     workspaceArray: WorkspaceDto[],
     userId: string,
     role: string,
@@ -147,14 +106,14 @@ export class PermissionService {
       workspaceDataPromises.push(
         this.workspaceRepository.updateWorkspaceById(
           new ObjectId(item._id),
-          item as WorkspaceDtoForIdDocument,
+          item,
         ),
       );
     }
     await Promise.all(workspaceDataPromises);
   }
 
-  async updatePermissionForAdmin(
+  async updateAdminRoleInWorkspace(
     workspaceArray: WorkspaceDto[],
     userId: string,
   ): Promise<void> {
@@ -169,7 +128,7 @@ export class PermissionService {
     const workspaceDataArray =
       await this.workspaceRepository.findWorkspacesByIdArray(updatedIdArray);
     for (let index = 0; index < workspaceDataArray.length; index++) {
-      const usersLength: Array<WorkspaceDto> = workspaceDataArray[index].users;
+      const usersLength = workspaceDataArray[index].users;
       let count = 0;
       for (let flag = 0; flag < usersLength.length; flag++) {
         if (
@@ -198,17 +157,14 @@ export class PermissionService {
       workspaceDataPromises.push(
         this.workspaceRepository.updateWorkspaceById(
           new ObjectId(item._id),
-          item as WorkspaceDtoForIdDocument,
+          item,
         ),
       );
     }
     await Promise.all(workspaceDataPromises);
   }
 
-  async demotePermissionForAdmin(
-    workspaceArray: WorkspaceDto[],
-    userId: string,
-  ) {
+  async demoteAdminInWorkspace(workspaceArray: WorkspaceDto[], userId: string) {
     const updatedIdArray = [];
     for (const item of workspaceArray) {
       if (!isString(item.id)) {
@@ -238,14 +194,10 @@ export class PermissionService {
       workspaceDataPromises.push(
         this.workspaceRepository.updateWorkspaceById(
           new ObjectId(item._id),
-          item as WorkspaceDtoForIdDocument,
+          item,
         ),
       );
     }
     await Promise.all(workspaceDataPromises);
-  }
-
-  async setAdminPermissionForOwner(_id: ObjectId) {
-    return await this.permissionRepository.setAdminPermissionForOwner(_id);
   }
 }
