@@ -1,8 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ObjectId } from "mongodb";
 import { WorkspaceRole } from "@src/modules/common/enum/roles.enum";
-import { ConfigService } from "@nestjs/config";
-import { ContextService } from "@src/modules/common/services/context.service";
 import { WorkspaceDto } from "@src/modules/common/models/workspace.model";
 import { UserRepository } from "../../identity/repositories/user.repository";
 import { WorkspaceRepository } from "@src/modules/workspace/repositories/workspace.repository";
@@ -13,17 +11,10 @@ import { SelectedWorkspaces } from "@src/modules/identity/payloads/teamUser.payl
  */
 @Injectable()
 export class WorkspaceUserService {
-  userBlacklistPrefix: string;
   constructor(
-    private readonly contextService: ContextService,
     private readonly userRepository: UserRepository,
-    private readonly configService: ConfigService,
     private readonly workspaceRepository: WorkspaceRepository,
-  ) {
-    this.userBlacklistPrefix = this.configService.get(
-      "app.userBlacklistPrefix",
-    );
-  }
+  ) {}
 
   async addUserInWorkspace(
     workspaceArray: SelectedWorkspaces[],
