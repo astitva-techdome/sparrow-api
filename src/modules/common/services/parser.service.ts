@@ -25,9 +25,9 @@ export class ParserService {
   ) {}
   async parse(file: string): Promise<Record<string, string>> {
     const openApiDocument = (await SwaggerParser.validate(file)) as OpenAPI303;
+    const baseUrl = this.getBaseUrl(openApiDocument);
 
     const folderObjMap = new Map();
-
     for (const [key, value] of Object.entries(openApiDocument.paths)) {
       //key will be endpoints /put and values will its apis post ,put etc
       for (const [innerKey, innerValue] of Object.entries(value)) {
@@ -40,9 +40,9 @@ export class ParserService {
         requestObj.id = uuidv4();
         (requestObj.isDeleted = false),
           (requestObj.request = {} as RequestMetaData);
-        requestObj.request.method = innerKey as HTTPMethods;
+        requestObj.request.method = innerKey.toUpperCase() as HTTPMethods;
         requestObj.request.operationId = innerValue.operationId;
-        requestObj.request.url = key;
+        requestObj.request.url = baseUrl + key;
 
         if (innerValue.parameters?.length) {
           requestObj.request.queryParams = innerValue.parameters.filter(
@@ -70,11 +70,10 @@ export class ParserService {
         //Add to a folder
         const tag = innerValue.tags ? innerValue.tags[0] : "default";
         const tagArr =
-          openApiDocument?.tags.length > 0 &&
+          openApiDocument?.tags?.length > 0 &&
           openApiDocument.tags.filter((tagObj) => {
             return tagObj.name === tag;
           });
-
         let folderObj: CollectionItem = folderObjMap.get(tag);
         if (!folderObj) {
           folderObj = {} as CollectionItem;
@@ -89,6 +88,7 @@ export class ParserService {
         folderObjMap.set(folderObj.name, folderObj);
       }
     }
+
     const itemObject = Object.fromEntries(folderObjMap);
     let items: CollectionItem[] = [];
     let totalRequests = 0;
@@ -99,7 +99,7 @@ export class ParserService {
       }
     }
     items.map((itemObj) => {
-      totalRequests = totalRequests + itemObj.items.length;
+      totalRequests = totalRequests + itemObj.items?.length;
     });
     const user = await this.contextService.get("user");
 
@@ -111,7 +111,7 @@ export class ParserService {
     if (existingCollection) {
       //check on folder level
       mergedFolderItems = this.compareAndMerge(existingCollection.items, items);
-      for (let x = 0; x < existingCollection.items.length; x++) {
+      for (let x = 0; x < existingCollection.items?.length; x++) {
         const newItem: CollectionItem[] = items.filter((item) => {
           return item.name === existingCollection.items[x].name;
         });
@@ -125,7 +125,7 @@ export class ParserService {
       items = mergedFolderItems;
     }
     const newItems: CollectionItem[] = [];
-    for (let x = 0; x < items.length; x++) {
+    for (let x = 0; x < items?.length; x++) {
       const itemsObj: CollectionItem = {
         name: items[x].name,
         description: items[x].description,
@@ -139,13 +139,14 @@ export class ParserService {
         updatedAt: new Date(),
       };
       const innerArray: CollectionItem[] = [];
-      for (let y = 0; y < items[x].items.length; y++) {
+      for (let y = 0; y < items[x].items?.length; y++) {
         const data = this.handleCircularReference(items[x].items[y]);
         innerArray.push(JSON.parse(data));
       }
       itemsObj.items = innerArray;
       newItems.push(itemsObj);
     }
+
     const collection: Collection = {
       name: openApiDocument.info.title,
       totalRequests,
@@ -157,6 +158,7 @@ export class ParserService {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
     if (existingCollection) {
       await this.collectionService.updateImportedCollection(
         existingCollection._id.toString(),
@@ -167,7 +169,11 @@ export class ParserService {
       const newCollection = await this.collectionService.importCollection(
         collection,
       );
-      return { id: newCollection.insertedId.toString(), name: collection.name };
+
+      return {
+        id: newCollection.insertedId.toString(),
+        name: collection.name,
+      };
     }
   }
   handleCircularReference(obj: CollectionItem) {
@@ -193,7 +199,7 @@ export class ParserService {
           newItems.map((item) => [
             item.type === ItemTypeEnum.FOLDER
               ? item.name
-              : item.name + item.request.method,
+              : item.name + item.request?.method,
             item,
           ]),
         )
@@ -203,7 +209,7 @@ export class ParserService {
           existingitems.map((item) => [
             item.type === ItemTypeEnum.FOLDER
               ? item.name
-              : item.name + item.request.method,
+              : item.name + item.request?.method,
             item,
           ]),
         )
@@ -214,14 +220,14 @@ export class ParserService {
         newItemMap.has(
           existingItem.type === ItemTypeEnum.FOLDER
             ? existingItem.name
-            : existingItem.name + existingItem.request.method,
+            : existingItem.name + existingItem.request?.method,
         )
       ) {
         return {
           ...newItemMap.get(
             existingItem.type === ItemTypeEnum.FOLDER
               ? existingItem.name
-              : existingItem.name + existingItem.request.method,
+              : existingItem.name + existingItem.request?.method,
           ),
           isDeleted: false,
         };
@@ -245,5 +251,13 @@ export class ParserService {
     });
 
     return mergedArray;
+  }
+  getBaseUrl(openApiDocument: OpenAPI303): string {
+    const basePath = openApiDocument.basePath ? openApiDocument.basePath : "";
+    if (openApiDocument.host) {
+      return "https://" + openApiDocument.host + basePath;
+    } else {
+      return "http://localhost:{{PORT}}" + basePath;
+    }
   }
 }

@@ -79,7 +79,7 @@ export class WorkSpaceController {
       HttpStatusCode.CREATED,
       workspace,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":workspaceId")
@@ -99,7 +99,7 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       data,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get("user/:userId")
@@ -125,7 +125,7 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       data,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get("team/:teamId")
@@ -151,7 +151,7 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       data,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put(":workspaceId")
@@ -174,7 +174,7 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       workspace,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":workspaceId")
@@ -194,7 +194,7 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       data,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/user")
@@ -254,7 +254,7 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       workspace,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":workspaceId/user/:userId")
@@ -280,7 +280,7 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       workspace,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/importFile/collection")
@@ -305,18 +305,18 @@ export class WorkSpaceController {
         : yml.load(dataString);
     const collectionObj = await this.parserService.parse(dataObj);
     await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-      id: new ObjectId(collectionObj.insertedId),
+      id: new ObjectId(collectionObj.id),
       name: collectionObj.name,
     });
     const collection = await this.collectionService.getCollection(
-      collectionObj.insertedId,
+      collectionObj.id,
     );
     const responseData = new ApiResponseService(
       "Collection Imported",
       HttpStatusCode.OK,
       collection,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/importUrl/collection")
@@ -339,7 +339,7 @@ export class WorkSpaceController {
 
     const collectionObj = await this.parserService.parse(dataObj);
     await this.workspaceService.addCollectionInWorkSpace(workspaceId, {
-      id: new ObjectId(collectionObj.insertedId),
+      id: new ObjectId(collectionObj.id),
       name: collectionObj.name,
     });
     const responseData = new ApiResponseService(
@@ -347,7 +347,7 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       collectionObj,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Post(":workspaceId/importJson/collection")
@@ -385,6 +385,6 @@ export class WorkSpaceController {
       HttpStatusCode.OK,
       collection,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 }

@@ -67,7 +67,7 @@ export class EnvironmentController {
       HttpStatusCode.CREATED,
       environment,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Delete(":workspaceId/environment/:environmentId")
@@ -96,7 +96,7 @@ export class EnvironmentController {
       HttpStatusCode.OK,
       environment,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":workspaceId/environment")
@@ -121,7 +121,7 @@ export class EnvironmentController {
       HttpStatusCode.OK,
       environment,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Put(":workspaceId/environment/:environmentId")
@@ -156,7 +156,7 @@ export class EnvironmentController {
       HttpStatusCode.OK,
       environment,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 
   @Get(":workspaceId/environment/:environmentId")
@@ -183,6 +183,6 @@ export class EnvironmentController {
       HttpStatusCode.OK,
       environment,
     );
-    res.status(responseData.httpStatusCode).send(responseData);
+    return res.status(responseData.httpStatusCode).send(responseData);
   }
 }
