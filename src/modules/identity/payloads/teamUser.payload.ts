@@ -84,9 +84,9 @@ export class AddTeamUserDto {
   @IsOptional()
   teamId?: string;
 
-  @IsMongoId()
-  @IsOptional()
-  userId?: string;
+  @IsArray()
+  @ApiProperty({ example: ["user@gmail.com"] })
+  users: string;
 
   @IsString()
   @IsOptional()
