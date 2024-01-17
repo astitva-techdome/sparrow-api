@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateOrUpdateTeamDto, TeamResponse } from "../payloads/team.payload";
+import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
 import { TeamRepository } from "../repositories/team.repository";
 import {
   DeleteResult,
@@ -30,6 +30,13 @@ export class TeamService {
     private readonly contextService: ContextService,
   ) {}
 
+  async isImageSizeValid(size: number) {
+    if (size < 102400) {
+      return true;
+    }
+    throw new BadRequestException("Image size should be less than 100kb");
+  }
+
   /**
    * Creates a new team in the database
    * @param {CreateOrUpdateTeamDto} teamData
@@ -41,6 +48,7 @@ export class TeamService {
   ): Promise<InsertOneResult<Team>> {
     let team;
     if (image) {
+      await this.isImageSizeValid(image.size);
       const dataBuffer = image.buffer;
       const dataString = Buffer.from(dataBuffer).toString("base64");
       const logo = {
@@ -95,31 +103,9 @@ export class TeamService {
    * @param {string} id
    * @returns {Promise<Team>} queried team data
    */
-  async get(id: string): Promise<WithId<TeamResponse> | WithId<Team>> {
+  async get(id: string): Promise<WithId<Team>> {
     const data = await this.teamRepository.get(id);
-    let updatedData: TeamResponse;
-    if (data.logo) {
-      updatedData = {
-        _id: data._id,
-        name: data.name,
-        description: data.description,
-        logo: {
-          buffer: data?.logo?.bufferString,
-          encoding: data?.logo?.encoding,
-          mimetype: data?.logo?.mimetype,
-          size: data?.logo?.size,
-        },
-        workspaces: data.workspaces,
-        users: data.users,
-        owner: data.owner,
-        admins: data?.admins,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-        createdBy: data.createdBy,
-        updatedBy: data.updatedBy,
-      };
-    }
-    return data.logo ? updatedData : data;
+    return data;
   }
 
   /**
@@ -145,14 +131,14 @@ export class TeamService {
     return data;
   }
 
-  async getAllTeams(userId: string): Promise<WithId<TeamResponse>[]> {
+  async getAllTeams(userId: string): Promise<WithId<Team>[]> {
     const user = await this.userRespository.getUserById(userId);
     if (!user) {
       throw new BadRequestException(
         "The user with this id does not exist in the system",
       );
     }
-    const teams: WithId<TeamResponse>[] = [];
+    const teams: WithId<Team>[] = [];
     for (const { id } of user.teams) {
       const teamData = await this.get(id.toString());
       teams.push(teamData);
