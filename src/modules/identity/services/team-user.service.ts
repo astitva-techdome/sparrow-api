@@ -264,7 +264,10 @@ export class TeamUserService {
     const teamData = await this.teamRepository.findTeamByTeamId(
       new ObjectId(payload.teamId),
     );
-    await this.isTeamOwner(payload.teamId);
+    const teamOwner = await this.isTeamOwner(payload.teamId);
+    if (!teamOwner) {
+      throw new BadRequestException("You don't have access");
+    }
     const updatedTeamAdmins = teamData.admins.filter(
       (id) => id !== payload.userId,
     );
@@ -326,14 +329,17 @@ export class TeamUserService {
       new ObjectId(id),
     );
     if (teamDetails.owner !== user._id.toString()) {
-      throw new BadRequestException("You don't have access");
+      return false;
     }
     return true;
   }
 
   async changeOwner(payload: CreateOrUpdateTeamUserDto) {
     const user = await this.contextService.get("user");
-    await this.isTeamOwner(payload.teamId);
+    const teamOwner = await this.isTeamOwner(payload.teamId);
+    if (!teamOwner) {
+      throw new BadRequestException("You don't have access");
+    }
     const currentUserAdmin = await this.isTeamAdmin(payload);
     const teamDetails = await this.teamRepository.findTeamByTeamId(
       new ObjectId(payload.teamId),
@@ -430,5 +436,64 @@ export class TeamUserService {
       });
     }
     return response;
+  }
+
+  async leaveTeam(teamId: string) {
+    const teamOwner = await this.isTeamOwner(teamId);
+    if (teamOwner) {
+      throw new BadRequestException("Owner cannot leave team");
+    }
+    const user = await this.contextService.get("user");
+    const adminDto = {
+      teamId: teamId,
+      userId: user._id.toString(),
+    };
+    const teamAdmin = await this.isTeamAdmin(adminDto);
+    const teamData = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(teamId),
+    );
+    const userData = await this.userRepository.findUserByUserId(user._id);
+    const teamAdmins = [...teamData.admins];
+    const teamUser = [...teamData.users];
+    let filteredAdmin;
+    const filteredUser = teamUser.filter(
+      (item) => item.id !== user._id.toString(),
+    );
+    if (teamAdmin) {
+      filteredAdmin = teamAdmins.filter(
+        (id: string) => id.toString() !== user._id.toString(),
+      );
+    }
+    const teamUpdatedParams = {
+      users: filteredUser,
+      admins: teamAdmin ? filteredAdmin : teamAdmins,
+    };
+    const userTeams = [...userData.teams];
+    const userFilteredTeams = userTeams.filter(
+      (item) => item.id.toString() !== teamId,
+    );
+    const userFilteredWorkspaces = userData.workspaces.filter(
+      (workspace) => workspace.teamId !== teamId,
+    );
+    const userUpdatedParams = {
+      teams: userFilteredTeams,
+      workspaces: userFilteredWorkspaces,
+    };
+    await this.userRepository.updateUserById(user._id, userUpdatedParams);
+    const teamWorkspaces = [...teamData.workspaces];
+
+    const message = {
+      teamWorkspaces: teamWorkspaces,
+      userId: userData._id,
+      role: teamAdmin ? TeamRole.ADMIN : TeamRole.MEMBER,
+    };
+    await this.producerService.produce(TOPIC.USER_REMOVED_FROM_TEAM_TOPIC, {
+      value: JSON.stringify(message),
+    });
+    const data = await this.teamRepository.updateTeamById(
+      new ObjectId(teamId),
+      teamUpdatedParams,
+    );
+    return data;
   }
 }
