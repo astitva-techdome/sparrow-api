@@ -121,7 +121,7 @@ export class TeamController {
     res.status(responseData.httpStatusCode).send(responseData);
   }
 
-  @Post(":teamId/user/:userId")
+  @Post(":teamId/user")
   @ApiOperation({
     summary: "Add Users in Team",
     description: "This will add multiple users in your Team",

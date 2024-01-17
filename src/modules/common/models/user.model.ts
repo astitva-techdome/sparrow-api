@@ -4,7 +4,6 @@ import {
   IsArray,
   IsDate,
   IsEmail,
-  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
@@ -12,9 +11,7 @@ import {
   MaxLength,
   ValidateNested,
 } from "class-validator";
-import { WorkspaceRole } from "../enum/roles.enum";
 import { TeamDto } from "./team.model";
-import { ObjectId } from "mongodb";
 
 export enum EmailServiceProvider {
   GMAIL = "GMAIL",
@@ -114,16 +111,6 @@ class AuthProvider {
   @IsString()
   @IsNotEmpty()
   oAuthId: string;
-}
-
-export class PermissionDto {
-  @IsEnum(WorkspaceRole)
-  @IsNotEmpty()
-  role: WorkspaceRole;
-
-  @IsMongoId()
-  @IsNotEmpty()
-  id: ObjectId;
 }
 
 export class UserWorkspaceDto {
