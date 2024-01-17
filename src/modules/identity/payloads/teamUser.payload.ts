@@ -70,11 +70,6 @@ export class SelectedWorkspaces {
 
   @IsNotEmpty()
   @IsString()
-  @ApiProperty({ example: "admin" })
-  role: string;
-
-  @IsNotEmpty()
-  @IsString()
   @ApiProperty({ example: "MY Workspace" })
   name: string;
 }
@@ -89,9 +84,9 @@ export class AddTeamUserDto {
   users: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty({ example: "admin" })
-  role?: string;
+  role: string;
 
   @IsArray()
   @IsOptional()

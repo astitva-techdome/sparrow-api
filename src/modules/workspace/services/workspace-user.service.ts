@@ -48,7 +48,7 @@ export class WorkspaceUserService {
         for (const item of workspaceArray) {
           if (workspaceDataArray[index]._id.toString() === item.id.toString()) {
             workspaceDataArray[index].users.push({
-              role: item.role,
+              role: role,
               id: userId,
             });
           }
