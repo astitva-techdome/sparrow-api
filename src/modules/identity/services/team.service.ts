@@ -31,7 +31,7 @@ export class TeamService {
   ) {}
 
   async isImageSizeValid(size: number) {
-    if (size < 102400) {
+    if (size < this.configService.get("app.imageSizeLimit")) {
       return true;
     }
     throw new BadRequestException("Image size should be less than 100kb");

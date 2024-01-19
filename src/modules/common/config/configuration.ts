@@ -10,6 +10,7 @@ export default () => ({
     defaultWorkspaceName: "My Workspace",
     userBlacklistPrefix: "BL_",
     defaultTeamNameSuffix: "'s Team",
+    imageSizeLimit: 102400,
     refreshTokenSecretKey: process.env.REFRESH_TOKEN_SECRET_KEY,
     emailValidationCodeExpirationTime: parseInt(
       process.env.EMAIL_VALIDATION_CODE_EXPIRY_TIME,

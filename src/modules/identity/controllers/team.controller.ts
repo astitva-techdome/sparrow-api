@@ -12,6 +12,8 @@ import {
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -46,6 +48,23 @@ export class TeamController {
   @ApiOperation({
     summary: "Create a new  Team",
     description: "This will Create a  new Team",
+  })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        image: {
+          type: "file",
+        },
+        name: {
+          type: "string",
+        },
+        description: {
+          type: "string",
+        },
+      },
+    },
   })
   @UseInterceptors(FileInterceptor("image"))
   @ApiResponse({ status: 201, description: "Team Created Successfully" })

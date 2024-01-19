@@ -256,7 +256,7 @@ export class collectionController {
     const collectionId = requestDto.collectionId;
     const workspaceId = requestDto.workspaceId;
     const user = await this.contextService.get("user");
-    await this.workSpaceService.isWorkspaceAdminorEditor(
+    await this.workSpaceService.IsWorkspaceAdminOrEditor(
       requestDto.workspaceId,
     );
     await this.collectionRequestService.checkPermission(workspaceId, user._id);
@@ -293,7 +293,7 @@ export class collectionController {
   ) {
     const collectionId = requestDto.collectionId;
     const workspaceId = requestDto.workspaceId;
-    await this.workSpaceService.isWorkspaceAdminorEditor(
+    await this.workSpaceService.IsWorkspaceAdminOrEditor(
       requestDto.workspaceId,
     );
     const user = await this.contextService.get("user");
@@ -327,7 +327,7 @@ export class collectionController {
   ) {
     const collectionId = requestDto.collectionId;
     const workspaceId = requestDto.workspaceId;
-    await this.workSpaceService.isWorkspaceAdminorEditor(
+    await this.workSpaceService.IsWorkspaceAdminOrEditor(
       requestDto.workspaceId,
     );
     const user = await this.contextService.get("user");

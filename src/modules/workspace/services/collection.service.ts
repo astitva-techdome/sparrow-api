@@ -30,7 +30,7 @@ export class CollectionService {
   async createCollection(
     createCollectionDto: CreateCollectionDto,
   ): Promise<InsertOneResult> {
-    await this.workspaceService.isWorkspaceAdminorEditor(
+    await this.workspaceService.IsWorkspaceAdminOrEditor(
       createCollectionDto.workspaceId,
     );
     const user = await this.contextService.get("user");
@@ -88,7 +88,7 @@ export class CollectionService {
     updateCollectionDto: UpdateCollectionDto,
     workspaceId: string,
   ): Promise<UpdateResult> {
-    await this.workspaceService.isWorkspaceAdminorEditor(workspaceId);
+    await this.workspaceService.IsWorkspaceAdminOrEditor(workspaceId);
     const user = await this.contextService.get("user");
     await this.checkPermission(workspaceId, user._id);
     await this.collectionReposistory.get(collectionId);
@@ -103,7 +103,7 @@ export class CollectionService {
     id: string,
     workspaceId: string,
   ): Promise<DeleteResult> {
-    await this.workspaceService.isWorkspaceAdminorEditor(workspaceId);
+    await this.workspaceService.IsWorkspaceAdminOrEditor(workspaceId);
     const user = await this.contextService.get("user");
     await this.checkPermission(workspaceId, user._id);
     const data = await this.collectionReposistory.delete(id);

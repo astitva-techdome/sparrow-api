@@ -89,7 +89,7 @@ export class WorkspaceService {
     return workspaces;
   }
 
-  async isWorkspaceAdminorEditor(id: string): Promise<Workspace> {
+  async IsWorkspaceAdminOrEditor(id: string): Promise<Workspace> {
     const workspaceData = await this.get(id);
     const userId = this.contextService.get("user")._id;
     if (workspaceData) {
@@ -283,7 +283,7 @@ export class WorkspaceService {
     id: string,
     updates: UpdateWorkspaceDto,
   ): Promise<UpdateResult<Document>> {
-    const workspace = await this.isWorkspaceAdminorEditor(id);
+    const workspace = await this.IsWorkspaceAdminOrEditor(id);
     const data = await this.workspaceRepository.update(id, updates);
     const team = await this.teamRepository.findTeamByTeamId(
       new ObjectId(workspace.team.id),
@@ -392,7 +392,7 @@ export class WorkspaceService {
     workspaceId: string,
     collection: CollectionDto,
   ): Promise<void> {
-    await this.isWorkspaceAdminorEditor(workspaceId);
+    await this.IsWorkspaceAdminOrEditor(workspaceId);
     await this.workspaceRepository.addCollectionInWorkspace(
       workspaceId,
       collection,
@@ -405,7 +405,7 @@ export class WorkspaceService {
     collectionId: string,
     name: string,
   ): Promise<void> {
-    await this.isWorkspaceAdminorEditor(workspaceId);
+    await this.IsWorkspaceAdminOrEditor(workspaceId);
     await this.workspaceRepository.updateCollectioninWorkspace(
       workspaceId,
       collectionId,
@@ -418,7 +418,7 @@ export class WorkspaceService {
     workspaceId: string,
     collectionId: string,
   ): Promise<void> {
-    await this.isWorkspaceAdminorEditor(workspaceId);
+    await this.IsWorkspaceAdminOrEditor(workspaceId);
     const data = await this.get(workspaceId);
 
     const filteredCollections = data.collection.filter((collection) => {
@@ -439,7 +439,7 @@ export class WorkspaceService {
     workspaceId: string,
     environment: EnvironmentDto,
   ): Promise<void> {
-    await this.isWorkspaceAdminorEditor(workspaceId);
+    await this.IsWorkspaceAdminOrEditor(workspaceId);
     await this.workspaceRepository.addEnvironmentInWorkspace(
       workspaceId,
       environment,
@@ -456,7 +456,7 @@ export class WorkspaceService {
     workspaceId: string,
     environmentId: string,
   ): Promise<void> {
-    await this.isWorkspaceAdminorEditor(workspaceId);
+    await this.IsWorkspaceAdminOrEditor(workspaceId);
     const data = await this.get(workspaceId);
 
     const filteredEnvironments = data.environments.filter((env) => {
@@ -479,7 +479,7 @@ export class WorkspaceService {
     environmentId: string,
     name: string,
   ): Promise<void> {
-    await this.isWorkspaceAdminorEditor(workspaceId);
+    await this.IsWorkspaceAdminOrEditor(workspaceId);
     await this.workspaceRepository.updateEnvironmentinWorkspace(
       workspaceId,
       environmentId,

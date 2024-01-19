@@ -33,7 +33,7 @@ export class CollectionRequestService {
   ) {}
 
   async addFolder(payload: FolderDto): Promise<CollectionItem> {
-    await this.workspaceService.isWorkspaceAdminorEditor(payload.workspaceId);
+    await this.workspaceService.IsWorkspaceAdminOrEditor(payload.workspaceId);
     const user = await this.contextService.get("user");
     const uuid = uuidv4();
     await this.checkPermission(payload.workspaceId, user._id);
@@ -65,7 +65,7 @@ export class CollectionRequestService {
   }
 
   async updateFolder(payload: FolderDto): Promise<CollectionItem> {
-    await this.workspaceService.isWorkspaceAdminorEditor(payload.workspaceId);
+    await this.workspaceService.IsWorkspaceAdminOrEditor(payload.workspaceId);
     const user = await this.contextService.get("user");
     await this.checkPermission(payload.workspaceId, user._id);
     const collection = await this.collectionReposistory.getCollection(
@@ -88,7 +88,7 @@ export class CollectionRequestService {
   async deleteFolder(
     payload: DeleteFolderDto,
   ): Promise<UpdateResult<Collection>> {
-    await this.workspaceService.isWorkspaceAdminorEditor(payload.workspaceId);
+    await this.workspaceService.IsWorkspaceAdminOrEditor(payload.workspaceId);
     const user = await this.contextService.get("user");
     await this.checkPermission(payload.workspaceId, user._id);
     const collection = await this.collectionReposistory.getCollection(
