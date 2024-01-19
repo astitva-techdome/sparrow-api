@@ -237,4 +237,22 @@ export class TeamController {
     );
     res.status(responseData.httpStatusCode).send(responseData);
   }
+
+  @Put(":teamId/leave")
+  @ApiOperation({
+    summary: "Leave the Team",
+    description: "This will be for to leave a team",
+  })
+  @ApiResponse({ status: 201, description: "Leave Team Successfully" })
+  @ApiResponse({ status: 400, description: "Failed to leave team" })
+  async leaveTeam(@Param("teamId") teamId: string, @Res() res: FastifyReply) {
+    await this.teamUserService.leaveTeam(teamId);
+    const team = await this.teamService.get(teamId);
+    const responseData = new ApiResponseService(
+      "User left the team",
+      HttpStatusCode.OK,
+      team,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
 }

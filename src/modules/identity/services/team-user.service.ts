@@ -3,6 +3,7 @@ import { TeamRepository } from "../repositories/team.repository";
 import {
   AddTeamUserDto,
   CreateOrUpdateTeamUserDto,
+  TeamInviteMailDto,
 } from "../payloads/teamUser.payload";
 import { ObjectId, WithId } from "mongodb";
 import { ContextService } from "@src/modules/common/services/context.service";
@@ -12,7 +13,11 @@ import { Team } from "@src/modules/common/models/team.model";
 import { ProducerService } from "@src/modules/common/services/kafka/producer.service";
 import { TeamRole } from "@src/modules/common/enum/roles.enum";
 import { TeamService } from "./team.service";
-
+import * as nodemailer from "nodemailer";
+import hbs = require("nodemailer-express-handlebars");
+import { EmailServiceProvider } from "@src/modules/common/models/user.model";
+import { ConfigService } from "@nestjs/config";
+import path = require("path");
 /**
  * Team User Service
  */
@@ -24,6 +29,7 @@ export class TeamUserService {
     private readonly userRepository: UserRepository,
     private readonly producerService: ProducerService,
     private readonly teamService: TeamService,
+    private readonly configService: ConfigService,
   ) {}
 
   async HasPermissionToRemove(
@@ -60,6 +66,45 @@ export class TeamUserService {
     throw new BadRequestException(
       "User is not part of team, first add user in Team",
     );
+  }
+
+  async inviteUserInTeamEmail(payload: TeamInviteMailDto) {
+    const transporter = nodemailer.createTransport({
+      service: EmailServiceProvider.GMAIL,
+      auth: {
+        user: this.configService.get("app.senderEmail"),
+        pass: this.configService.get("app.senderPassword"),
+      },
+    });
+    // const verificationCode = this.generateEmailVerificationCode();
+    const handlebarOptions = {
+      //view engine contains default and partial templates
+      viewEngine: {
+        defaultLayout: "",
+      },
+      viewPath: path.resolve(__dirname, "..", "..", "views"),
+    };
+    transporter.use("compile", hbs(handlebarOptions));
+    const mailOptions = {
+      from: this.configService.get("app.senderEmail"),
+      to: payload.email,
+      text: "User Invited",
+      template: "verifyEmail",
+      context: {
+        firstname: payload.firstName,
+        username: payload.userName,
+        teamname: payload.teamName,
+      },
+      subject: `${payload.userName} has invited you to the team "${payload.teamName}"`,
+    };
+    const promise = [
+      transporter.sendMail(mailOptions),
+      // this.userRepository.updateVerificationCode(
+      //   resetPasswordDto.email,
+      //   verificationCode,
+      // ),
+    ];
+    await Promise.all(promise);
   }
 
   /**
@@ -141,6 +186,13 @@ export class TeamUserService {
       await this.userRepository.updateUserById(userData._id, updateUserParams);
 
       await this.teamRepository.updateTeamById(teamFilter, updatedTeamParams);
+      const emailDto = {
+        firstName: "First",
+        userName: "Second",
+        teamName: "TeamData",
+        email: "ankurpatle18@gmal.com",
+      };
+      await this.inviteUserInTeamEmail(emailDto);
     }
     return usersNotExist;
   }
@@ -186,7 +238,7 @@ export class TeamUserService {
 
     const message = {
       teamWorkspaces: teamWorkspaces,
-      userId: userData._id,
+      userId: userData._id.toString(),
       role: userTeamRole,
     };
     await this.producerService.produce(TOPIC.USER_REMOVED_FROM_TEAM_TOPIC, {
@@ -457,7 +509,7 @@ export class TeamUserService {
     const teamUser = [...teamData.users];
     let filteredAdmin;
     const filteredUser = teamUser.filter(
-      (item) => item.id !== user._id.toString(),
+      (item) => item.id.toString() !== user._id.toString(),
     );
     if (teamAdmin) {
       filteredAdmin = teamAdmins.filter(
@@ -484,7 +536,7 @@ export class TeamUserService {
 
     const message = {
       teamWorkspaces: teamWorkspaces,
-      userId: userData._id,
+      userId: userData._id.toString(),
       role: teamAdmin ? TeamRole.ADMIN : TeamRole.MEMBER,
     };
     await this.producerService.produce(TOPIC.USER_REMOVED_FROM_TEAM_TOPIC, {

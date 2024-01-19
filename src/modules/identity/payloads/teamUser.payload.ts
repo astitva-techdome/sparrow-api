@@ -95,3 +95,21 @@ export class AddTeamUserDto {
   @ValidateNested({ each: true })
   workspaces?: SelectedWorkspaces[];
 }
+
+export class TeamInviteMailDto {
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  userName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  teamName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+}
