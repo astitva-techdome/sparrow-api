@@ -69,6 +69,7 @@ export class TeamUserService {
   }
 
   async inviteUserInTeamEmail(payload: TeamInviteMailDto) {
+    const currentUser = await this.contextService.get("user");
     const transporter = nodemailer.createTransport({
       service: EmailServiceProvider.GMAIL,
       auth: {
@@ -76,7 +77,6 @@ export class TeamUserService {
         pass: this.configService.get("app.senderPassword"),
       },
     });
-    // const verificationCode = this.generateEmailVerificationCode();
     const handlebarOptions = {
       //view engine contains default and partial templates
       viewEngine: {
@@ -85,26 +85,23 @@ export class TeamUserService {
       viewPath: path.resolve(__dirname, "..", "..", "views"),
     };
     transporter.use("compile", hbs(handlebarOptions));
-    const mailOptions = {
-      from: this.configService.get("app.senderEmail"),
-      to: payload.email,
-      text: "User Invited",
-      template: "verifyEmail",
-      context: {
-        firstname: payload.firstName,
-        username: payload.userName,
-        teamname: payload.teamName,
-      },
-      subject: `${payload.userName} has invited you to the team "${payload.teamName}"`,
-    };
-    const promise = [
-      transporter.sendMail(mailOptions),
-      // this.userRepository.updateVerificationCode(
-      //   resetPasswordDto.email,
-      //   verificationCode,
-      // ),
-    ];
-    await Promise.all(promise);
+    const promiseArray = [];
+    for (const user of payload.users) {
+      const mailOptions = {
+        from: this.configService.get("app.senderEmail"),
+        to: user.email,
+        text: "User Invited",
+        template: "inviteTeamEmail",
+        context: {
+          firstname: user.name,
+          username: currentUser.name,
+          teamname: payload.teamName,
+        },
+        subject: `${currentUser.name} has invited you to the team "${payload.teamName}"`,
+      };
+      promiseArray.push(transporter.sendMail(mailOptions));
+    }
+    await Promise.all(promiseArray);
   }
 
   /**
@@ -166,7 +163,6 @@ export class TeamUserService {
         users: teamUsers,
         admins: teamAdmins,
       };
-
       const teamWorkspaces =
         payload.role === TeamRole.ADMIN
           ? [...teamData.workspaces]
@@ -186,14 +182,11 @@ export class TeamUserService {
       await this.userRepository.updateUserById(userData._id, updateUserParams);
 
       await this.teamRepository.updateTeamById(teamFilter, updatedTeamParams);
-      const emailDto = {
-        firstName: "First",
-        userName: "Second",
-        teamName: "TeamData",
-        email: "ankurpatle18@gmal.com",
-      };
-      await this.inviteUserInTeamEmail(emailDto);
     }
+    await this.inviteUserInTeamEmail({
+      users: usersExist,
+      teamName: teamData.name,
+    });
     return usersNotExist;
   }
 
@@ -393,6 +386,9 @@ export class TeamUserService {
       throw new BadRequestException("You don't have access");
     }
     const currentUserAdmin = await this.isTeamAdmin(payload);
+    if (!currentUserAdmin) {
+      throw new BadRequestException("Only existing admin can become owner");
+    }
     const teamDetails = await this.teamRepository.findTeamByTeamId(
       new ObjectId(payload.teamId),
     );
@@ -406,18 +402,13 @@ export class TeamUserService {
       }
     }
     const teamAdmins = [...teamDetails.admins];
-    let filteredAdmin;
-    if (currentUserAdmin) {
-      filteredAdmin = teamAdmins.filter(
-        (adminId) => adminId !== payload.userId,
-      );
-      filteredAdmin.push(user._id.toString());
-    } else {
-      teamAdmins.push(user._id.toString());
-    }
+    const filteredAdmin = teamAdmins.filter(
+      (adminId) => adminId !== payload.userId,
+    );
+    filteredAdmin.push(user._id.toString());
     const updatedTeamParams = {
       users: teamUsers,
-      admins: currentUserAdmin ? filteredAdmin : teamAdmins,
+      admins: filteredAdmin,
       owner: payload.userId,
     };
     const response = await this.teamRepository.updateTeamById(
@@ -442,27 +433,6 @@ export class TeamUserService {
         currentOwnerUserTeams[index].role = TeamRole.OWNER;
       }
     }
-    const currentOwnerUserWorkspaces = [...currentOwnerUserDetails.workspaces];
-    if (!currentUserAdmin) {
-      for (let index = 0; index < teamDetails.workspaces.length; index++) {
-        let count = 0;
-        for (let flag = 0; flag < currentOwnerUserWorkspaces.length; flag++) {
-          if (
-            teamDetails.workspaces[index].id.toString() !==
-            currentOwnerUserWorkspaces[flag].workspaceId
-          ) {
-            count++;
-          }
-        }
-        if (count === currentOwnerUserWorkspaces.length) {
-          currentOwnerUserWorkspaces.push({
-            workspaceId: teamDetails.workspaces[index].id.toString(),
-            teamId: teamDetails._id.toString(),
-            name: teamDetails.workspaces[index].name,
-          });
-        }
-      }
-    }
     const prevOwnerUpdatedParams = {
       teams: prevOwnerUserTeams,
     };
@@ -472,21 +442,11 @@ export class TeamUserService {
     );
     const currentOwnerUpdatedParams = {
       teams: currentOwnerUserTeams,
-      workspaces: currentOwnerUserWorkspaces,
     };
     await this.userRepository.updateUserById(
       new ObjectId(payload.userId),
       currentOwnerUpdatedParams,
     );
-    if (!currentUserAdmin) {
-      const message = {
-        userId: payload.userId,
-        teamWorkspaces: teamDetails.workspaces,
-      };
-      await this.producerService.produce(TOPIC.TEAM_OWNER_CHANGED_TOPIC, {
-        value: JSON.stringify(message),
-      });
-    }
     return response;
   }
 

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { UserDto } from "@src/modules/common/models/user.model";
+import { User, UserDto } from "@src/modules/common/models/user.model";
 import { WorkspaceDto } from "@src/modules/common/models/workspace.model";
 import { Type } from "class-transformer";
 import {
@@ -97,19 +97,12 @@ export class AddTeamUserDto {
 }
 
 export class TeamInviteMailDto {
-  @IsString()
+  @IsArray()
   @IsNotEmpty()
-  firstName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  userName: string;
+  @Type(() => User)
+  users: User[];
 
   @IsString()
   @IsNotEmpty()
   teamName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  email: string;
 }
