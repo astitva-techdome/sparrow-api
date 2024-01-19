@@ -6,7 +6,6 @@ import { IdentityModule } from "../identity/identity.module";
 import { WorkspaceUserService } from "./services/workspace-user.service";
 import { WorkspaceHandler } from "./handlers/workspace.handler";
 import { AddUserHandler } from "./handlers/addUser.handler";
-import { ChangeOwnerHandler } from "./handlers/changeOwner.handler";
 import { RemoveUserHandler } from "./handlers/removeUser.handler";
 import { CollectionService } from "./services/collection.service";
 import { CollectionRepository } from "./repositories/collection.repository";
@@ -25,7 +24,6 @@ import { DemoteAdminHandler } from "./handlers/demoteAdmin.handlers";
     WorkspaceUserService,
     WorkspaceHandler,
     AddUserHandler,
-    ChangeOwnerHandler,
     RemoveUserHandler,
     PromoteAdminHandler,
     DemoteAdminHandler,

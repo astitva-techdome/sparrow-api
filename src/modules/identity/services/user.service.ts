@@ -177,8 +177,8 @@ export class UserService {
     const transporter = nodemailer.createTransport({
       service: EmailServiceProvider.GMAIL,
       auth: {
-        user: this.configService.get("app.email"),
-        pass: this.configService.get("app.password"),
+        user: this.configService.get("app.senderEmail"),
+        pass: this.configService.get("app.senderPassword"),
       },
     });
     const handlebarOptions = {
@@ -190,7 +190,7 @@ export class UserService {
     transporter.use("compile", hbs(handlebarOptions));
 
     const mailOptions = {
-      from: this.configService.get("app.email"),
+      from: this.configService.get("app.senderEmail"),
       to: earlyAccessDto.email,
       subject: `Welcome to Sparrow `,
       template: "welcomeEmail",

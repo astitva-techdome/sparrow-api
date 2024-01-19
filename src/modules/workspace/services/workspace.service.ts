@@ -7,6 +7,7 @@ import { WorkspaceRepository } from "../repositories/workspace.repository";
 import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
+  workspaceUsersResponseDto,
 } from "../payloads/workspace.payload";
 import { Workspace } from "@src/modules/common/models/workspace.model";
 import { ContextService } from "@src/modules/common/services/context.service";
@@ -34,10 +35,16 @@ import { TeamService } from "@src/modules/identity/services/team.service";
 import {
   AddUserInWorkspaceDto,
   UserRoleInWorkspcaeDto,
+  WorkspaceInviteMailDto,
   removeUserFromWorkspaceDto,
 } from "../payloads/workspaceUser.payload";
 import { User } from "@src/modules/common/models/user.model";
 import { isString } from "class-validator";
+import * as nodemailer from "nodemailer";
+import hbs = require("nodemailer-express-handlebars");
+import { EmailServiceProvider } from "@src/modules/common/models/user.model";
+import { ConfigService } from "@nestjs/config";
+import path = require("path");
 /**
  * Workspace Service
  */
@@ -50,6 +57,7 @@ export class WorkspaceService {
     private readonly environmentService: EnvironmentService,
     private readonly userRepository: UserRepository,
     private readonly teamService: TeamService,
+    private readonly configService: ConfigService,
     private readonly logger: Logger,
   ) {}
 
@@ -480,6 +488,42 @@ export class WorkspaceService {
     return;
   }
 
+  async inviteUserInWorkspaceEmail(payload: WorkspaceInviteMailDto) {
+    const currentUser = await this.contextService.get("user");
+    const transporter = nodemailer.createTransport({
+      service: EmailServiceProvider.GMAIL,
+      auth: {
+        user: this.configService.get("app.senderEmail"),
+        pass: this.configService.get("app.senderPassword"),
+      },
+    });
+    const handlebarOptions = {
+      //view engine contains default and partial templates
+      viewEngine: {
+        defaultLayout: "",
+      },
+      viewPath: path.resolve(__dirname, "..", "..", "views"),
+    };
+    transporter.use("compile", hbs(handlebarOptions));
+    const promiseArray = [];
+    for (const user of payload.users) {
+      const mailOptions = {
+        from: this.configService.get("app.senderEmail"),
+        to: user.email,
+        text: "User Invited",
+        template: "inviteWorkspaceEmail",
+        context: {
+          firstname: user.name,
+          username: currentUser.name,
+          workspacename: payload.workspaceName,
+        },
+        subject: `${currentUser.name} has invited you to the workspace "${payload.workspaceName}"`,
+      };
+      promiseArray.push(transporter.sendMail(mailOptions));
+    }
+    await Promise.all(promiseArray);
+  }
+
   async addUserInWorkspace(payload: AddUserInWorkspaceDto): Promise<object> {
     const workspaceData = await this.workspaceRepository.get(
       payload.workspaceId,
@@ -533,6 +577,15 @@ export class WorkspaceService {
         updatedWorkspaceParams,
       );
     }
+    const userExistData = [];
+    for (const email of usersExist) {
+      const userData = await this.userRepository.getUserByEmail(email);
+      userExistData.push(userData);
+    }
+    await this.inviteUserInWorkspaceEmail({
+      users: userExistData,
+      workspaceName: workspaceData.name,
+    });
     const response = {
       notExistInTeam: usersNotExist,
       existInWorkspace: alreadyWorkspaceMember,
@@ -622,5 +675,38 @@ export class WorkspaceService {
       updatedWorkspaceParams,
     );
     return response;
+  }
+
+  async getAllWorkspaceUsers(
+    workspaceId: string,
+  ): Promise<workspaceUsersResponseDto[]> {
+    const workspaceData = await this.workspaceRepository.get(workspaceId);
+    const workspaceUsers = [...workspaceData.users];
+    const updatedIdArray = [];
+    for (const item of workspaceUsers) {
+      if (!isString(item.id)) {
+        updatedIdArray.push(item.id);
+        continue;
+      }
+      updatedIdArray.push(new ObjectId(item.id));
+    }
+    const userDataArray = await this.userRepository.findUsersByIdArray(
+      updatedIdArray,
+    );
+    const allUsers: workspaceUsersResponseDto[] = [];
+    for (const user of userDataArray) {
+      for (let index = 0; index < workspaceData.users.length; index++) {
+        if (user._id.toString() === workspaceData.users[index].id.toString()) {
+          allUsers.push({
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: workspaceData.users[index].role,
+            workspaceId: workspaceData._id.toString(),
+          });
+        }
+      }
+    }
+    return allUsers;
   }
 }
