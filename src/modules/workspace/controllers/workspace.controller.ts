@@ -105,7 +105,7 @@ export class WorkSpaceController {
   @Get("user/:userId")
   @ApiOperation({
     summary: "Retreive all User's Workspaces",
-    description: "This will retrieve all User's Wprkspaces",
+    description: "This will retrieve all workspaces of a user",
   })
   @ApiResponse({
     status: 200,
@@ -120,6 +120,32 @@ export class WorkSpaceController {
     @Res() res: FastifyReply,
   ) {
     const data = await this.workspaceService.getAllWorkSpaces(userId);
+    const responseData = new ApiResponseService(
+      "Success",
+      HttpStatusCode.OK,
+      data,
+    );
+    res.status(responseData.httpStatusCode).send(responseData);
+  }
+
+  @Get(":workspaceId/users")
+  @ApiOperation({
+    summary: "Retreive all workspace users",
+    description: "This will retrieve all the User's of a single Workspace",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "All Users of a workspace fetched Successfully",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Fetching to fetch all users of a workspace",
+  })
+  async getAllWorkspaceUsers(
+    @Param("workspaceId") workspaceId: string,
+    @Res() res: FastifyReply,
+  ) {
+    const data = await this.workspaceService.getAllWorkspaceUsers(workspaceId);
     const responseData = new ApiResponseService(
       "Success",
       HttpStatusCode.OK,
@@ -180,7 +206,7 @@ export class WorkSpaceController {
   @Delete(":workspaceId")
   @ApiOperation({
     summary: "Delete a Workspace",
-    description: "This will delete a  User's Workspace",
+    description: "This will delete a User's Workspace",
   })
   @ApiResponse({ status: 200, description: "Workspace Deleted Successfully" })
   @ApiResponse({ status: 400, description: "Delete Workspace Failed" })
@@ -199,7 +225,7 @@ export class WorkSpaceController {
 
   @Post(":workspaceId/user")
   @ApiOperation({
-    summary: "Add Users in  Workspace",
+    summary: "Add Users in Workspace",
     description: "You can add multiple users to your Workspace",
   })
   @ApiResponse({ status: 201, description: "Users Added Successfully" })

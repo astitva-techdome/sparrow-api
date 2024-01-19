@@ -7,6 +7,7 @@ import { WorkspaceRepository } from "../repositories/workspace.repository";
 import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
+  workspaceUsersResponseDto,
 } from "../payloads/workspace.payload";
 import { Workspace } from "@src/modules/common/models/workspace.model";
 import { ContextService } from "@src/modules/common/services/context.service";
@@ -622,5 +623,38 @@ export class WorkspaceService {
       updatedWorkspaceParams,
     );
     return response;
+  }
+
+  async getAllWorkspaceUsers(
+    workspaceId: string,
+  ): Promise<workspaceUsersResponseDto[]> {
+    const workspaceData = await this.workspaceRepository.get(workspaceId);
+    const workspaceUsers = [...workspaceData.users];
+    const updatedIdArray = [];
+    for (const item of workspaceUsers) {
+      if (!isString(item.id)) {
+        updatedIdArray.push(item.id);
+        continue;
+      }
+      updatedIdArray.push(new ObjectId(item.id));
+    }
+    const userDataArray = await this.userRepository.findUsersByIdArray(
+      updatedIdArray,
+    );
+    const allUsers: workspaceUsersResponseDto[] = [];
+    for (const user of userDataArray) {
+      for (let index = 0; index < workspaceData.users.length; index++) {
+        if (user._id.toString() === workspaceData.users[index].id.toString()) {
+          allUsers.push({
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: workspaceData.users[index].role,
+            workspaceId: workspaceData._id.toString(),
+          });
+        }
+      }
+    }
+    return allUsers;
   }
 }

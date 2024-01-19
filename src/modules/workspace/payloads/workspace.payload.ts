@@ -3,6 +3,7 @@ import { AdminDto } from "@src/modules/common/models/workspace.model";
 import {
   IsArray,
   IsDateString,
+  IsEmail,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
@@ -93,4 +94,26 @@ export class WorkspaceDtoForIdDocument {
   @IsMongoId()
   @IsOptional()
   createdBy?: string;
+}
+
+export class workspaceUsersResponseDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  role: string;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  workspaceId: string;
 }
