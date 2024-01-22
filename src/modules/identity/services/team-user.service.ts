@@ -197,7 +197,7 @@ export class TeamUserService {
       teamName: teamData.name,
     });
     const response = {
-      usersNotExist: usersNotExist,
+      nonExistingUsers: usersNotExist,
       alreadyTeamMember: alreadyTeamMember,
     };
     return response;
