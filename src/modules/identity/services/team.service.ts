@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateOrUpdateTeamDto } from "../payloads/team.payload";
+import { CreateOrUpdateTeamDto, UpdateTeamDto } from "../payloads/team.payload";
 import { TeamRepository } from "../repositories/team.repository";
 import {
   DeleteResult,
@@ -115,9 +115,39 @@ export class TeamService {
    */
   async update(
     id: string,
-    payload: CreateOrUpdateTeamDto,
+    teamData: UpdateTeamDto,
+    image?: MemoryStorageFile,
   ): Promise<UpdateResult<Team>> {
-    const data = await this.teamRepository.update(id, payload);
+    await this.isTeamOwner(id);
+    const teamDetails = await this.get(id);
+    if (!teamDetails) {
+      throw new BadRequestException(
+        "The teams with that id does not exist in the system.",
+      );
+    }
+    let team;
+    if (image) {
+      await this.isImageSizeValid(image.size);
+      const dataBuffer = image.buffer;
+      const dataString = Buffer.from(dataBuffer).toString("base64");
+      const logo = {
+        bufferString: dataString,
+        encoding: image.encoding,
+        mimetype: image.mimetype,
+        size: image.size,
+      };
+      team = {
+        name: teamData.name ?? teamDetails.name,
+        description: teamData.description ?? teamDetails.description,
+        logo: logo,
+      };
+    } else {
+      team = {
+        name: teamData.name ?? teamDetails.name,
+        description: teamData.description ?? teamDetails.description,
+      };
+    }
+    const data = await this.teamRepository.update(id, team);
     return data;
   }
 
@@ -162,6 +192,17 @@ export class TeamService {
       throw new BadRequestException("You don't have access");
     }
     throw new BadRequestException("Team doesn't exist");
+  }
+
+  async isTeamOwner(id: string): Promise<boolean> {
+    const user = await this.contextService.get("user");
+    const teamDetails = await this.teamRepository.findTeamByTeamId(
+      new ObjectId(id),
+    );
+    if (teamDetails.owner !== user._id.toString()) {
+      return false;
+    }
+    return true;
   }
 
   async isTeamMember(userId: string, userArray: Array<any>): Promise<boolean> {
