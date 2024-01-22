@@ -159,7 +159,7 @@ export class TeamController {
     const team = await this.teamService.get(teamId);
     const response = {
       ...team,
-      nonExistingUsers: data,
+      ...data,
     };
     const responseData = new ApiResponseService(
       "User Added in Team",

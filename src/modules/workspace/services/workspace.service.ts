@@ -18,7 +18,7 @@ import {
   UpdateResult,
   WithId,
 } from "mongodb";
-import { WorkspaceRole } from "@src/modules/common/enum/roles.enum";
+import { TeamRole, WorkspaceRole } from "@src/modules/common/enum/roles.enum";
 import { TeamRepository } from "@src/modules/identity/repositories/team.repository";
 import { CollectionDto } from "@src/modules/common/models/collection.model";
 
@@ -219,18 +219,20 @@ export class WorkspaceService {
     const { _id: id, name, type } = environment;
     const environmentDto: EnvironmentDto = { id, name, type };
 
-    const adminInfo = [
-      {
-        id: userId.toString(),
-        name: this.contextService.get("user").name,
-      },
-    ];
-    const usersInfo = [
-      {
-        role: WorkspaceRole.ADMIN,
-        id: userId.toString(),
-      },
-    ];
+    const adminInfo = [];
+    const usersInfo = [];
+    for (const user of teamData.users) {
+      if (user.role !== TeamRole.MEMBER) {
+        adminInfo.push({
+          id: user.id.toString(),
+          name: user.name,
+        });
+        usersInfo.push({
+          role: WorkspaceRole.ADMIN,
+          id: user.id.toString(),
+        });
+      }
+    }
     const params = {
       name: workspaceData.name,
       team: {
@@ -261,15 +263,33 @@ export class WorkspaceService {
       workspaces: teamWorkspaces,
     };
     await this.teamRepository.updateTeamById(teamId, updateTeamParams);
-    const userData = await this.userRepository.findUserByUserId(
-      new ObjectId(userId),
+    const userIdArray = [];
+    for (const item of teamData.users) {
+      if (item.role !== TeamRole.MEMBER) {
+        if (!isString(item.id)) {
+          userIdArray.push(item.id);
+          continue;
+        }
+        userIdArray.push(new ObjectId(item.id));
+      }
+    }
+    const userDataArray = await this.userRepository.findUsersByIdArray(
+      userIdArray,
     );
-    userData.workspaces.push({
-      workspaceId: response.insertedId.toString(),
-      name: workspaceData.name,
-      teamId: workspaceData.id,
-    });
-    await this.userRepository.updateUserById(new ObjectId(userId), userData);
+    for (let index = 0; index < userDataArray.length; index++) {
+      userDataArray[index].workspaces.push({
+        workspaceId: response.insertedId.toString(),
+        name: workspaceData.name,
+        teamId: workspaceData.id,
+      });
+    }
+    const userDataPromises = [];
+    for (const item of userDataArray) {
+      userDataPromises.push(
+        this.userRepository.updateUserById(new ObjectId(item._id), item),
+      );
+    }
+    await Promise.all(userDataPromises);
     return response;
   }
 

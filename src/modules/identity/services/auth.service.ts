@@ -87,7 +87,6 @@ export class AuthService {
         {
           _id: insertedId,
           email: user.email,
-          workspaces: user.workspaces,
           exp: Date.now() / 1000 + this.expiration,
         },
         { secret: this.configService.get("app.jwtSecretKey") },
@@ -106,7 +105,6 @@ export class AuthService {
         {
           _id: insertedId,
           email: user.email,
-          workspaces: user.workspaces,
           exp: Date.now() / 1000 + this.refreshTokenExpirationTime,
         },
         { secret: this.configService.get("app.refreshTokenSecretKey") },

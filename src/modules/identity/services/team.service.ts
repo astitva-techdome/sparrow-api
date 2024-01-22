@@ -170,8 +170,6 @@ export class TeamService {
         return true;
       }
     }
-    throw new BadRequestException(
-      "User is not part of team, first add user in Team",
-    );
+    return false;
   }
 }

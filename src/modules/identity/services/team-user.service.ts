@@ -109,15 +109,24 @@ export class TeamUserService {
    * @param {CreateOrUpdateTeamUserDto} payload
    * @returns {Promise<InsertOneWriteOpResult<Team>>} result of the insert operation
    */
-  async addUser(payload: AddTeamUserDto): Promise<string[]> {
+  async addUser(payload: AddTeamUserDto): Promise<object> {
     const teamFilter = new ObjectId(payload.teamId);
     const teamData = await this.teamRepository.findTeamByTeamId(teamFilter);
     const usersExist = [];
     const usersNotExist = [];
+    const alreadyTeamMember = [];
     for (const emailId of payload.users) {
       const user = await this.userRepository.getUserByEmail(emailId);
       if (user) {
-        usersExist.push(user);
+        const teamMember = await this.teamService.isTeamMember(
+          user._id.toString(),
+          teamData.users,
+        );
+        if (!teamMember) {
+          usersExist.push(user);
+        } else {
+          alreadyTeamMember.push(emailId);
+        }
       } else {
         usersNotExist.push(emailId);
       }
@@ -187,7 +196,11 @@ export class TeamUserService {
       users: usersExist,
       teamName: teamData.name,
     });
-    return usersNotExist;
+    const response = {
+      usersNotExist: usersNotExist,
+      alreadyTeamMember: alreadyTeamMember,
+    };
+    return response;
   }
 
   async removeUser(payload: CreateOrUpdateTeamUserDto): Promise<WithId<Team>> {
@@ -392,7 +405,15 @@ export class TeamUserService {
     const teamDetails = await this.teamRepository.findTeamByTeamId(
       new ObjectId(payload.teamId),
     );
-    await this.teamService.isTeamMember(payload.userId, teamDetails.users);
+    const teamMember = await this.teamService.isTeamMember(
+      payload.userId,
+      teamDetails.users,
+    );
+    if (!teamMember) {
+      throw new BadRequestException(
+        "User is not part of team, first add user in Team",
+      );
+    }
     const teamUsers = [...teamDetails.users];
     for (let index = 0; index < teamUsers.length; index++) {
       if (teamUsers[index].id.toString() === user._id.toString()) {
