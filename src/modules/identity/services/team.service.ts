@@ -118,7 +118,10 @@ export class TeamService {
     teamData: UpdateTeamDto,
     image?: MemoryStorageFile,
   ): Promise<UpdateResult<Team>> {
-    await this.isTeamOwner(id);
+    const teamOwner = await this.isTeamOwner(id);
+    if (!teamOwner) {
+      throw new BadRequestException("You don't have Access");
+    }
     const teamDetails = await this.get(id);
     if (!teamDetails) {
       throw new BadRequestException(
@@ -199,7 +202,7 @@ export class TeamService {
     const teamDetails = await this.teamRepository.findTeamByTeamId(
       new ObjectId(id),
     );
-    if (teamDetails.owner !== user._id.toString()) {
+    if (teamDetails.owner.toString() !== user._id.toString()) {
       return false;
     }
     return true;
